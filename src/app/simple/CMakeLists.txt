@@ -1,12 +1,10 @@
-project(demo)
+project(simple)
 
 set(${PROJECT_NAME}_HEADERS
-    Render.h
 )
 
 set(${PROJECT_NAME}_SOURCES
     main.cpp
-    Render.cpp
 )
 
 find_package(glfw3 3.3 REQUIRED)

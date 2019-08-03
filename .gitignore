@@ -1,5 +1,8 @@
 build*/
 
+# Vim
+*.swp
+
 # Prerequisites
 *.d
 
