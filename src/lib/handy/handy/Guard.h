@@ -74,8 +74,9 @@ public:
         return mResource;
     }
 
-private:
+protected:
     T mResource;
+private:
     Guard mGuard;
 };
 

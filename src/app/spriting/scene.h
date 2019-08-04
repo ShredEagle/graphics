@@ -103,7 +103,9 @@ Scene setupScene()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 4, 4); 
+    constexpr GLsizei width  = 347-3;
+    constexpr GLsizei height = 303-3;
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); 
     {
         GLint isSuccess;
         glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
@@ -114,8 +116,17 @@ Scene setupScene()
             throw std::runtime_error(message);
         }
     }
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE, gTextureImage);
 
+    // the literal texture defined above
+    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE, gTextureImage);
+    //
+    static Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+    std::cerr << "W: " << ring.mWidth 
+                << "H: " << ring.mHeight 
+                << "Comps : " << ring.mSourceComponents
+                << std::endl;
+    /// \TODO offset by 3, 3 in the image
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ring);
 
     // Program
     Shader<GL_VERTEX_SHADER> vertexShader;

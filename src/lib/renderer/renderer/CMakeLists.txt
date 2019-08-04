@@ -1,13 +1,18 @@
 project(renderer)
 
 set(${PROJECT_NAME}_HEADERS
+    Error.h
     Shading.h
     Texture.h
     VertexSpecification.h
+
+    stb_image.h
 )
 
 set(${PROJECT_NAME}_SOURCES
     Shading.cpp
+
+    stb_image.c
 )
 
 find_package(glad REQUIRED)

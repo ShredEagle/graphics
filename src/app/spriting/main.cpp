@@ -1,3 +1,5 @@
+#include <renderer/Error.h>
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -10,7 +12,7 @@ constexpr int gWindowWidth{1280};
 constexpr int gWindowHeight{1024};
 
 constexpr int gGLVersionMajor{4};
-constexpr int gGLVersionMinor{2};
+constexpr int gGLVersionMinor{3};
 
 
 static void error_callback(int error, const char* description)
@@ -54,6 +56,7 @@ int main(void)
     // VSync
     glfwSwapInterval(1);
 
+    ad::enableDebugOutput();
     ad::Scene scene = ad::setupScene();
 
     while(!glfwWindowShouldClose(window))
