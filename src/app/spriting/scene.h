@@ -30,12 +30,10 @@ const GLchar* gFragmentShader = R"#(
     in vec4 ex_Color;
     in vec2 ex_UV;
     out vec4 out_Color;
-    //layout(binding=0) uniform sampler2D spriteSampler;
-    uniform sampler2D spriteSampler;
+    layout(binding=1) uniform sampler2D spriteSampler;
 
     void main(void)
     {
-        //out_Color = ex_Color;
         out_Color = texture(spriteSampler, ex_UV).rgba;
     }
 )#";
@@ -101,13 +99,10 @@ Scene setupScene()
 
     // Texture
     Texture texture;
-    glActiveTexture(GL_TEXTURE0);
+    // Don't use the default GL_TEXTURE0, to make sure it does not work just by accident
+    glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    //const GLenum PIXEL_FORMAT = GL_RGBA;
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 4, 4); 
     {
         GLint isSuccess;
@@ -119,7 +114,6 @@ Scene setupScene()
             throw std::runtime_error(message);
         }
     }
-    glGenerateMipmap(GL_TEXTURE_2D);
     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE, gTextureImage);
 
 
@@ -140,10 +134,6 @@ Scene setupScene()
     glDetachShader(program, fragmentShader);
 
     handleGlslError(program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
-
-    // Bind texture
-    GLuint TextureID  = glGetUniformLocation(program, "spriteSampler");
-    glUniform1i(TextureID, 0);
 
     /// \TODO handle use program and un-use (glUseProgram(0)), otherwise preventing correct deletion
     ///       since the used program is a global status, it should not be altered in a specific program dtor

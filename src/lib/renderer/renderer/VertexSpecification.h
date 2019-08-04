@@ -26,7 +26,7 @@ struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 
 /// \TODO build on a ResourceGuard
 /// \TODO understand when glDisableVertexAttribArray should actually be called
-///       (likely before destruction, when changing geometry to render)
+///       (likely not only before destruction, but more when rendering other objects)
 struct [[nodiscard]] VertexBufferObject
 {
     // Disable copy
