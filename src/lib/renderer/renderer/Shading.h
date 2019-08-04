@@ -1,5 +1,7 @@
 #pragma once
 
+#include <handy/Guard.h>
+
 #include <glad/glad.h>
 
 #include <functional>
@@ -8,61 +10,19 @@ namespace ad
 {
 
 template <int N_stage>
-struct [[nodiscard]] Shader
+struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
 {
-    // Disable copy
-    Shader(const Shader &) = delete;
-    Shader & operator=(const Shader &) = delete;
-
-    // Movable
-    Shader(Shader && aOther) :
-        mShaderId{aOther.mShaderId}
-    {
-        aOther.mShaderId = 0;
-    }
-
-    Shader(GLuint aShaderId) :
-        mShaderId(aShaderId)
+    Shader() :
+        ResourceGuard<GLuint>{glCreateShader(N_stage), glDeleteShader}
     {}
-
-    ~Shader()
-    {
-        glDeleteShader(mShaderId);
-    }
-
-    operator GLuint ()
-    { return mShaderId; }
-
-    GLuint mShaderId;
 };
 
 
-struct [[nodiscard]] Program
+struct [[nodiscard]] Program : public ResourceGuard<GLuint>
 {
-    // Disable copy
-    Program(const Program &) = delete;
-    Program & operator=(const Program &) = delete;
-
-    // Movable
-    Program(Program && aOther) :
-        mProgramId{aOther.mProgramId}
-    {
-        aOther.mProgramId = 0;
-    }
-
-    Program(GLuint aProgramId) :
-        mProgramId(aProgramId)
+    Program() :
+        ResourceGuard<GLuint>{glCreateProgram(), glDeleteProgram}
     {}
-
-    ~Program()
-    {
-        glDeleteProgram(mProgramId);
-    }
-
-    operator GLuint ()
-    { return mProgramId; }
-
-    GLuint mProgramId;
 };
 
 void handleGlslError(GLuint objectId,
@@ -88,21 +48,17 @@ void handleGlslError(GLuint objectId,
 }
 
 template <int N_stage>
-Shader<N_stage> compileShader(const std::string &aSource)
+void compileShader(const Shader<N_stage> & aShader, const std::string &aSource)
 {
-    Shader<N_stage> shader{glCreateShader(N_stage)};
-
     //glShadersource(shader, 1, char*[]{aSource.data()}, NULL);
     const char* sourceProxy = aSource.data(); 
-    glShaderSource(shader, 1, &sourceProxy, NULL);
-    glCompileShader(shader);
+    glShaderSource(aShader, 1, &sourceProxy, NULL);
+    glCompileShader(aShader);
 
-    handleGlslError(shader,
+    handleGlslError(aShader,
                     GL_COMPILE_STATUS,
                     glGetShaderiv,
                     glGetShaderInfoLog);
-
-    return shader;
 }
 
 } // namespace ad

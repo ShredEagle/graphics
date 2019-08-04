@@ -1,7 +1,6 @@
 #pragma once
 
-/// \TODO move to a separate lib
-#include <renderer/Handy.h>
+#include <handy/Guard.h>
 
 #include <glad/glad.h>
 
@@ -10,23 +9,24 @@
 namespace ad
 {
 
-//using VertexArrayObject = ResourceGuard<GLuint>
-//
-//VertexArrayObject makeVAO(GLuint vaoIndex)
-//{
-//    return VertexArrayObject(vaoIndex, [](GLuint vaoIndex)(glDeleteVertexArrays, 1, &vaoIndex));
-//}
-//
-
-class VertexArrayObject : public ResourceGuard<GLuint>
+struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 {
-public:
-    VertexArrayObject(GLuint aIndex) :
-        ResourceGuard<GLuint>{aIndex, [](GLuint aIndex){glDeleteVertexArrays(1, &aIndex);}}
+    static GLuint reserveVertexArray()
+    {
+        GLuint vertexArrayId;
+        glGenVertexArrays(1, &vertexArrayId);
+        return vertexArrayId;
+    }
+
+    VertexArrayObject() :
+        ResourceGuard<GLuint>{reserveVertexArray(),
+                              [](GLuint aIndex){glDeleteVertexArrays(1, &aIndex);}}
     {}
 };
 
-
+/// \TODO build on a ResourceGuard
+/// \TODO understand when glDisableVertexAttribArray should actually be called
+///       (likely before destruction, when changing geometry to render)
 struct [[nodiscard]] VertexBufferObject
 {
     // Disable copy
@@ -68,13 +68,13 @@ struct [[nodiscard]] VertexBufferObject
 
 struct [[nodiscard]] VertexSpecification
 {
-    VertexSpecification(VertexArrayObject aVertexArray,
-                        std::vector<VertexBufferObject> aVertexBuffers) :
+    VertexSpecification(VertexArrayObject aVertexArray={},
+                        std::vector<VertexBufferObject> aVertexBuffers={}) :
         mVertexArray{std::move(aVertexArray)},
         mVertexBuffers{std::move(aVertexBuffers)}
     {}
 
-    VertexArrayObject  mVertexArray; 
+    VertexArrayObject mVertexArray;
     std::vector<VertexBufferObject> mVertexBuffers; 
 };
 
@@ -84,6 +84,10 @@ struct MappedGl;
 
 template <> struct MappedGl<GLfloat>
 { static const GLenum enumerator = GL_FLOAT; };
+
+template <> struct MappedGl<GLubyte>
+{ static const GLenum enumerator = GL_UNSIGNED_BYTE; };
+
 
 template <class T_element, int N_vertices, int N_attributeDimension>
 VertexBufferObject makeAndLoadBuffer(GLuint aAttributeId,

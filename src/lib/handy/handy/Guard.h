@@ -1,3 +1,7 @@
+#pragma once
+
+#include <functional>
+
 class [[nodiscard]] Guard
 {
 public:
@@ -65,7 +69,7 @@ public:
 
     ResourceGuard & operator=(ResourceGuard &&) = default;
 
-    operator T& ()
+    operator const T& () const
     {
         return mResource;
     }
