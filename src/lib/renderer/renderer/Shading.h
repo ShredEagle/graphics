@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 
 #include <functional>
+#include <vector>
 
 namespace ad
 {

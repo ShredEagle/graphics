@@ -12,11 +12,12 @@ class TwodConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
     generators = "cmake_paths"
+    build_policy = "missing"
 
-    requires = [
+    requires = (
         ("glad/0.1.29@bincrafters/stable"),
         ("glfw/3.3@bincrafters/stable"),
-    ]
+    )
 
     default_options = {
         "shared": False,

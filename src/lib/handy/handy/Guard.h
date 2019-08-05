@@ -23,7 +23,7 @@ public:
         aOther.mReleaser = &Guard::turnOff;
     }
 
-    Guard & operator=(Guard && aOther)
+    void operator=(Guard && aOther)
     {
         mReleaser = std::move(aOther.mReleaser);
         aOther.mReleaser = &Guard::turnOff;
