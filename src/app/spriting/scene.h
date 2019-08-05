@@ -25,12 +25,14 @@ const GLchar* gVertexShader = R"#(
 )#";
 
 const GLchar* gFragmentShader = R"#(
-    #version 420
+    #version 400
 
     in vec4 ex_Color;
     in vec2 ex_UV;
     out vec4 out_Color;
-    layout(binding=1) uniform sampler2D spriteSampler;
+    // Only works starting with 4.2
+    //layout(binding=1) uniform sampler2D spriteSampler;
+    uniform sampler2D spriteSampler;
 
     void main(void)
     {
@@ -103,8 +105,32 @@ Scene setupScene()
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
 
+    ////
+    //// the literal texture defined above
+    ////
+    //constexpr GLsizei width  = 4;
+    //constexpr GLsizei height = 4;
+    //const GLvoid * imageData = gTextureImage;
+
+    //
+    // From file image texture
+    //
+    /// \TODO ensure correct lifetime of the image data vis-à-vis async OpenGL loading to texture
+    static const Image ring("/tmp/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+
+    //// Whole image
+    //const GLsizei width  = ring.mWidth;
+    //const GLsizei height = ring.mHeight;
+    //const GLvoid * imageData = ring;
+
+    // Sub-part
+    // Found by measuring in the image raster
     constexpr GLsizei width  = 347-3;
     constexpr GLsizei height = 303-3;
+    static const std::vector<unsigned char> firstRing = ring.crop(3, 3, width, height);
+    const GLvoid * imageData = firstRing.data();
+
+#if defined(GL_VERSION_4_2)
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); 
     {
         GLint isSuccess;
@@ -116,17 +142,18 @@ Scene setupScene()
             throw std::runtime_error(message);
         }
     }
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+#else
+    {
+        ErrorCheck check;
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+#endif
 
-    // the literal texture defined above
-    //glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE, gTextureImage);
-    //
-    static Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
-    std::cerr << "W: " << ring.mWidth 
-                << "H: " << ring.mHeight 
-                << "Comps : " << ring.mSourceComponents
-                << std::endl;
-    /// \TODO offset by 3, 3 in the image
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, ring);
+    // Enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Program
     Shader<GL_VERTEX_SHADER> vertexShader;
@@ -140,6 +167,8 @@ Scene setupScene()
     glAttachShader(program, fragmentShader);
 
     glLinkProgram(program);
+
+
     // Apparently, it is a good practice to detach as soon as link is done
     glDetachShader(program, vertexShader);
     glDetachShader(program, fragmentShader);
@@ -149,6 +178,13 @@ Scene setupScene()
     /// \TODO handle use program and un-use (glUseProgram(0)), otherwise preventing correct deletion
     ///       since the used program is a global status, it should not be altered in a specific program dtor
     glUseProgram(program);
+#if not defined(GL_VERSION_4_2)
+    {
+        ErrorCheck check;
+        glUniform1i(glGetUniformLocation(program, "spriteSampler"), 1);
+    }
+#endif
+
 
     /// \TODO return the shader resource instances to keep correct lifetime
     /// note that deleting the shader is just marking them for deletion until no program use the,

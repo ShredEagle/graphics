@@ -8,6 +8,7 @@
 namespace ad
 {
 
+#if defined(GL_VERSION_4_3)
     // Only starting in 4.3 apparently
 void GLAPIENTRY
 MessageCallback( GLenum source,
@@ -32,16 +33,25 @@ void enableDebugOutput()
     glEnable              ( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( MessageCallback, 0 );
 }
+#endif
 
-//struct ErrorCheck
-//{
-//    ErrorCheck()
-//    {
-//        if (glGetError() != GL_NO_ERROR)
-//        {
-//            std::cerr << "An error was waiting in the stack";
-//        }
-//    }
-//}
+struct [[nodiscard]] ErrorCheck
+{
+    ErrorCheck()
+    {
+        while (glGetError() != GL_NO_ERROR)
+        {
+            std::cerr << "An error was waiting in the stack";
+        }
+    }
+
+    ~ErrorCheck()
+    {
+        while (GLenum status = glGetError())
+        {
+            std::cerr << "The call generated error: " << std::hex << "0x" <<  status << std::endl;
+        }
+    }
+};
 
 } // namespace ad;

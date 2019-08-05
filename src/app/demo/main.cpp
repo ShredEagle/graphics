@@ -81,7 +81,7 @@ constexpr int gWindowWidth{1280};
 constexpr int gWindowHeight{1024};
 
 constexpr int gGLVersionMajor{4};
-constexpr int gGLVersionMinor{2};
+constexpr int gGLVersionMinor{1};
 
 int main(void)
 {
@@ -89,6 +89,10 @@ int main(void)
     
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gGLVersionMajor);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gGLVersionMinor);
+
+    // macOS
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     auto window = guardResource(glfwCreateWindow(gWindowWidth,
                                                  gWindowHeight,

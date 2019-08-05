@@ -12,7 +12,7 @@ constexpr int gWindowWidth{1280};
 constexpr int gWindowHeight{1024};
 
 constexpr int gGLVersionMajor{4};
-constexpr int gGLVersionMinor{3};
+constexpr int gGLVersionMinor{1};
 
 
 static void error_callback(int error, const char* description)
@@ -38,6 +38,10 @@ int main(void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gGLVersionMajor);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gGLVersionMinor);
 
+    // macOS requirement (as well as not going above to OpenGL 4.1)
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     auto window = guard(glfwCreateWindow(gWindowWidth,
                                          gWindowHeight,
                                          "2D Demo",
@@ -56,7 +60,9 @@ int main(void)
     // VSync
     glfwSwapInterval(1);
 
+#if defined(GL_VERSION_4_3)
     ad::enableDebugOutput();
+#endif
     ad::Scene scene = ad::setupScene();
 
     while(!glfwWindowShouldClose(window))

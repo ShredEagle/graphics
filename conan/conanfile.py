@@ -21,5 +21,5 @@ class TwodConan(ConanFile):
 
     default_options = {
         "shared": False,
-        "glad:api_version": "4.3",
+        "glad:api_version": "4.1",
     }
