@@ -17,4 +17,8 @@ endif()
 #    add_compile_options(-Wall -Wextra -pedantic -Werror)
 #endif()
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(LINK_OPTIONS "/INCREMENTAL:NO")
+endif()
+
 add_subdirectory(src)

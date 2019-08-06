@@ -116,7 +116,8 @@ Scene setupScene()
     // From file image texture
     //
     /// \TODO ensure correct lifetime of the image data vis-à-vis async OpenGL loading to texture
-    static const Image ring("/tmp/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+    //static const Image ring("/tmp/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+    static const Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
 
     //// Whole image
     //const GLsizei width  = ring.mWidth;
@@ -178,7 +179,7 @@ Scene setupScene()
     /// \TODO handle use program and un-use (glUseProgram(0)), otherwise preventing correct deletion
     ///       since the used program is a global status, it should not be altered in a specific program dtor
     glUseProgram(program);
-#if not defined(GL_VERSION_4_2)
+#if !defined(GL_VERSION_4_2)
     {
         ErrorCheck check;
         glUniform1i(glGetUniformLocation(program, "spriteSampler"), 1);
