@@ -60,6 +60,16 @@ struct Image : public ResourceGuard<unsigned char *>
         return target;
     }
 
+    std::vector<std::vector<unsigned char>> cutouts(std::vector<std::pair<int, int>> aCoords, int width, int height) const
+    {
+        std::vector<std::vector<unsigned char>> cutouts;
+        for(auto coords : aCoords)
+        {
+            cutouts.push_back(crop(coords.first, coords.second, width, height));
+        }
+        return cutouts;
+    }
+
     int mWidth;
     int mHeight;
     int mSourceComponents;

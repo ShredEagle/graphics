@@ -124,12 +124,26 @@ Scene setupScene()
     //const GLsizei height = ring.mHeight;
     //const GLvoid * imageData = ring;
 
-    // Sub-part
-    // Found by measuring in the image raster
+    //// Sub-part
+    //// Found by measuring in the image raster
     constexpr GLsizei width  = 347-3;
     constexpr GLsizei height = 303-3;
-    static const std::vector<unsigned char> firstRing = ring.crop(3, 3, width, height);
-    const GLvoid * imageData = firstRing.data();
+    //static const std::vector<unsigned char> firstRing = ring.crop(3, 3, width, height);
+    //const GLvoid * imageData = firstRing.data();
+
+    std::vector<std::vector<unsigned char>> cutouts = ring.cutouts({
+            {3,    3},
+            {353,  3},
+            {703,  3},
+            {1053, 3},
+            {1403, 3},
+            {1753, 3},
+            {2103, 3},
+            {2453, 3},
+        },
+        width,
+        height
+    );
 
 #if defined(GL_VERSION_4_2)
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); 
