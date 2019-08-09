@@ -16,6 +16,7 @@ set(${PROJECT_NAME}_SOURCES
 )
 
 find_package(glad REQUIRED)
+find_package(math REQUIRED)
 
 add_library(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}
@@ -32,5 +33,6 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         handy
+        ad::math
         glad::glad
 )

@@ -4,6 +4,8 @@
 
 #include <handy/Guard.h>
 
+#include <math/Vector.h>
+
 #include <glad/glad.h>
 
 namespace ad
@@ -24,17 +26,35 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
     {}
 };
 
+
+struct Rectangle
+{
+    math::Vec2<int> mPosition;
+    math::Dimension2<int> mDimension;
+
+    int x() const
+    { return mPosition.x(); };
+    int y() const
+    { return mPosition.y(); };
+
+    int width() const
+    { return mDimension.width(); }
+    int height() const
+    { return mDimension.height(); }
+};
+
 struct Image : public ResourceGuard<unsigned char *>
 {
     Image(const std::string & aFilePath) :
-        ResourceGuard<unsigned char*>(nullptr, stbi_image_free)
+        ResourceGuard<unsigned char*>(nullptr, stbi_image_free),
+        mDimension(mDimension.Zero())
     {
         stbi_set_flip_vertically_on_load(true); // adapt to OpenGL
         mResource = stbi_load(aFilePath.c_str(),
-                              &mWidth,
-                              &mHeight,
+                              &mDimension.width(),
+                              &mDimension.height(),
                               &mSourceComponents,
-                              STBI_rgb_alpha);
+                              STBI_rgb_alpha /*equivalent to gComponents*/);
 
         if (mResource == nullptr)
         {
@@ -44,35 +64,48 @@ struct Image : public ResourceGuard<unsigned char *>
         }
     }
 
-    std::vector<unsigned char> crop(int x, int y, int width, int height) const
+    Image crop(const Rectangle aZone) const
     {
-        std::vector<unsigned char> target;
-        target.reserve(width*height);
+        std::unique_ptr<unsigned char[]> target{
+            new unsigned char[aZone.mDimension.area() * gComponents]
+        };
 
-        const int startOffset = (y*mWidth + x) * 4;
-        for (int line = 0; line != height; ++line)
+        unsigned char * destination = target.get();
+        int startOffset = (aZone.y()*mDimension.width() + aZone.x());
+        for (int line = 0; line != aZone.height(); ++line)
         {
-            target.insert(target.end(),
-                          mResource + (startOffset + (line*mWidth)*4),
-                          mResource + (startOffset + (line*mWidth + width)*4));
+            destination = std::copy(mResource + (startOffset)*gComponents,
+                                    mResource + (startOffset + aZone.width())*gComponents,
+                                    destination);
+            startOffset += mDimension.width();
         }
 
-        return target;
+        return {target.release(), aZone.mDimension, mSourceComponents};
     }
 
-    std::vector<std::vector<unsigned char>> cutouts(std::vector<std::pair<int, int>> aCoords, int width, int height) const
-    {
-        std::vector<std::vector<unsigned char>> cutouts;
-        for(auto coords : aCoords)
-        {
-            cutouts.push_back(crop(coords.first, coords.second, width, height));
-        }
-        return cutouts;
-    }
+    //std::vector<std::vector<unsigned char>> cutouts(std::vector<std::pair<int, int>> aCoords, int width, int height) const
+    //{
+    //    std::vector<std::vector<unsigned char>> cutouts;
+    //    for(auto coords : aCoords)
+    //    {
+    //        cutouts.push_back(crop(coords.first, coords.second, width, height));
+    //    }
+    //    return cutouts;
+    //}
 
-    int mWidth;
-    int mHeight;
+    math::Dimension2<int> mDimension;
     int mSourceComponents;
+
+    static constexpr int gComponents{4};
+
+protected:
+    Image(unsigned char * aData,
+          math::Dimension2<int> aDimension,
+          int aSourceComponents) :
+        ResourceGuard<unsigned char*>(aData, [](unsigned char* data){delete [] data;}),
+        mDimension(aDimension),
+        mSourceComponents(aSourceComponents)
+    {}
 };
 
 void loadImageToTexture()

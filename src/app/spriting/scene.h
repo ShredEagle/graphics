@@ -120,30 +120,30 @@ Scene setupScene()
     static const Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
 
     //// Whole image
-    //const GLsizei width  = ring.mWidth;
-    //const GLsizei height = ring.mHeight;
+    //const GLsizei width  = ring.mDimension.width();
+    //const GLsizei height = ring.mDimension.height();
     //const GLvoid * imageData = ring;
 
-    //// Sub-part
-    //// Found by measuring in the image raster
+    // Sub-part
+    // Found by measuring in the image raster
     constexpr GLsizei width  = 347-3;
     constexpr GLsizei height = 303-3;
-    //static const std::vector<unsigned char> firstRing = ring.crop(3, 3, width, height);
-    //const GLvoid * imageData = firstRing.data();
+    static const Image firstRing = ring.crop({{3, 3}, {width, height}});
+    const GLvoid * imageData = firstRing;
 
-    std::vector<std::vector<unsigned char>> cutouts = ring.cutouts({
-            {3,    3},
-            {353,  3},
-            {703,  3},
-            {1053, 3},
-            {1403, 3},
-            {1753, 3},
-            {2103, 3},
-            {2453, 3},
-        },
-        width,
-        height
-    );
+    //std::vector<std::vector<unsigned char>> cutouts = ring.cutouts({
+    //        {3,    3},
+    //        {353,  3},
+    //        {703,  3},
+    //        {1053, 3},
+    //        {1403, 3},
+    //        {1753, 3},
+    //        {2103, 3},
+    //        {2453, 3},
+    //    },
+    //    width,
+    //    height
+    //);
 
 #if defined(GL_VERSION_4_2)
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); 
