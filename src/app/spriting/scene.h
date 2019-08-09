@@ -40,6 +40,21 @@ const GLchar* gFragmentShader = R"#(
     }
 )#";
 
+const GLchar* gAnimationFragmentShader = R"#(
+    #version 400
+
+    in vec4 ex_Color;
+    in vec2 ex_UV;
+    out vec4 out_Color;
+    uniform sampler2DArray spriteSampler;
+    uniform int frame;
+
+    void main(void)
+    {
+        out_Color = texture(spriteSampler, vec3(ex_UV, frame));
+    }
+)#";
+
 constexpr size_t gVerticesCount = 4;
 
 GLfloat gVerticesPositions[gVerticesCount][4] = {
@@ -99,12 +114,6 @@ Scene setupScene()
     specification.mVertexBuffers.emplace_back(makeAndLoadBuffer(1, gVerticesColors));
     specification.mVertexBuffers.emplace_back(makeAndLoadBuffer(2, gVerticesUVs));
 
-    // Texture
-    Texture texture;
-    // Don't use the default GL_TEXTURE0, to make sure it does not work just by accident
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
     ////
     //// the literal texture defined above
     ////
@@ -119,34 +128,49 @@ Scene setupScene()
     //static const Image ring("/tmp/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
     static const Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
 
+    ////
     //// Whole image
+    ////
     //const GLsizei width  = ring.mDimension.width();
     //const GLsizei height = ring.mDimension.height();
     //const GLvoid * imageData = ring;
 
-    // Sub-part
-    // Found by measuring in the image raster
+    //
+    // Sub-parts
+    //
     constexpr GLsizei width  = 347-3;
     constexpr GLsizei height = 303-3;
+
+    // First-sprite
+    // Found by measuring in the image raster
     static const Image firstRing = ring.crop({{3, 3}, {width, height}});
     const GLvoid * imageData = firstRing;
 
-    //std::vector<std::vector<unsigned char>> cutouts = ring.cutouts({
-    //        {3,    3},
-    //        {353,  3},
-    //        {703,  3},
-    //        {1053, 3},
-    //        {1403, 3},
-    //        {1753, 3},
-    //        {2103, 3},
-    //        {2453, 3},
-    //    },
-    //    width,
-    //    height
-    //);
+    // Complete animation
+    std::vector<math::Vec2<int>> framePositions = {
+            {3,    3},
+            {353,  3},
+            {703,  3},
+            {1053, 3},
+            {1403, 3},
+            {1753, 3},
+            {2103, 3},
+            {2453, 3},
+    };
+    Image animationArray = ring.prepareArray(framePositions, {width, height});
+
+      //
+      // Single image
+      //
+
+    // Texture
+    Texture texture;
+    // Don't use the default GL_TEXTURE0, to make sure it does not work just by accident
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
 #if defined(GL_VERSION_4_2)
-    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height); 
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, width, height);
     {
         GLint isSuccess;
         glGetTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
@@ -162,9 +186,37 @@ Scene setupScene()
     {
         ErrorCheck check;
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, imageData);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        // We don't generate mipmaps level, so disable mipmap based filtering for the texture to be complete
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // Otherwise, we'd generate mipmap levels
+        //glGenerateMipmap(GL_TEXTURE_2D);
     }
 #endif
+
+    //
+    // Animation
+    //
+    Texture textureAnimation;
+    {
+        ErrorCheck check;
+
+        const GLenum target = GL_TEXTURE_2D_ARRAY;
+
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(target, textureAnimation);
+
+        glTexImage3D(target, 0, GL_RGBA,
+                     width, height, static_cast<GLsizei>(framePositions.size()),
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, animationArray);
+
+        // Texture parameters
+        glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
+        // Sampler parameters
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+
 
     // Enable alpha blending
     glEnable(GL_BLEND);
@@ -175,14 +227,14 @@ Scene setupScene()
     compileShader(vertexShader, gVertexShader);
 
     Shader<GL_FRAGMENT_SHADER> fragmentShader;
-    compileShader(fragmentShader, gFragmentShader);
+    //compileShader(fragmentShader, gFragmentShader);
+    compileShader(fragmentShader, gAnimationFragmentShader);
 
     Program program;
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
 
     glLinkProgram(program);
-
 
     // Apparently, it is a good practice to detach as soon as link is done
     glDetachShader(program, vertexShader);
@@ -196,7 +248,8 @@ Scene setupScene()
 #if !defined(GL_VERSION_4_2)
     {
         ErrorCheck check;
-        glUniform1i(glGetUniformLocation(program, "spriteSampler"), 1);
+        //glUniform1i(glGetUniformLocation(program, "spriteSampler"), 1);
+        glUniform1i(glGetUniformLocation(program, "spriteSampler"), 2);
     }
 #endif
 
@@ -206,13 +259,20 @@ Scene setupScene()
     /// so it should not be a problem to have them deleted here for the moment
     return {
         std::move(specification),
-        std::move(texture),
+        //std::move(texture),
+        std::move(textureAnimation),
         std::move(program),
     };
 }
 
-void updateScene()
-{}
+void updateScene(Scene &aScene, double aTimeSeconds)
+{
+    constexpr int rotationsPerSec = 1;
+    constexpr int frames = 8;
+    glUniform1i(glGetUniformLocation(aScene.mProgram, "frame"),
+                static_cast<int>(aTimeSeconds*rotationsPerSec*frames) % frames);
+    std::cerr << "time: " << aTimeSeconds << std::endl;
+}
 
 void renderScene()
 {

@@ -64,36 +64,64 @@ struct Image : public ResourceGuard<unsigned char *>
         }
     }
 
+    /// \return First position after last written element
+    unsigned char * cropTo(unsigned char * aDestination, const Rectangle aZone) const
+    {
+        int startOffset = (aZone.y()*mDimension.width() + aZone.x());
+        for (int line = 0; line != aZone.height(); ++line)
+        {
+            aDestination = std::copy(mResource + (startOffset)*gComponents,
+                                     mResource + (startOffset + aZone.width())*gComponents,
+                                     aDestination);
+            startOffset += mDimension.width();
+        }
+        return aDestination;
+    }
+
     Image crop(const Rectangle aZone) const
     {
         std::unique_ptr<unsigned char[]> target{
             new unsigned char[aZone.mDimension.area() * gComponents]
         };
 
-        unsigned char * destination = target.get();
-        int startOffset = (aZone.y()*mDimension.width() + aZone.x());
-        for (int line = 0; line != aZone.height(); ++line)
-        {
-            destination = std::copy(mResource + (startOffset)*gComponents,
-                                    mResource + (startOffset + aZone.width())*gComponents,
-                                    destination);
-            startOffset += mDimension.width();
-        }
+        cropTo(target.get(), aZone);
 
         return {target.release(), aZone.mDimension, mSourceComponents};
     }
 
-    //std::vector<std::vector<unsigned char>> cutouts(std::vector<std::pair<int, int>> aCoords, int width, int height) const
-    //{
-    //    std::vector<std::vector<unsigned char>> cutouts;
-    //    for(auto coords : aCoords)
-    //    {
-    //        cutouts.push_back(crop(coords.first, coords.second, width, height));
-    //    }
-    //    return cutouts;
-    //}
+    Image prepareArray(std::vector<math::Vec2<int>> aPositions,
+                       math::Dimension2<int> aDimension) const
+    {
+        std::unique_ptr<unsigned char[]> target{
+            new unsigned char[aDimension.area() * gComponents * aPositions.size()]
+        };
+
+        unsigned char * destination = target.get();
+        for(const auto position : aPositions)
+        {
+            destination = cropTo(destination, {position, aDimension});
+        }
+
+        return {
+            target.release(),
+            {static_cast<int>(aDimension.width() * aPositions.size()), aDimension.height()},
+            mSourceComponents
+        };
+    }
+
+    std::vector<Image> cutouts(std::vector<math::Vec2<int>> aPositions,
+                               math::Dimension2<int> aDimension) const
+    {
+        std::vector<Image> cutouts;
+        for(const auto position : aPositions)
+        {
+            cutouts.push_back(crop({position, aDimension}));
+        }
+        return cutouts;
+    }
 
     math::Dimension2<int> mDimension;
+    /// \brief The number of channels in the source image, not in the current data
     int mSourceComponents;
 
     static constexpr int gComponents{4};

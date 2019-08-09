@@ -47,7 +47,7 @@ int main(void)
                                          "2D Demo",
                                          NULL,
                                          NULL),
-                                glfwDestroyWindow);
+                        glfwDestroyWindow);
     if (!window)
     {
         throw std::runtime_error("Unable to initialize window or context");
@@ -72,7 +72,7 @@ int main(void)
         glfwGetFramebufferSize(window, &width, &height);    
         glViewport(0, 0, width, height);
 
-        ad::updateScene();
+        ad::updateScene(scene, glfwGetTime());
         ad::renderScene();
 
         glfwSwapBuffers(window);
