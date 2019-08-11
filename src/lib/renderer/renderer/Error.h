@@ -8,8 +8,7 @@
 namespace ad
 {
 
-#if defined(GL_VERSION_4_3)
-    // Only starting in 4.3 apparently
+// Only starting in 4.3 apparently
 void GLAPIENTRY
 MessageCallback( GLenum source,
                  GLenum type,
@@ -19,7 +18,7 @@ MessageCallback( GLenum source,
                  const GLchar* message,
                  const void* userParam )
 {
-    std::cerr << "GL CALLBACK: " << ((type == GL_DEBUG_TYPE_ERROR) ? "** GL ERROR **" 
+    std::cerr << "GL CALLBACK: " << ((type == GL_DEBUG_TYPE_ERROR) ? "** GL ERROR **"
                                                                    : "")
               << "type = 0x" << type
               << ", severity = 0x" << severity
@@ -33,7 +32,6 @@ void enableDebugOutput()
     glEnable              ( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( MessageCallback, 0 );
 }
-#endif
 
 struct [[nodiscard]] ErrorCheck
 {

@@ -1,7 +1,10 @@
 project(renderer)
 
 set(${PROJECT_NAME}_HEADERS
+    Drawing.h
     Error.h
+    gl_helpers.h
+    Image.h
     Shading.h
     Texture.h
     VertexSpecification.h

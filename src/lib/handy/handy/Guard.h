@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <iostream>
 
 class [[nodiscard]] Guard
 {
@@ -37,10 +38,10 @@ public:
         }
         catch(...)
         {
-            std::cerr << "Catastrophic failure: guard release threw an exception" 
+            std::cerr << "Catastrophic failure: guard release threw an exception"
                       << std::endl;
         }
-    } 
+    }
 
 private:
     static void turnOff()
@@ -55,7 +56,7 @@ class [[nodiscard]] ResourceGuard
 {
 public:
     typedef std::function<void(T &)> release_fun;
-    
+
     ResourceGuard(T aResource, release_fun aReleaser):
         mResource{std::move(aResource)},
         mGuard{std::bind(aReleaser, mResource)}

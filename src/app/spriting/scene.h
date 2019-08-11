@@ -1,5 +1,6 @@
 #pragma once
 
+#include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
@@ -110,9 +111,9 @@ Scene setupScene()
     VertexSpecification specification;
     glBindVertexArray(specification.mVertexArray);
 
-    specification.mVertexBuffers.emplace_back(makeAndLoadBuffer(0, gVerticesPositions));
-    specification.mVertexBuffers.emplace_back(makeAndLoadBuffer(1, gVerticesColors));
-    specification.mVertexBuffers.emplace_back(makeAndLoadBuffer(2, gVerticesUVs));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(0, gVerticesPositions));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(1, gVerticesColors));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(2, gVerticesUVs));
 
     ////
     //// the literal texture defined above
@@ -164,7 +165,7 @@ Scene setupScene()
       //
 
     // Texture
-    Texture texture;
+    Texture texture{GL_TEXTURE_2D};
     // Don't use the default GL_TEXTURE0, to make sure it does not work just by accident
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -197,7 +198,7 @@ Scene setupScene()
     //
     // Animation
     //
-    Texture textureAnimation;
+    Texture textureAnimation{GL_TEXTURE_2D_ARRAY};
     {
         ErrorCheck check;
 
@@ -223,10 +224,10 @@ Scene setupScene()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     // Program
-    Shader<GL_VERTEX_SHADER> vertexShader;
+    Shader vertexShader{GL_VERTEX_SHADER};
     compileShader(vertexShader, gVertexShader);
 
-    Shader<GL_FRAGMENT_SHADER> fragmentShader;
+    Shader fragmentShader{GL_FRAGMENT_SHADER};
     //compileShader(fragmentShader, gFragmentShader);
     compileShader(fragmentShader, gAnimationFragmentShader);
 

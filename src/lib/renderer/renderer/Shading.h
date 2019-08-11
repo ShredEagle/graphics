@@ -1,6 +1,7 @@
 #pragma once
 
 #include <handy/Guard.h>
+#include <handy/tuple_utils.h>
 
 #include <glad/glad.h>
 
@@ -10,12 +11,16 @@
 namespace ad
 {
 
-template <int N_stage>
 struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
 {
-    Shader() :
-        ResourceGuard<GLuint>{glCreateShader(N_stage), glDeleteShader}
+    Shader(GLenum aStage) :
+        ResourceGuard<GLuint>{glCreateShader(aStage), glDeleteShader},
+        mStage(aStage)
     {}
+
+    Shader(GLenum aStage, const char * aSource);
+
+    GLenum mStage;
 };
 
 
@@ -26,7 +31,7 @@ struct [[nodiscard]] Program : public ResourceGuard<GLuint>
     {}
 };
 
-void handleGlslError(GLuint objectId,
+inline void handleGlslError(GLuint objectId,
                      GLenum aStatusEnumerator,
                      std::function<void(GLuint, GLenum, GLint*)> statusGetter,
                      std::function<void(GLuint, GLsizei, GLsizei*, GLchar*)> infoLogGetter)
@@ -43,17 +48,14 @@ void handleGlslError(GLuint objectId,
 
         std::string errorLog(infoLog.begin(), infoLog.end());
         std::cerr << "GLSL error[" << maxLength << "]: " << errorLog;
-        
+
         throw std::runtime_error("GLSL error");
-    } 
+    }
 }
 
-template <int N_stage>
-void compileShader(const Shader<N_stage> & aShader, const std::string &aSource)
+inline void compileShader(const Shader & aShader, const char * aSource)
 {
-    //glShadersource(shader, 1, char*[]{aSource.data()}, NULL);
-    const char* sourceProxy = aSource.data(); 
-    glShaderSource(aShader, 1, &sourceProxy, NULL);
+    glShaderSource(aShader, 1, &aSource, NULL);
     glCompileShader(aShader);
 
     handleGlslError(aShader,
@@ -61,5 +63,8 @@ void compileShader(const Shader<N_stage> & aShader, const std::string &aSource)
                     glGetShaderiv,
                     glGetShaderInfoLog);
 }
+
+Program makeLinkedProgram(std::vector<std::pair<const GLenum/*stage*/,
+                                                const char * /*source*/>> aShaders);
 
 } // namespace ad
