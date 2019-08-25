@@ -1,5 +1,7 @@
 #pragma once
 
+#include "gl_helpers.h"
+
 #include <handy/Guard.h>
 
 #include <glad/glad.h>
@@ -11,16 +13,9 @@ namespace ad
 
 struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 {
-    static GLuint reserveVertexArray()
-    {
-        GLuint vertexArrayId;
-        glGenVertexArrays(1, &vertexArrayId);
-        return vertexArrayId;
-    }
-
     /// \note Deleting a bound VAO reverts the binding to zero
     VertexArrayObject() :
-        ResourceGuard<GLuint>{reserveVertexArray(),
+        ResourceGuard<GLuint>{reserve(glGenVertexArrays),
                               [](GLuint aIndex){glDeleteVertexArrays(1, &aIndex);}}
     {}
 };
@@ -28,17 +23,12 @@ struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 /// \TODO understand when glDisableVertexAttribArray should actually be called
 ///       (likely not specially before destruction, but more when rendering other objects
 ///        since it is a current(i.e. global) VAO state)
+/// \Note Well note even that: Activated vertex attribute array are per VAO, so changing VAO
+//        Already correctly handles that.
 struct [[nodiscard]] VertexBufferObject : public ResourceGuard<GLuint>
 {
-    static GLuint reserveBuffer()
-    {
-        GLuint bufferId;
-        glGenBuffers(1, &bufferId);
-        return bufferId;
-    }
-
     VertexBufferObject() :
-        ResourceGuard<GLuint>{reserveBuffer(),
+        ResourceGuard<GLuint>{reserve(glGenBuffers),
                               [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
     {}
 };
@@ -120,5 +110,21 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
 
     return vbo;
 }
+
+/// \see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
+template <class T_data>
+void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, aVBO);
+
+    // Orphan the previous buffer
+    GLint size;
+    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
+
+    // Copy value to new buffer
+    glBufferSubData(GL_ARRAY_BUFFER, 0, size, aData);
+}
+
 
 } // namespace ad

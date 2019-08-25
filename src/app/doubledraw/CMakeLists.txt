@@ -1,7 +1,6 @@
-project(ringdrop)
+project(doubledraw)
 
 set(${PROJECT_NAME}_HEADERS
-    Ring.h
     scene.h
     shaders.h
 )

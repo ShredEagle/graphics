@@ -5,43 +5,42 @@ namespace ad {
 const GLchar* gVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec4 in_Position;
+    layout(location=0) in vec4 in_VertexPosition;
     layout(location=1) in vec2 in_UV;
+    layout(location=2) in vec2 in_InstancePosition;
+    layout(location=3) in float in_RotationPerSec;
     out vec2 ex_UV;
+    out float ex_RotationPerSec;
 
     void main(void)
     {
-        gl_Position = in_Position;
+        // Column major notation, which seems to be the convention in OpenGL
+        mat4 transform = mat4(
+            0.1, 0.0, 0.0, 0.0,
+            0.0, 0.1, 0.0, 0.0,
+            0.0, 0.0, 0.0, 0.0,
+            in_InstancePosition.x, in_InstancePosition.y, 0.0, 1.0
+        );
+        gl_Position = transform*in_VertexPosition;
         ex_UV = in_UV;
+        ex_RotationPerSec = in_RotationPerSec;
     }
 )#";
 
-const GLchar* gFragmentShader = R"#(
-    #version 400
-
-    in vec2 ex_UV;
-    out vec4 out_Color;
-    // Only works starting with 4.2
-    //layout(binding=1) uniform sampler2D spriteSampler;
-    uniform sampler2D spriteSampler;
-
-    void main(void)
-    {
-        out_Color = texture(spriteSampler, ex_UV);
-    }
-)#";
 
 const GLchar* gAnimationFragmentShader = R"#(
     #version 400
 
-    in vec4 ex_Color;
     in vec2 ex_UV;
+    in float ex_RotationPerSec;
     out vec4 out_Color;
     uniform sampler2DArray spriteSampler;
-    uniform int frame;
+    uniform float time;
 
     void main(void)
     {
+        int frameCount = 8;
+        int frame = int(ex_RotationPerSec * time * frameCount) % frameCount;
         out_Color = texture(spriteSampler, vec3(ex_UV, frame));
     }
 )#";
