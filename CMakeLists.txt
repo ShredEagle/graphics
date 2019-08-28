@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 project(2D)
 
+include(cmake/include.cmake)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -9,13 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(EXISTS "${CMAKE_BINARY_DIR}/conan_paths.cmake")
     include("${CMAKE_BINARY_DIR}/conan_paths.cmake")
 endif()
-
-# Warning as errors:
-#if (MSVC)
-#    add_compile_options(/W4 /WX)
-#else()
-#    add_compile_options(-Wall -Wextra -pedantic -Werror)
-#endif()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(LINK_OPTIONS "/INCREMENTAL:NO")

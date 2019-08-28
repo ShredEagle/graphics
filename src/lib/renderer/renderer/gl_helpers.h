@@ -12,7 +12,7 @@ namespace ad {
 //    return name;
 //}
 
-GLint reserve(void(*aGlGenFunction)(GLsizei, GLuint *))
+GLuint reserve(void(*aGlGenFunction)(GLsizei, GLuint *))
 {
     GLuint name;
     aGlGenFunction(1, &name);

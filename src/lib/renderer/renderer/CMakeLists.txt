@@ -18,8 +18,8 @@ set(${PROJECT_NAME}_SOURCES
     stb_image.c
 )
 
-find_package(glad REQUIRED)
-find_package(math REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(math CONFIG REQUIRED)
 
 add_library(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}

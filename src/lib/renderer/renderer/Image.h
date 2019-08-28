@@ -6,6 +6,8 @@
 
 #include <math/Vector.h>
 
+#include <vector>
+
 namespace ad {
 
 struct Rectangle

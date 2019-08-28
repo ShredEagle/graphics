@@ -6,7 +6,7 @@ set(${PROJECT_NAME}_HEADERS
 
 add_library(${PROJECT_NAME} INTERFACE)
 
-# To have the files show up in the IDE
+# Custom target to have the files show up in the IDE
 add_custom_target(${PROJECT_NAME}_IDE
     SOURCES
         ${${PROJECT_NAME}_HEADERS}
