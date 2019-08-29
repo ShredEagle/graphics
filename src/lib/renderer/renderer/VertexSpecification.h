@@ -111,6 +111,20 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
     return vbo;
 }
 
+// Sadly C++ 20, but it would handle nicely arrays and vectors
+//template <class T_contiguousIterator>
+//std::enable_if<std::iterator_traits<T_contiguousIterator>::iterator_category == ...>
+template <class T_element>
+VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
+                                          typename std::vector<T_element>::const_iterator aFirst,
+                                          typename std::vector<T_element>::const_iterator aLast)
+{
+    return makeLoadedVertexBuffer(std::move(aAttributes),
+                                  sizeof(T_element),
+                                  sizeof(T_element) * std::distance(aFirst, aLast),
+                                  &(*aFirst));
+}
+
 /// \see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
 template <class T_data>
 void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData)

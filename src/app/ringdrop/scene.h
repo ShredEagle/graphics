@@ -84,7 +84,7 @@ struct Scene
     std::vector<Ring> mRings;
 };
 
-DrawContext animatedRing(const Image &aImage, const math::Dimension2<int> aFrame)
+DrawContext animatedRing()
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -119,6 +119,14 @@ DrawContext animatedRing(const Image &aImage, const math::Dimension2<int> aFrame
     // Texture
     //
     {
+        static const Image
+            ring{pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png")};
+
+        const math::Dimension2<int> frame {
+            347-3,
+            303-3
+        };
+
         // Complete animation
         std::vector<math::Vec2<int>> framePositions = {
                 {3,    3},
@@ -130,32 +138,18 @@ DrawContext animatedRing(const Image &aImage, const math::Dimension2<int> aFrame
                 {2103, 3},
                 {2453, 3},
         };
-        Image animationArray = aImage.prepareArray(framePositions, aFrame);
+        Image animationArray = ring.prepareArray(framePositions, frame);
 
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimation(texture, GL_TEXTURE2, animationArray, aFrame, framePositions.size());
+        loadAnimation(texture, GL_TEXTURE2, animationArray, frame, framePositions.size());
 
         drawing.mTextures.push_back(std::move(texture));
     }
 
     return drawing;
 }
-
-void drawRing(const Entity &aEntity)
-{
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, gVerticesCount);
-}
-
-void rotateRing(Entity &aEntity, double aTimeSeconds)
-{
-    constexpr int rotationsPerSec = 1;
-    constexpr int frames = 8;
-    glUniform1i(glGetUniformLocation(aEntity.mDrawContext.mProgram, "frame"),
-                static_cast<int>(aTimeSeconds*rotationsPerSec*frames) % frames);
-}
-
 
 struct Randomizer
 {
@@ -191,15 +185,7 @@ Scene setupScene()
     // Frame buffer clear color
     glClearColor(0.1f, 0.2f, 0.3f, 1.f);
 
-    static const Image ring(pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png"));
-
-    //
-    // Sub-parts
-    //
-    constexpr GLsizei width  = 347-3;
-    constexpr GLsizei height = 303-3;
-
-    Scene scene{animatedRing(ring, {width, height})};
+    Scene scene{animatedRing()};
 
     Randomizer pos(-128, 128);
     Randomizer speed(1, 4);
@@ -212,15 +198,12 @@ Scene setupScene()
     }
 
     scene.mDrawContext.mVertexSpecification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer(
+        makeLoadedVertexBuffer<Ring>(
             {
                 {2, 2, offsetof(Ring, mPosition),       MappedGL<GLfloat>::enumerator},
                 {3, 1, offsetof(Ring, mRotationsPerSec),MappedGL<GLfloat>::enumerator},
             },
-            sizeof(Ring),
-            getStoredSize(scene.mRings),
-            scene.mRings.data()
-    ));
+            scene.mRings.cbegin(), scene.mRings.cend()));
 
     glVertexAttribDivisor(2, 1);
     glVertexAttribDivisor(3, 1);
