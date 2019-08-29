@@ -11,6 +11,8 @@
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
 
+#include <resource/PathProvider.h>
+
 #include <math/Vector.h>
 
 #include <glad/glad.h>
@@ -189,7 +191,7 @@ Scene setupScene()
     // Frame buffer clear color
     glClearColor(0.1f, 0.2f, 0.3f, 1.f);
 
-    static const Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+    static const Image ring(pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png"));
 
     //
     // Sub-parts

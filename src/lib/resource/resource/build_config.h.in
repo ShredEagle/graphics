@@ -1,0 +1,10 @@
+#pragma once
+
+@AUTOGEN_DISCLAIMER@
+
+namespace ad {
+
+// Usefull for development builds
+constexpr const char * gAssetFolderPath = "@ASSET_FOLDER@";
+
+} // namespace ad

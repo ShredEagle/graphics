@@ -1,5 +1,6 @@
 add_subdirectory(lib/handy/handy)
 add_subdirectory(lib/renderer/renderer)
+add_subdirectory(lib/resource/resource)
 
 add_subdirectory(app/demo)
 add_subdirectory(app/simple)
