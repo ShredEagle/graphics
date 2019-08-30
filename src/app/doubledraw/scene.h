@@ -254,7 +254,7 @@ DrawContext animatedRing(const Image &aImage, const math::Dimension2<int> aFrame
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimation(texture, GL_TEXTURE2, animationArray, aFrame, framePositions.size());
+        loadAnimationAsArray(texture, GL_TEXTURE2, animationArray, aFrame, framePositions.size());
 
         drawing.mTextures.push_back(std::move(texture));
     }

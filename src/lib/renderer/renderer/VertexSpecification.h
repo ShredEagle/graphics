@@ -56,6 +56,9 @@ template <> struct MappedGL<GLfloat>
 template <> struct MappedGL<GLubyte>
 { static const GLenum enumerator = GL_UNSIGNED_BYTE; };
 
+template <> struct MappedGL<GLint>
+{ static const GLenum enumerator = GL_INT; };
+
 
 template <class T_element, int N_vertices, int N_attributeDimension>
 VertexBufferObject makeLoadedVertexBuffer(
@@ -126,19 +129,28 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
 }
 
 /// \see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
+
+
 template <class T_data>
-void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData)
+void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData, GLsizei aSize)
 {
     glBindBuffer(GL_ARRAY_BUFFER, aVBO);
 
     // Orphan the previous buffer
-    GLint size;
-    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-    glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, aSize, NULL, GL_STATIC_DRAW);
 
     // Copy value to new buffer
-    glBufferSubData(GL_ARRAY_BUFFER, 0, size, aData);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, aSize, aData);
 }
 
+/// \brief Respecify the buffer with the same size (allowing potential optimizations)
+template <class T_data>
+void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData)
+{
+    GLint size;
+    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+
+    respecifyBuffer(aVBO, aData, size);
+}
 
 } // namespace ad

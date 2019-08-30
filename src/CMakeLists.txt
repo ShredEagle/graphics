@@ -1,9 +1,11 @@
 add_subdirectory(lib/handy/handy)
 add_subdirectory(lib/renderer/renderer)
 add_subdirectory(lib/resource/resource)
+add_subdirectory(lib/2d/2d)
 
 add_subdirectory(app/demo)
 add_subdirectory(app/simple)
 add_subdirectory(app/spriting)
 add_subdirectory(app/doubledraw)
 add_subdirectory(app/ringdrop)
+add_subdirectory(app/tiler)

@@ -24,7 +24,7 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 };
 
 
-void loadSprite(const Texture & aTexture,
+inline void loadSprite(const Texture & aTexture,
                 GLenum aTextureUnit,
                 const Image & aImage)
 {
@@ -65,11 +65,11 @@ void loadSprite(const Texture & aTexture,
     }
 }
 
-void loadAnimation(const Texture & aTexture,
-                   GLenum aTextureUnit,
-                   const Image & aImage,
-                   const math::Dimension2<int> & aFrame,
-                   size_t aSteps)
+inline void loadAnimationAsArray(const Texture & aTexture,
+                          GLenum aTextureUnit,
+                          const Image & aImage,
+                          const math::Dimension2<int> & aFrame,
+                          size_t aSteps)
 {
     assert(aTexture.mTarget == GL_TEXTURE_2D_ARRAY);
 
@@ -82,6 +82,26 @@ void loadAnimation(const Texture & aTexture,
 
     // Texture parameters
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAX_LEVEL, 0);
+    // Sampler parameters
+    glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+inline void loadSpriteSheet(const Texture & aTexture,
+                     GLenum aTextureUnit,
+                     const Image & aImage,
+                     const math::Dimension2<int> & aFrame)
+{
+    /// \todo can be extended, many other target types are valid here
+    assert(aTexture.mTarget == GL_TEXTURE_RECTANGLE);
+
+    glActiveTexture(aTextureUnit);
+    glBindTexture(aTexture.mTarget, aTexture);
+
+    glTexImage2D(aTexture.mTarget, 0, GL_RGBA,
+                 aFrame.width(), aFrame.height(),
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, aImage);
+
     // Sampler parameters
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

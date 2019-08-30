@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rectangle.h"
+
 #include "stb_image.h"
 
 #include <handy/Guard.h>
@@ -9,22 +11,6 @@
 #include <vector>
 
 namespace ad {
-
-struct Rectangle
-{
-    math::Vec2<int> mPosition;
-    math::Dimension2<int> mDimension;
-
-    int x() const
-    { return mPosition.x(); };
-    int y() const
-    { return mPosition.y(); };
-
-    int width() const
-    { return mDimension.width(); }
-    int height() const
-    { return mDimension.height(); }
-};
 
 struct Image : public ResourceGuard<unsigned char *>
 {
@@ -101,6 +87,11 @@ struct Image : public ResourceGuard<unsigned char *>
             cutouts.push_back(crop({position, aDimension}));
         }
         return cutouts;
+    }
+
+    math::Dimension2<int> dimension()
+    {
+        return mDimension;
     }
 
     math::Dimension2<int> mDimension;

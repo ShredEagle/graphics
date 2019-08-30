@@ -1,0 +1,16 @@
+{
+    "file": "tiles.bmp",
+    "set": {
+        "prefix": "terrain_",
+        "regularGrid": {
+            "xBorder": 1 ,
+            "yBorder": 1 ,
+            "xOffset": 0,
+            "yOffset": 1,
+            "width": 32,
+            "height": 32,
+            "xCount": 10,
+            "yCount": 4
+        }
+    }
+}

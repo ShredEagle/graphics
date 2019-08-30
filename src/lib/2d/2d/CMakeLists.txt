@@ -1,26 +1,18 @@
-project(renderer)
+project(2d)
 
 set(${PROJECT_NAME}_HEADERS
-    Drawing.h
-    Error.h
-    gl_helpers.h
-    Image.h
-    Rectangle.h
-    Shading.h
-    Texture.h
-    VertexSpecification.h
-
-    stb_image.h
+    commons.h
+    Sprite.h
+    Engine.h
 )
 
 set(${PROJECT_NAME}_SOURCES
-    Shading.cpp
-
-    stb_image.c
+    Engine.cpp
 )
 
 find_package(glad CONFIG REQUIRED)
 find_package(math CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG 3.7.0 REQUIRED)
 
 add_library(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}
@@ -36,7 +28,10 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        handy
+        renderer # TODO: make private?
         ad::math
-        glad::glad
+    PRIVATE 
+        nlohmann_json::nlohmann_json
+        handy
+        resource
 )

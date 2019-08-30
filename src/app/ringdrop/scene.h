@@ -50,34 +50,6 @@ Vertex gVerticesQuad[gVerticesCount] = {
     },
 };
 
-struct Entity
-{
-    Entity(DrawContext aDrawContext,
-           std::function<void(Entity &, double)> aUpdater,
-           std::function<void(const Entity &)> aDrawer) :
-        mDrawContext(std::move(aDrawContext)),
-        mUpdater(std::move(aUpdater)),
-        mDrawer(std::move(aDrawer))
-    {}
-
-    void update(double aTime)
-    {
-        mUpdater(*this, aTime);
-    }
-
-    void draw() const
-    {
-        glBindVertexArray(mDrawContext.mVertexSpecification.mVertexArray);
-        glUseProgram(mDrawContext.mProgram);
-        mDrawer(*this);
-    }
-
-    DrawContext mDrawContext;
-    std::function<void(Entity &, double)> mUpdater;
-    std::function<void(const Entity &)> mDrawer;
-};
-
-
 struct Scene
 {
     DrawContext mDrawContext;
@@ -143,7 +115,7 @@ DrawContext animatedRing()
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimation(texture, GL_TEXTURE2, animationArray, frame, framePositions.size());
+        loadAnimationAsArray(texture, GL_TEXTURE2, animationArray, frame, framePositions.size());
 
         drawing.mTextures.push_back(std::move(texture));
     }

@@ -6,7 +6,7 @@
 
 namespace ad {
 
-std::string pathFor(const std::string &aAsset)
+inline std::string pathFor(const std::string &aAsset)
 {
     return gAssetFolderPath + ("/" + aAsset);
 }
