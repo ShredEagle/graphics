@@ -35,15 +35,15 @@ struct Vertex
 constexpr size_t gVerticesCount{4};
 Vertex gVerticesQuad[gVerticesCount] = {
     {
-        {-1.0f, -1.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f, 0.0f, 1.0f},
         {0, 0},
     },
     {
-        {-1.0f,  1.0f, 0.0f, 1.0f},
+        {0.0f,  1.0f, 0.0f, 1.0f},
         {0, 1},
     },
     {
-        { 1.0f, -1.0f, 0.0f, 1.0f},
+        { 1.0f, 0.0f, 0.0f, 1.0f},
         {1, 0},
     },
     {
@@ -60,7 +60,8 @@ DrawContext makeBareContext()
 }
 
 Engine::Engine() :
-    mDrawContext(makeBareContext())
+    mDrawContext(makeBareContext()),
+    mWindowSize(0, 0)
 {
     //
     // General OpenGL setups
@@ -119,6 +120,11 @@ Engine::Engine() :
 void Engine::callbackWindowSize(int width, int height)
 {
     glViewport(0, 0, width, height);
+    mWindowSize.width() = width;
+    mWindowSize.height() = height;
+
+    GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
+    glProgramUniform2iv(mDrawContext.mProgram, location, 1, mWindowSize.data());
 }
 
 std::vector<Sprite> Engine::loadSheet(const std::string &aPath)

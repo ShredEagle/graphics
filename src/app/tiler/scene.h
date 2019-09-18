@@ -12,7 +12,7 @@ typedef std::vector<Sprite> Scene;
 inline Scene setupScene(Engine & aEngine)
 {
     Scene result = aEngine.loadSheet(pathFor("tiles.bmp.meta")); 
-    aEngine.appendDraw(result.at(0), {0, 0}); 
+    aEngine.appendDraw(result.at(0), {10, 10});
     return result;
 }
 

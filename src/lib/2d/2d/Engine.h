@@ -33,6 +33,7 @@ public:
 private:
     DrawContext mDrawContext;
     std::vector<Instance> mSprites;
+    math::Dimension2<int> mWindowSize;
 };
 
 } // namespace ad

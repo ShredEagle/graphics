@@ -48,6 +48,10 @@ int main(void)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    // Only show the window after its size callback is set
+    // so we cannot miss notifications
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
     auto window = guard(glfwCreateWindow(gWindowWidth,
                                          gWindowHeight,
                                          "2D Demo",
@@ -64,9 +68,13 @@ int main(void)
 
     ad::Engine engine;
     glfwSetWindowUserPointer(window, &engine);
+    // Explicitly call it, because it is used to complete the engine setup
+    windowsSize_callback(window, gWindowWidth, gWindowHeight);
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, windowsSize_callback);
+
+    glfwShowWindow(window);
 
     // VSync
     glfwSwapInterval(1);
@@ -74,7 +82,8 @@ int main(void)
     if (!GLAD_GL_KHR_debug)
     {
         std::cerr << "Debug output is not available."
-                  << " Please run on a decent platform for debugging.";
+                  << " Please run on a decent platform for debugging."
+                  << std::endl;
     }
     else
     {
