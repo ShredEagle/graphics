@@ -6,9 +6,11 @@ const GLchar* gVertexShader = R"#(
     #version 400
 
     layout(location=0) in vec4 in_VertexPosition;
-    layout(location=1) in vec2 in_UV;
+    layout(location=1) in ivec2 in_UV;
     layout(location=2) in vec2 in_InstancePosition;
-    layout(location=3) in vec4 in_TextureArea;
+    layout(location=3) in ivec4 in_TextureArea;
+
+    //uniform ivec2 in
     
     out vec2 ex_UV;
 

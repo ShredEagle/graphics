@@ -26,7 +26,7 @@ using json = nlohmann::json;
 struct Vertex
 {
     math::Vec4<GLfloat> mPosition;
-    math::Vec2<GLfloat> mUV;
+    math::Vec2<GLint> mUV;
 };
 
 // Note: texture_2D_rect indices are texel based (not normalized)
@@ -36,19 +36,19 @@ constexpr size_t gVerticesCount{4};
 Vertex gVerticesQuad[gVerticesCount] = {
     {
         {-1.0f, -1.0f, 0.0f, 1.0f},
-        {0.0f, 0.0f},
+        {0, 0},
     },
     {
         {-1.0f,  1.0f, 0.0f, 1.0f},
-        {0.0f, 1.0f},
+        {0, 1},
     },
     {
         { 1.0f, -1.0f, 0.0f, 1.0f},
-        {1.0f, 0.0f},
+        {1, 0},
     },
     {
         { 1.0f,  1.0f, 0.0f, 1.0f},
-        {1.0f, 1.0f},
+        {1, 1},
     },
 };
 
@@ -64,7 +64,7 @@ Engine::Engine() :
 {
     //
     // General OpenGL setups
-    // 
+    //
 
     // Enable alpha blending
     glEnable(GL_BLEND);
@@ -84,7 +84,7 @@ Engine::Engine() :
         makeLoadedVertexBuffer(
             {
                 {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
-                {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},
+                {1, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator, ShaderAccess::Integer},
             },
             sizeof(Vertex),
             sizeof(gVerticesQuad),
@@ -96,7 +96,7 @@ Engine::Engine() :
         makeLoadedVertexBuffer<Instance>(
             {
                 {2, 2, offsetof(Instance, mPosition),   MappedGL<GLint>::enumerator},
-                {3, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator},
+                {3, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator, ShaderAccess::Integer},
             },
             mSprites.begin(), mSprites.end()
         ));

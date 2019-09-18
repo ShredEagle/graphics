@@ -80,6 +80,12 @@ VertexBufferObject makeLoadedVertexBuffer(
     return vbo;
 }
 
+enum class ShaderAccess
+{
+    Float,
+    Integer,
+};
+
 struct AttributeDescription
 {
     GLuint mIndex;
@@ -87,6 +93,7 @@ struct AttributeDescription
     size_t mOffset;
     /// \TODO clever template tricks should allow to rework this function and deduce that
     GLenum mDataType;
+    ShaderAccess typeInShader{ShaderAccess::Float};
     bool mNormalize{false};
 };
 
@@ -102,12 +109,29 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
 
     for (const auto & attribute : aAttributes)
     {
-        glVertexAttribPointer(attribute.mIndex,
-                              attribute.mDimension,
-                              attribute.mDataType,
-                              attribute.mNormalize,
-                              aStride,
-                              reinterpret_cast<const void*>(attribute.mOffset));
+        switch(attribute.typeInShader)
+        {
+            case ShaderAccess::Float :
+            {
+                glVertexAttribPointer(attribute.mIndex,
+                                      attribute.mDimension,
+                                      attribute.mDataType,
+                                      attribute.mNormalize,
+                                      aStride,
+                                      reinterpret_cast<const void*>(attribute.mOffset));
+                break;
+            }
+            case ShaderAccess::Integer :
+            {
+                glVertexAttribIPointer(attribute.mIndex,
+                                       attribute.mDimension,
+                                       attribute.mDataType,
+                                       aStride,
+                                       reinterpret_cast<const void*>(attribute.mOffset));
+                break;
+            }
+        }
+
         glEnableVertexAttribArray(attribute.mIndex);
     }
 
