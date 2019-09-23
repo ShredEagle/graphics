@@ -2,6 +2,9 @@ project(handy)
 
 set(${PROJECT_NAME}_HEADERS
     Guard.h
+    random.h
+    tuple_utils.h
+    vector_utils.h
 )
 
 add_library(${PROJECT_NAME} INTERFACE)

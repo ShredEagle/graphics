@@ -2,12 +2,14 @@ project(2d)
 
 set(${PROJECT_NAME}_HEADERS
     commons.h
-    Sprite.h
     Engine.h
+    Sprite.h
+    Tiling.h
 )
 
 set(${PROJECT_NAME}_SOURCES
     Engine.cpp
+    Tiling.cpp
 )
 
 find_package(glad CONFIG REQUIRED)

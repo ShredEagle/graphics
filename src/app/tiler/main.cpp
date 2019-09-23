@@ -95,7 +95,7 @@ int main(void)
     while(!glfwWindowShouldClose(window))
     {
         ad::updateScene(scene, engine, glfwGetTime());
-        engine.render();
+        ad::renderScene(scene, engine);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

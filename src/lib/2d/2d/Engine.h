@@ -18,6 +18,11 @@ struct Instance
     Rectangle mTextureArea;
 };
 
+const std::vector<const AttributeDescription> gInstanceDescription = {
+    {2, 2, offsetof(Instance, mPosition),    MappedGL<GLint>::enumerator},
+    {3, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator, ShaderAccess::Integer},
+};
+
 class Engine
 {
 public:
@@ -28,12 +33,21 @@ public:
 
     void appendDraw(const Sprite & aSprite, Position aPosition);
 
+    void clear();
     void render();
+
+    const math::Dimension2<int> & getWindowSize() const;
 
 private:
     DrawContext mDrawContext;
     std::vector<Instance> mSprites;
     math::Dimension2<int> mWindowSize;
 };
+
+
+inline const math::Dimension2<int> & Engine::getWindowSize() const
+{
+    return mWindowSize;
+}
 
 } // namespace ad

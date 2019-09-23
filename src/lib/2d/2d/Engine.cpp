@@ -1,6 +1,6 @@
-#include "Engine.h"
-
+#include "Engine.h" 
 #include "shaders.h"
+#include "Vertex.h"
 
 #include <handy/vector_utils.h>
 
@@ -20,44 +20,29 @@ namespace ad {
 using json = nlohmann::json;
 
 
-//
-// Vertex
-//
-struct Vertex
-{
-    math::Vec4<GLfloat> mPosition;
-    math::Vec2<GLint> mUV;
-};
-
 // Note: texture_2D_rect indices are texel based (not normalized)
 // the UV value should be computed from shader and frame size
 // 10 is a quick fix
 constexpr size_t gVerticesCount{4};
 Vertex gVerticesQuad[gVerticesCount] = {
     {
-        {0.0f, 0.0f, 0.0f, 1.0f},
+        {0.0f, 0.0f},
         {0, 0},
     },
     {
-        {0.0f,  1.0f, 0.0f, 1.0f},
+        {0.0f,  1.0f},
         {0, 1},
     },
     {
-        { 1.0f, 0.0f, 0.0f, 1.0f},
+        { 1.0f, 0.0f},
         {1, 0},
     },
     {
-        { 1.0f,  1.0f, 0.0f, 1.0f},
+        { 1.0f,  1.0f},
         {1, 1},
     },
 };
 
-
-/// \todo move this kind of feature to renderer
-DrawContext makeBareContext()
-{
-    return DrawContext{VertexSpecification{}, Program{}};
-}
 
 Engine::Engine() :
     mDrawContext(makeBareContext()),
@@ -84,7 +69,7 @@ Engine::Engine() :
     mDrawContext.mVertexSpecification.mVertexBuffers.emplace_back(
         makeLoadedVertexBuffer(
             {
-                {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
+                {0, 2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
                 {1, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator, ShaderAccess::Integer},
             },
             sizeof(Vertex),
@@ -176,8 +161,15 @@ void Engine::appendDraw(const Sprite & aSprite, Position aPosition)
 }
 
 
+void Engine::clear()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+}
+
 void Engine::render()
 {
+    activate(mDrawContext);
+
     //
     // Stream vertex attributes
     //
@@ -188,7 +180,6 @@ void Engine::render()
     //
     // Draw
     //
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,

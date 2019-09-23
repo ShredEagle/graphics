@@ -97,8 +97,12 @@ struct AttributeDescription
     bool mNormalize{false};
 };
 
+/// \todo Enhance those signatures
+///       Better automatic deduction
+///       More permissive ranges for attributes and data (data could benefit from "ContiguousStorage" in C++20)
+/// \todo What is the point of the template param here?
 template <class T_data>
-VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(std::vector<const AttributeDescription> aAttributes,
                                           GLsizei aStride,
                                           size_t aSize,
                                           const T_data & aData)
@@ -142,7 +146,7 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
 //template <class T_contiguousIterator>
 //std::enable_if<std::iterator_traits<T_contiguousIterator>::iterator_category == ...>
 template <class T_element>
-VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(std::vector<const AttributeDescription> aAttributes,
                                           typename std::vector<T_element>::const_iterator aFirst,
                                           typename std::vector<T_element>::const_iterator aLast)
 {
@@ -156,7 +160,7 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
 
 
 template <class T_data>
-void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData, GLsizei aSize)
+void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData, GLsizei aSize)
 {
     glBindBuffer(GL_ARRAY_BUFFER, aVBO);
 
@@ -169,7 +173,7 @@ void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData, GLsizei aS
 
 /// \brief Respecify the buffer with the same size (allowing potential optimizations)
 template <class T_data>
-void respecifyBuffer(VertexBufferObject & aVBO, const T_data & aData)
+void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData)
 {
     GLint size;
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);

@@ -21,4 +21,25 @@ struct [[nodiscard]] DrawContext
     std::vector<Texture>  mTextures;
 };
 
+inline DrawContext makeBareContext()
+{
+    return DrawContext{VertexSpecification{}, Program{}};
+}
+
+inline void bindVertexArray(const DrawContext & aDrawContext)
+{
+    glBindVertexArray(aDrawContext.mVertexSpecification.mVertexArray);
+}
+
+inline void useProgram(const DrawContext & aDrawContext)
+{
+    glUseProgram(aDrawContext.mProgram);
+}
+
+inline void activate(const DrawContext & aDrawContext)
+{
+    bindVertexArray(aDrawContext);
+    useProgram(aDrawContext);
+}
+
 } // namespace ad
