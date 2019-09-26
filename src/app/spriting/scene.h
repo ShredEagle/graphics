@@ -148,7 +148,7 @@ Scene setupScene()
     const GLvoid * imageData = firstRing;
 
     // Complete animation
-    std::vector<math::Vec2<int>> framePositions = {
+    std::vector<Vec2<int>> framePositions = {
             {3,    3},
             {353,  3},
             {703,  3},

@@ -1,12 +1,10 @@
 #pragma once
 
-#include "Rectangle.h"
+#include "commons.h"
 
 #include "stb_image.h"
 
 #include <handy/Guard.h>
-
-#include <math/Vector.h>
 
 #include <vector>
 
@@ -34,7 +32,7 @@ struct Image : public ResourceGuard<unsigned char *>
     }
 
     /// \return First position after last written element
-    unsigned char * cropTo(unsigned char * aDestination, const Rectangle aZone) const
+    unsigned char * cropTo(unsigned char * aDestination, const Rectangle<int> aZone) const
     {
         int startOffset = (aZone.y()*mDimension.width() + aZone.x());
         for (int line = 0; line != aZone.height(); ++line)
@@ -47,7 +45,7 @@ struct Image : public ResourceGuard<unsigned char *>
         return aDestination;
     }
 
-    Image crop(const Rectangle aZone) const
+    Image crop(const Rectangle<int> aZone) const
     {
         std::unique_ptr<unsigned char[]> target{
             new unsigned char[aZone.mDimension.area() * gComponents]
@@ -58,8 +56,8 @@ struct Image : public ResourceGuard<unsigned char *>
         return {target.release(), aZone.mDimension, mSourceComponents};
     }
 
-    Image prepareArray(std::vector<math::Vec2<int>> aPositions,
-                       math::Dimension2<int> aDimension) const
+    Image prepareArray(std::vector<Vec2<int>> aPositions,
+                       Size2<int> aDimension) const
     {
         std::unique_ptr<unsigned char[]> target{
             new unsigned char[aDimension.area() * gComponents * aPositions.size()]
@@ -78,8 +76,8 @@ struct Image : public ResourceGuard<unsigned char *>
         };
     }
 
-    std::vector<Image> cutouts(std::vector<math::Vec2<int>> aPositions,
-                               math::Dimension2<int> aDimension) const
+    std::vector<Image> cutouts(std::vector<Vec2<int>> aPositions,
+                               Size2<int> aDimension) const
     {
         std::vector<Image> cutouts;
         for(const auto position : aPositions)
@@ -89,12 +87,12 @@ struct Image : public ResourceGuard<unsigned char *>
         return cutouts;
     }
 
-    math::Dimension2<int> dimension()
+    Size2<int> dimension() const
     {
         return mDimension;
     }
 
-    math::Dimension2<int> mDimension;
+    Size2<int> mDimension;
     /// \brief The number of channels in the source image, not in the current data
     int mSourceComponents;
 
@@ -102,7 +100,7 @@ struct Image : public ResourceGuard<unsigned char *>
 
 protected:
     Image(unsigned char * aData,
-          math::Dimension2<int> aDimension,
+          Size2<int> aDimension,
           int aSourceComponents) :
         ResourceGuard<unsigned char*>(aData, [](unsigned char* data){delete [] data;}),
         mDimension(aDimension),

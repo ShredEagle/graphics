@@ -18,8 +18,8 @@ namespace ad
 
 struct Vertex
 {
-    math::Vec4<GLfloat> mPosition;
-    math::Vec2<GLfloat> mUV;
+    math::Vec<4, GLfloat> mPosition;
+    math::Vec<2, GLfloat> mUV;
 };
 
 constexpr size_t gVerticesCount{4};
@@ -156,7 +156,7 @@ DrawContext staticEggman()
     return drawing;
 }
 
-DrawContext staticRing(const Image &aImage, const math::Dimension2<int> aFrame)
+DrawContext staticRing(const Image &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -203,7 +203,7 @@ DrawContext staticRing(const Image &aImage, const math::Dimension2<int> aFrame)
     return drawing;
 }
 
-DrawContext animatedRing(const Image &aImage, const math::Dimension2<int> aFrame)
+DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -239,7 +239,7 @@ DrawContext animatedRing(const Image &aImage, const math::Dimension2<int> aFrame
     //
     {
         // Complete animation
-        std::vector<math::Vec2<int>> framePositions = {
+        std::vector<math::Vec<2, int>> framePositions = {
                 {3,    3},
                 {353,  3},
                 {703,  3},

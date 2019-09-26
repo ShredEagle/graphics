@@ -5,11 +5,15 @@ set(${PROJECT_NAME}_HEADERS
     Engine.h
     Sprite.h
     Tiling.h
+
+    dataformat/tiles.h
 )
 
 set(${PROJECT_NAME}_SOURCES
     Engine.cpp
     Tiling.cpp
+
+    dataformat/tiles.cpp
 )
 
 find_package(glad CONFIG REQUIRED)

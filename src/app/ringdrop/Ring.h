@@ -1,6 +1,6 @@
 #pragma once
 
-#include <math/Vector.h>
+#include <renderer/commons.h>
 
 #include <glad/glad.h>
 
@@ -8,7 +8,7 @@ namespace ad {
 
 struct Ring
 {
-    math::Vec2<GLfloat> mPosition;
+    Vec2<GLfloat> mPosition;
     GLfloat mRotationsPerSec;
 };
 

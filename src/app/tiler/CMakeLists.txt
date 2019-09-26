@@ -9,6 +9,7 @@ set(${PROJECT_NAME}_SOURCES
     main.cpp
 )
 
+find_package(Boost 1.71)
 find_package(glfw3 3.3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 
@@ -22,4 +23,5 @@ target_link_libraries(${PROJECT_NAME}
         glfw
         2d
         resource
+        Boost::boost # Target for header-only dependencies
 )

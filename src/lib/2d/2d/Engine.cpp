@@ -128,14 +128,14 @@ std::vector<Sprite> Engine::loadSheet(const std::string &aPath)
     std::vector<Sprite> result;
 
     auto grid = meta["set"]["regularGrid"];
-    math::Dimension2<int> dimension{grid["width"], grid["height"]};
+    Size2<int> dimension{grid["width"], grid["height"]};
     /// \todo Address correctly at the math library level
-    math::Vec2<int> dimensionVec{grid["width"], grid["height"]};
+    Vec2<int> dimensionVec{grid["width"], grid["height"]};
     ///
-    math::Vec2<int> tileOffset =
+    Vec2<int> tileOffset =
         //static_cast<math::Vec2<int>>(dimension) + math::Vec2<int>{grid["xBorder"], grid["yBorder"]};
-        dimensionVec + math::Vec2<int>{grid["xBorder"], grid["yBorder"]};
-    math::Vec2<int> startOffset = math::Vec2<int>{grid["xOffset"], grid["yOffset"]};
+        dimensionVec + Vec2<int>{grid["xBorder"], grid["yBorder"]};
+    Vec2<int> startOffset = Vec2<int>{grid["xOffset"], grid["yOffset"]};
     const std::string prefix = meta["set"]["prefix"];
 
     for (int row : math::Range<int>{grid["yCount"]})

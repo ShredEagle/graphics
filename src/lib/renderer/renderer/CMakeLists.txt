@@ -5,7 +5,6 @@ set(${PROJECT_NAME}_HEADERS
     Error.h
     gl_helpers.h
     Image.h
-    Rectangle.h
     Shading.h
     Texture.h
     VertexSpecification.h

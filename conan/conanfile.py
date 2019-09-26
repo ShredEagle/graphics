@@ -15,6 +15,7 @@ class TwodConan(ConanFile):
     build_policy = "missing"
 
     requires = (
+        ("boost/1.71.0@conan/stable"),
         ("glad/0.1.29@bincrafters/stable"),
         ("glfw/3.3@bincrafters/stable"),
         ("jsonformoderncpp/3.7.0@vthiery/stable"),
@@ -22,6 +23,7 @@ class TwodConan(ConanFile):
 
     default_options = {
         "shared": False,
+        "boost:header_only": True,
         "glad:api_version": "4.1",
-        "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage"
+        "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }

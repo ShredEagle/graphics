@@ -6,14 +6,9 @@
 
 namespace ad {
 
-template <class T>
-using Vec2=math::Vec2<T>;
 /// \todo Have a dedicated position type
-using Position=math::Vec2<GLint>;
+using Position=math::Vec<2, GLint>;
 
-template <class T>
-using Size2 = math::Dimension2<T>;
-
-using Color = math::Vec3<GLubyte>;
+using Color = math::Vec<3, GLubyte>;
 
 } // namespace ad

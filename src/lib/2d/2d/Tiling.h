@@ -12,12 +12,16 @@ class Engine;
 
 class Tiling
 {
-    /// \todo make const so the size is fixed to the gride size
-    typedef std::vector<Color> instance_data;
+    /// \todo Would be better with a container of const size
+    typedef std::vector<LoadedSprite> instance_data;
+
 public:
     Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
-    std::vector<LoadedSprite> load(const SpriteSheet &aSpriteSheet);
+    /// \brief Takes a pair of iterator to SpriteArea instances, and the corresponding raster data
+    template <class T_iterator>
+    std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
+                                   const Image & aRasterData);
 
     instance_data::iterator begin(); 
     instance_data::iterator end(); 
@@ -27,11 +31,14 @@ public:
     void render(const Engine & aEngine) const;
 
 private:
-    instance_data mColors;
     DrawContext mDrawContext;
-    //std::vector<Rectangle> mTiles;
+    //instance_data mColors;
+    instance_data mTiles;
 
     static constexpr GLsizei gVerticesPerInstance{4};
 };
 
 } // namespace ad
+
+#include "Tiling-impl.h"
+

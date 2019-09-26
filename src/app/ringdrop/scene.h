@@ -5,6 +5,7 @@
 
 #include <handy/vector_utils.h>
 
+#include <renderer/commons.h>
 #include <renderer/Drawing.h>
 #include <renderer/Image.h>
 #include <renderer/Shading.h>
@@ -12,8 +13,6 @@
 #include <renderer/VertexSpecification.h>
 
 #include <resource/PathProvider.h>
-
-#include <math/Vector.h>
 
 #include <glad/glad.h>
 
@@ -25,8 +24,8 @@ namespace ad
 
 struct Vertex
 {
-    math::Vec4<GLfloat> mPosition;
-    math::Vec2<GLfloat> mUV;
+    Vec4<GLfloat> mPosition;
+    Vec2<GLfloat> mUV;
 };
 
 constexpr size_t gVerticesCount{4};
@@ -94,13 +93,13 @@ DrawContext animatedRing()
         static const Image
             ring{pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png")};
 
-        const math::Dimension2<int> frame {
+        const Size2<int> frame {
             347-3,
             303-3
         };
 
         // Complete animation
-        std::vector<math::Vec2<int>> framePositions = {
+        std::vector<Vec2<int>> framePositions = {
                 {3,    3},
                 {353,  3},
                 {703,  3},

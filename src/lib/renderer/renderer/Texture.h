@@ -68,7 +68,7 @@ inline void loadSprite(const Texture & aTexture,
 inline void loadAnimationAsArray(const Texture & aTexture,
                           GLenum aTextureUnit,
                           const Image & aImage,
-                          const math::Dimension2<int> & aFrame,
+                          const Size2<int> & aFrame,
                           size_t aSteps)
 {
     assert(aTexture.mTarget == GL_TEXTURE_2D_ARRAY);
@@ -90,7 +90,7 @@ inline void loadAnimationAsArray(const Texture & aTexture,
 inline void loadSpriteSheet(const Texture & aTexture,
                      GLenum aTextureUnit,
                      const Image & aImage,
-                     const math::Dimension2<int> & aFrame)
+                     const Size2<int> & aFrame)
 {
     /// \todo can be extended, many other target types are valid here
     assert(aTexture.mTarget == GL_TEXTURE_RECTANGLE);

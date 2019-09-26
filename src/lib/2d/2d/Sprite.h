@@ -1,19 +1,20 @@
 #pragma once
 
 #include <renderer/Image.h>
-#include <renderer/Rectangle.h>
-
-#include <math/Vector.h>
+#include <renderer/commons.h>
 
 #include <string>
 #include <vector>
 
 namespace ad {
 
+typedef Rectangle<int> SpriteArea;
+
+/// \todo How to address it cleanly? We don't know how client code wants to represent sprites
 struct Sprite
 {
     const std::string mName;
-    const Rectangle mTextureArea;
+    const SpriteArea mTextureArea;
 };
 
 struct SpriteSheet
@@ -23,7 +24,6 @@ struct SpriteSheet
 };
 
 // Implementer's note: Leave room for potential future optimization, by changing this type
-struct LoadedSprite : public Sprite
-{};
+typedef SpriteArea LoadedSprite;
 
 } // namespace ad

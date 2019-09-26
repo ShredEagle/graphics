@@ -8,8 +8,8 @@ namespace ad {
 
 struct Vertex
 {
-    math::Vec2<GLfloat> mPosition;
-    math::Vec2<GLint> mUV;
+    Vec2<GLfloat> mPosition;
+    Vec2<GLint> mUV;
 };
 
 

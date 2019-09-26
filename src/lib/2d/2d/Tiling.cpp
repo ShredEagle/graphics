@@ -9,19 +9,55 @@
 
 namespace ad {
 
+//const GLchar* gTilingVertexShader = R"#(
+//    #version 400
+//
+//    layout(location=0) in vec4  in_VertexPosition;
+//    layout(location=1) in ivec2 in_UV;
+//    layout(location=2) in vec2  in_InstancePosition;
+//    layout(location=3) in vec3 in_Color;
+//
+//    uniform ivec2 in_BufferResolution;
+//
+//    out vec2 ex_UV;
+//    out vec3 ex_Color;
+//
+//    void main(void)
+//    {
+//        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy;
+//        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
+//                           0.0, 1.0);
+//
+//        ex_Color = in_Color;
+//    }
+//)#";
+//
+//
+//const GLchar* gTilingFragmentShader = R"#(
+//    #version 400
+//
+//    in vec2 ex_UV;
+//    in vec3 ex_Color;
+//    out vec4 out_Color;
+//    uniform sampler2DRect spriteSampler;
+//
+//    void main(void)
+//    {
+//        out_Color = vec4(ex_Color, 1.0);
+//    }
+//)#";
+
 const GLchar* gTilingVertexShader = R"#(
     #version 400
 
     layout(location=0) in vec4  in_VertexPosition;
     layout(location=1) in ivec2 in_UV;
     layout(location=2) in vec2  in_InstancePosition;
-    //layout(location=3) in ivec4 in_TextureArea;
-    layout(location=3) in vec3 in_Color;
+    layout(location=3) in ivec4 in_TextureArea;
 
     uniform ivec2 in_BufferResolution;
     
     out vec2 ex_UV;
-    out vec3 ex_Color;
 
     void main(void)
     {
@@ -29,8 +65,7 @@ const GLchar* gTilingVertexShader = R"#(
         gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
                            0.0, 1.0);
 
-        //ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
-        ex_Color = in_Color;
+        ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
     }
 )#";
 
@@ -39,14 +74,12 @@ const GLchar* gTilingFragmentShader = R"#(
     #version 400
 
     in vec2 ex_UV;
-    in vec3 ex_Color;
     out vec4 out_Color;
     uniform sampler2DRect spriteSampler;
 
     void main(void)
     {
-        //out_Color = texture(spriteSampler, ex_UV);
-        out_Color = vec4(ex_Color, 1.0);
+        out_Color = texture(spriteSampler, ex_UV);
     }
 )#";
 
@@ -98,7 +131,8 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     /// \todo separate buffer specification and filling
     specification.mVertexBuffers.push_back(
         makeLoadedVertexBuffer({
-                {3, 3, 0, MappedGL<GLubyte>::enumerator, ShaderAccess::Float, true}
+                //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
+                {3, 4, 0, MappedGL<GLint>::enumerator, ShaderAccess::Integer}
             },
             0, 
             0,
@@ -123,22 +157,18 @@ Program makeProgram()
 }
 
 Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition) :
-    mColors(aGridDefinition.area(), Color{0, 0, 0}),
-    mDrawContext(makeVertexGrid(aCellSize, aGridDefinition), makeProgram())
+    mDrawContext(makeVertexGrid(aCellSize, aGridDefinition), makeProgram()),
+    mTiles(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}})
 {}
-
-
-// std::vector<LoadedSprite> Tiling::load(const SpriteSheet &aSpriteSheet)
-// {}
 
 Tiling::instance_data::iterator Tiling::begin()
 {
-    return mColors.begin(); 
+    return mTiles.begin();
 }
 
 Tiling::instance_data::iterator Tiling::end()
 {
-    return mColors.end(); 
+    return mTiles.end();
 }
 
 void Tiling::render(const Engine & aEngine) const
@@ -152,8 +182,8 @@ void Tiling::render(const Engine & aEngine) const
     // Stream vertex attributes
     //
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    mColors.data(),
-                    getStoredSize(mColors));
+                    mTiles.data(),
+                    getStoredSize(mTiles));
 
     //
     // Draw
@@ -161,7 +191,7 @@ void Tiling::render(const Engine & aEngine) const
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesPerInstance,
-                          static_cast<GLsizei>(mColors.size()));
+                          static_cast<GLsizei>(mTiles.size()));
 }
 
 } // namespace ad

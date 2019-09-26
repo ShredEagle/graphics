@@ -9,13 +9,13 @@ namespace ad {
 
 struct Instance
 {
-    Instance(Position aPosition, Rectangle aTextureArea):
+    Instance(Position aPosition, Rectangle<GLint> aTextureArea):
         mPosition(aPosition),
         mTextureArea(aTextureArea)
     {}
 
     Position mPosition;
-    Rectangle mTextureArea;
+    Rectangle<GLint> mTextureArea;
 };
 
 const std::vector<const AttributeDescription> gInstanceDescription = {
@@ -36,16 +36,16 @@ public:
     void clear();
     void render();
 
-    const math::Dimension2<int> & getWindowSize() const;
+    const Size2<int> & getWindowSize() const;
 
 private:
     DrawContext mDrawContext;
     std::vector<Instance> mSprites;
-    math::Dimension2<int> mWindowSize;
+    Size2<int> mWindowSize;
 };
 
 
-inline const math::Dimension2<int> & Engine::getWindowSize() const
+inline const Size2<int> & Engine::getWindowSize() const
 {
     return mWindowSize;
 }
