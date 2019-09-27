@@ -135,7 +135,7 @@ std::vector<Sprite> Engine::loadSheet(const std::string &aPath)
     Vec2<int> tileOffset =
         //static_cast<math::Vec2<int>>(dimension) + math::Vec2<int>{grid["xBorder"], grid["yBorder"]};
         dimensionVec + Vec2<int>{grid["xBorder"], grid["yBorder"]};
-    Vec2<int> startOffset = Vec2<int>{grid["xOffset"], grid["yOffset"]};
+    Position2<int> startPosition{grid["xOffset"], grid["yOffset"]};
     const std::string prefix = meta["set"]["prefix"];
 
     for (int row : math::Range<int>{grid["yCount"]})
@@ -146,7 +146,7 @@ std::vector<Sprite> Engine::loadSheet(const std::string &aPath)
             nameOss << prefix << column << "_" << row;
 
             result.push_back({nameOss.str(),
-                              startOffset + tileOffset.hadamard({column, row}),
+                              startPosition + tileOffset.hadamard({column, row}),
                               dimension});
         }
     }
@@ -155,7 +155,7 @@ std::vector<Sprite> Engine::loadSheet(const std::string &aPath)
 }
 
 
-void Engine::appendDraw(const Sprite & aSprite, Position aPosition)
+void Engine::appendDraw(const Sprite & aSprite, Position2<GLint> aPosition)
 {
     mSprites.emplace_back(aPosition, aSprite.mTextureArea);
 }

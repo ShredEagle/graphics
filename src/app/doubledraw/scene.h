@@ -239,7 +239,7 @@ DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
     //
     {
         // Complete animation
-        std::vector<math::Vec<2, int>> framePositions = {
+        std::vector<math::Position<2, int>> framePositions = {
                 {3,    3},
                 {353,  3},
                 {703,  3},

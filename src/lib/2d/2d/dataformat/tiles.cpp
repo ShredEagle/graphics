@@ -28,7 +28,7 @@ SpriteSheet loadMeta(std::istream & aDatastream)
     Size2<int> dimension{grid["width"], grid["height"]};
     Vec2<int> tileOffset = static_cast<Vec2<int>>(dimension) 
                            + Vec2<int>{grid["xBorder"], grid["yBorder"]};
-    Vec2<int> startOffset = Vec2<int>{grid["xOffset"], grid["yOffset"]};
+    Position2<int> startPosition{grid["xOffset"], grid["yOffset"]};
 
     for (int row : math::Range<int>{grid["yCount"]})
     {
@@ -38,7 +38,7 @@ SpriteSheet loadMeta(std::istream & aDatastream)
             nameOss << prefix << column << "_" << row;
 
             sheet.mSprites.push_back({nameOss.str(),
-                                      startOffset + tileOffset.hadamard({column, row}),
+                                      startPosition + tileOffset.hadamard({column, row}),
                                       dimension});
         }
     }

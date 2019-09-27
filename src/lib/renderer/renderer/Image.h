@@ -56,7 +56,7 @@ struct Image : public ResourceGuard<unsigned char *>
         return {target.release(), aZone.mDimension, mSourceComponents};
     }
 
-    Image prepareArray(std::vector<Vec2<int>> aPositions,
+    Image prepareArray(std::vector<Position2<int>> aPositions,
                        Size2<int> aDimension) const
     {
         std::unique_ptr<unsigned char[]> target{
@@ -76,7 +76,7 @@ struct Image : public ResourceGuard<unsigned char *>
         };
     }
 
-    std::vector<Image> cutouts(std::vector<Vec2<int>> aPositions,
+    std::vector<Image> cutouts(std::vector<Position2<int>> aPositions,
                                Size2<int> aDimension) const
     {
         std::vector<Image> cutouts;

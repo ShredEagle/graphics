@@ -110,7 +110,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
         makeLoadedVertexBuffer<Vertex>(gVertexDescription, quad.cbegin(), quad.cend()));
     
     // Per-instance attributes
-    std::vector<Position> positions;
+    std::vector<Position2<GLint>> positions;
     for (int x : math::range(aGridDefinition.width()))
     {
         for (int y : math::range(aGridDefinition.height()))
@@ -120,7 +120,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
         }
     }
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer<Position>({
+        makeLoadedVertexBuffer<Position2<GLint>>({
                 {2, 2, 0, MappedGL<GLint>::enumerator}
             },
             positions.cbegin(),

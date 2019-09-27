@@ -9,12 +9,12 @@ namespace ad {
 
 struct Instance
 {
-    Instance(Position aPosition, Rectangle<GLint> aTextureArea):
+    Instance(Position2<GLint> aPosition, Rectangle<GLint> aTextureArea):
         mPosition(aPosition),
         mTextureArea(aTextureArea)
     {}
 
-    Position mPosition;
+    Position2<GLint> mPosition;
     Rectangle<GLint> mTextureArea;
 };
 
@@ -31,7 +31,7 @@ public:
     void callbackWindowSize(int width, int height);
     std::vector<Sprite> loadSheet(const std::string &aPath);
 
-    void appendDraw(const Sprite & aSprite, Position aPosition);
+    void appendDraw(const Sprite & aSprite, Position2<GLint> aPosition);
 
     void clear();
     void render();

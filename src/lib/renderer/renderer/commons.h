@@ -20,4 +20,7 @@ using Vec4=math::Vec<4, T_number>;
 template <class T_number>
 using Size2=math::Size<2, T_number>;
 
+template <class T_number>
+using Position2=math::Position<2, T_number>;
+
 } // namespace ad
