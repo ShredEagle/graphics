@@ -171,6 +171,14 @@ void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData, GLsi
     glBufferSubData(GL_ARRAY_BUFFER, 0, aSize, aData);
 }
 
+template <class T_iterator>
+void respecifyBuffer(const VertexBufferObject & aVBO, T_iterator aFirst, T_iterator aLast)
+{
+    respecifyBuffer(aVBO,
+                    &(*aFirst),
+                    sizeof(typename T_iterator::value_type)*std::distance(aFirst, aLast));
+}
+
 /// \brief Respecify the buffer with the same size (allowing potential optimizations)
 template <class T_data>
 void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData)

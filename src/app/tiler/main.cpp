@@ -91,14 +91,17 @@ int main(void)
     }
 
     ad::Scene scene = ad::setupScene(engine);
+    ad::Timer timer{glfwGetTime(), 0.};
 
     while(!glfwWindowShouldClose(window))
     {
-        ad::updateScene(scene, engine, glfwGetTime());
+        ad::updateScene(scene, engine, timer);
         ad::renderScene(scene, engine);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        timer.mark(glfwGetTime());
     }
 
     std::exit(EXIT_SUCCESS);

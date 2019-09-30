@@ -110,6 +110,11 @@ void Engine::callbackWindowSize(int width, int height)
 
     GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
     glProgramUniform2iv(mDrawContext.mProgram, location, 1, mWindowSize.data());
+
+    for (auto & listener : mSizeCallbacks)
+    {
+        listener({width, height});
+    }
 }
 
 std::vector<Sprite> Engine::loadSheet(const std::string &aPath)

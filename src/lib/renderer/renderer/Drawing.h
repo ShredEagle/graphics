@@ -42,4 +42,9 @@ inline void activate(const DrawContext & aDrawContext)
     useProgram(aDrawContext);
 }
 
+inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
+{
+    return aDrawContext.mVertexSpecification.mVertexBuffers;
+}
+
 } // namespace ad

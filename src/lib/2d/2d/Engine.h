@@ -25,6 +25,10 @@ const std::vector<const AttributeDescription> gInstanceDescription = {
 
 class Engine
 {
+    typedef std::function<void(Size2<int>)> SizeListener;
+    /// \todo Implement an RAII structure that removes the listening on destruction
+    struct Listening{};
+
 public:
     Engine();
 
@@ -38,16 +42,26 @@ public:
 
     const Size2<int> & getWindowSize() const;
 
+    Listening listenResize(SizeListener aListener);
+
 private:
     DrawContext mDrawContext;
     std::vector<Instance> mSprites;
     Size2<int> mWindowSize;
+
+    std::vector<SizeListener> mSizeCallbacks;
 };
 
 
 inline const Size2<int> & Engine::getWindowSize() const
 {
     return mWindowSize;
+}
+
+inline Engine::Listening Engine::listenResize(SizeListener aListener)
+{
+    mSizeCallbacks.push_back(std::move(aListener));
+    return {};
 }
 
 } // namespace ad
