@@ -18,6 +18,7 @@ class Tiling
 public:
     /// \todo Would be better with a container of const size
     typedef instance_data::iterator iterator;
+    typedef GLfloat position_t;
 
     Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution);
 
@@ -37,10 +38,10 @@ public:
     ///       What is the real meaning of the Engine class
     void render(const Engine & aEngine) const;
 
-    Position2<GLint> getPosition() const;
-    void setPosition(Position2<GLint> aPosition);
+    Position2<position_t> getPosition() const;
+    void setPosition(Position2<position_t> aPosition);
 
-    Rectangle<GLint> getGridRectangle() const;
+    Rectangle<position_t> getGridRectangle() const;
 
     Size2<GLint> getTileSize() const;
     Size2<GLint> getGridDefinition() const;
@@ -52,7 +53,7 @@ private:
 
     Size2<GLint> mTileSize;
     Size2<GLint> mGridDefinition;
-    Rectangle<GLint> mGridRectangleScreen;
+    Rectangle<position_t> mGridRectangleScreen;
 
     static constexpr GLsizei gVerticesPerInstance{4};
 };
@@ -61,12 +62,12 @@ private:
 /*
  * Implementations
  */
-inline Position2<GLint> Tiling::getPosition() const
+inline Position2<Tiling::position_t> Tiling::getPosition() const
 {
     return mGridRectangleScreen.mPosition;
 }
 
-inline Rectangle<GLint> Tiling::getGridRectangle() const
+inline Rectangle<Tiling::position_t> Tiling::getGridRectangle() const
 {
     return mGridRectangleScreen;
 }

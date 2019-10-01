@@ -76,11 +76,12 @@ struct Scroller
         });
     }
 
-    void scroll(Vec2<GLdouble> aDisplacement, const Engine & aEngine)
+    void scroll(Vec2<GLfloat> aDisplacement, const Engine & aEngine)
     {
-        mTiling.setPosition(mTiling.getPosition() + static_cast<Vec2<GLint>>(aDisplacement));
+        mTiling.setPosition(mTiling.getPosition() + aDisplacement);
 
-        Rectangle<GLint> grid(mTiling.getGridRectangle());
+        Rectangle<GLfloat> grid(mTiling.getGridRectangle());
+        // Integral conversion
         GLint xDiff = grid.diagonalCorner().x() - aEngine.getWindowSize().width();
 
         if (xDiff < 0)
@@ -107,7 +108,7 @@ private:
     void reposition()
     {
         mTiling.setPosition(mTiling.getPosition()
-                            + static_cast<Vec2<GLint>>(mTiling.getTileSize().hadamard({1, 0})));
+                            + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().hadamard({1, 0})));
 
         // Copy the tile still appearing
         std::copy(mTiling.begin()+mTiling.getGridDefinition().height(),
@@ -153,8 +154,8 @@ inline Scene setupScene(Engine & aEngine)
 
 inline void updateScene(Scene & aScene, Engine & aEngine, const Timer & aTimer)
 {
-    static const Vec2<double> scrollSpeed{-200.f, 0.f};
-    aScene.mBackground.scroll(aTimer.mDelta*scrollSpeed, aEngine);
+    static const Vec2<GLfloat> scrollSpeed{-200.f, 0.f};
+    aScene.mBackground.scroll((GLfloat)aTimer.mDelta*scrollSpeed, aEngine);
 }
 
 inline void renderScene(const Scene & aScene, Engine & aEngine)

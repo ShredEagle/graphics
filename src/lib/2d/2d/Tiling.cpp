@@ -172,7 +172,8 @@ Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRen
     mTiles(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}}),
     mTileSize(aCellSize),
     mGridDefinition(aGridDefinition),
-    mGridRectangleScreen{{0, 0}, aCellSize.hadamard(aGridDefinition)}
+    mGridRectangleScreen{{0., 0.},
+                          static_cast<Size2<Tiling::position_t>>(aCellSize.hadamard(aGridDefinition))}
 {
     setBufferResolution(aRenderResolution);
 }
@@ -191,7 +192,8 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     mTiles.resize(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}});
     mTileSize = aCellSize;
     mGridDefinition = aGridDefinition;
-    mGridRectangleScreen.mDimension = aCellSize.hadamard(aGridDefinition);
+    mGridRectangleScreen.mDimension
+        = static_cast<Size2<Tiling::position_t>>(aCellSize.hadamard(aGridDefinition));
 }
 
 Tiling::iterator Tiling::begin()
@@ -210,11 +212,12 @@ void Tiling::setBufferResolution(Size2<int> aNewResolution)
     glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());
 }
 
-void Tiling::setPosition(Position2<GLint> aPosition)
+void Tiling::setPosition(Position2<position_t> aPosition)
 {
     mGridRectangleScreen.mPosition = aPosition;
     GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_GridPosition");
-    glProgramUniform2iv(mDrawContext.mProgram, location, 1, mGridRectangleScreen.mPosition.data());
+    glProgramUniform2iv(mDrawContext.mProgram, location, 1,
+                        static_cast<Position2<GLint>>(mGridRectangleScreen.mPosition).data());
 }
 
 void Tiling::render(const Engine & aEngine) const
