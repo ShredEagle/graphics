@@ -16,7 +16,6 @@ class Tiling
     typedef std::vector<LoadedSprite> instance_data;
 
 public:
-    /// \todo Would be better with a container of const size
     typedef instance_data::iterator iterator;
     typedef GLfloat position_t;
 

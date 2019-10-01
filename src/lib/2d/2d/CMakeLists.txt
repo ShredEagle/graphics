@@ -4,6 +4,7 @@ set(${PROJECT_NAME}_HEADERS
     commons.h
     Engine.h
     Sprite.h
+    Spriting.h
     Tiling.h
 
     dataformat/tiles.h
@@ -11,6 +12,7 @@ set(${PROJECT_NAME}_HEADERS
 
 set(${PROJECT_NAME}_SOURCES
     Engine.cpp
+    Spriting.cpp
     Tiling.cpp
 
     dataformat/tiles.cpp

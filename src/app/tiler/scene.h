@@ -4,6 +4,7 @@
 #include <resource/PathProvider.h>
 
 #include <2d/Engine.h>
+#include <2d/Spriting.h>
 #include <2d/Tiling.h>
 #include <2d/dataformat/tiles.h>
 
@@ -44,11 +45,12 @@ private:
     }
 };
 
-std::vector<LoadedSprite> loadTilesFromFile(Tiling & aTiling, const std::string &aFile)
+template <class T>
+std::vector<LoadedSprite> loadSheet(T & aDrawer, const path & aFile)
 {
     std::ifstream ifs{aFile};
     SpriteSheet sheet = dataformat::loadMeta(ifs);
-    return aTiling.load(SpriteArea_const_iter{sheet.mSprites.cbegin()},
+    return aDrawer.load(SpriteArea_const_iter{sheet.mSprites.cbegin()},
                         SpriteArea_const_iter{sheet.mSprites.cend()},
                         sheet.mRasterData);
 }
@@ -59,7 +61,7 @@ struct Scroller
             mTiling(aTileSize,
                     hadamardDiv(aEngine.getWindowSize(), aTileSize) + Size2<int>{1, 1},
                     aEngine.getWindowSize()),
-            mTiles(loadTilesFromFile(mTiling, pathFor(aTilesheet))),
+            mTiles(loadSheet(mTiling, aTilesheet)),
             mRandomIndex(0, mTiles.size()-1)
     {
         fillRandom(mTiling.begin(), mTiling.end());
@@ -110,7 +112,7 @@ private:
         mTiling.setPosition(mTiling.getPosition()
                             + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().hadamard({1, 0})));
 
-        // Copy the tile still appearing
+        // Copy the tiles still appearing
         std::copy(mTiling.begin()+mTiling.getGridDefinition().height(),
                   mTiling.end(),
                   mTiling.begin());
@@ -125,8 +127,32 @@ private:
     Randomizer<> mRandomIndex;
 };
 
+struct RingDrop
+{
+    RingDrop(path aSpriteSheet, Engine & aEngine) :
+             mSpriting(aEngine.getWindowSize()),
+             mFrames(loadSheet(mSpriting, aSpriteSheet))
+    {
+        mSpriting.instanceData().push_back(Instance{{20, 10}, mFrames.front()});
+
+        aEngine.listenResize([this](Size2<int> aNewSize)
+        {
+            mSpriting.setBufferResolution(aNewSize);
+        });
+    }
+
+    void render() const
+    {
+        mSpriting.render();
+    }
+
+private:
+    Spriting mSpriting;
+    std::vector<LoadedSprite> mFrames;
+};
+
 struct Scene {
-    std::vector<Sprite> mSprites;
+    RingDrop mRings;
     Scroller mBackground;
 };
 
@@ -136,17 +162,12 @@ inline Scene setupScene(Engine & aEngine)
 {
     const Size2<int> tileSize{32, 32};
     Scene result{
-        aEngine.loadSheet(pathFor("tiles.bmp.meta")),
-        Scroller{tileSize, "tiles.bmp.meta", aEngine}
+        RingDrop{pathFor("tiles.bmp.meta"), aEngine},
+        Scroller{tileSize, pathFor("tiles.bmp.meta"), aEngine}
     };
 
     /*
      * Sprites
-     */
-    aEngine.appendDraw(result.mSprites.at(0), {10, 10});
-
-    /*
-     * Tiles
      */
 
     return result;
@@ -162,7 +183,7 @@ inline void renderScene(const Scene & aScene, Engine & aEngine)
 {
     aEngine.clear();
     aScene.mBackground.render(aEngine);
-    aEngine.render();
+    aScene.mRings.render();
 }
 
 } // namespace ad
