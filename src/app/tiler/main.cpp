@@ -69,7 +69,13 @@ int main(void)
     ad::Engine engine;
     glfwSetWindowUserPointer(window, &engine);
     // Explicitly call it, because it is used to complete the engine setup
-    windowsSize_callback(window, gWindowWidth, gWindowHeight);
+    {
+        // Get the size, because the hints might not be satisfied
+        // (yet not invoking the size callback)
+        int width, height;
+        glfwGetWindowSize(window, &width, &height);
+        windowsSize_callback(window, width, height);
+    }
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, windowsSize_callback);
