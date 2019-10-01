@@ -96,7 +96,7 @@ std::vector<Vertex> makeQuad(const Vec2<int> aCellOffset, const Size2<int> aGrid
     std::vector<Vertex> quad;
     for (auto uv : UVs)
     {
-        quad.push_back({static_cast<Vec2<GLfloat>>(aCellOffset.hadamard(uv)), uv});
+        quad.push_back({static_cast<Vec2<GLfloat>>(aCellOffset.cwMul(uv)), uv});
     }
     return quad;
 }
@@ -109,7 +109,7 @@ std::vector<Position2<GLint>> makePositions(const Vec2<int> aCellOffset,
     {
         for (int y : math::range(aGridDefinition.height()))
         {
-            Vec2<GLint> position = aCellOffset.hadamard(Vec2<GLint>{x, y});
+            Vec2<GLint> position = aCellOffset.cwMul(Vec2<GLint>{x, y});
             positions.emplace_back(position.x(), position.y());
         }
     }
@@ -173,7 +173,7 @@ Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRen
     mTileSize(aCellSize),
     mGridDefinition(aGridDefinition),
     mGridRectangleScreen{{0., 0.},
-                          static_cast<Size2<Tiling::position_t>>(aCellSize.hadamard(aGridDefinition))}
+                          static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition))}
 {
     setBufferResolution(aRenderResolution);
 }
@@ -193,7 +193,7 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     mTileSize = aCellSize;
     mGridDefinition = aGridDefinition;
     mGridRectangleScreen.mDimension
-        = static_cast<Size2<Tiling::position_t>>(aCellSize.hadamard(aGridDefinition));
+        = static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition));
 }
 
 Tiling::iterator Tiling::begin()

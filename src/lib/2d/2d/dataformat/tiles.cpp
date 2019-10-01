@@ -38,7 +38,7 @@ SpriteSheet loadMeta(std::istream & aDatastream)
             nameOss << prefix << column << "_" << row;
 
             sheet.mSprites.push_back({nameOss.str(),
-                                      startPosition + tileOffset.hadamard({column, row}),
+                                      startPosition + tileOffset.cwMul({column, row}),
                                       dimension});
         }
     }

@@ -59,7 +59,7 @@ struct Scroller
 {
     Scroller(const Size2<int> aTileSize, path aTilesheet, Engine & aEngine) :
             mTiling(aTileSize,
-                    hadamardDiv(aEngine.getWindowSize(), aTileSize) + Size2<int>{1, 1},
+                    aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{1, 1},
                     aEngine.getWindowSize()),
             mTiles(loadSheet(mTiling, aTilesheet)),
             mRandomIndex(0, mTiles.size()-1)
@@ -72,7 +72,7 @@ struct Scroller
             // +2 tiles on each dimension:
             // * 1 to compensate for the integral division module
             // * 1 to make sure there is at least the size of a complete tile in excess
-            Size2<int> gridDefinition = hadamardDiv(aNewSize, mTiling.getTileSize()) + Size2<int>{2, 2};
+            Size2<int> gridDefinition = aNewSize.cwDiv(mTiling.getTileSize()) + Size2<int>{2, 2};
             mTiling.resetTiling(mTiling.getTileSize(), gridDefinition);
             fillRandom(mTiling.begin(), mTiling.end());
         });
@@ -110,7 +110,7 @@ private:
     void reposition()
     {
         mTiling.setPosition(mTiling.getPosition()
-                            + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().hadamard({1, 0})));
+                            + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().cwMul({1, 0})));
 
         // Copy the tiles still appearing
         std::copy(mTiling.begin()+mTiling.getGridDefinition().height(),
