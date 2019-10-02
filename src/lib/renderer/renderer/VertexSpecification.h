@@ -102,7 +102,7 @@ struct AttributeDescription
 ///       More permissive ranges for attributes and data (data could benefit from "ContiguousStorage" in C++20)
 /// \todo What is the point of the template param here?
 template <class T_data>
-VertexBufferObject makeLoadedVertexBuffer(std::vector<const AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
                                           GLsizei aStride,
                                           size_t aSize,
                                           const T_data & aData)
@@ -146,7 +146,7 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<const AttributeDescription
 //template <class T_contiguousIterator>
 //std::enable_if<std::iterator_traits<T_contiguousIterator>::iterator_category == ...>
 template <class T_element>
-VertexBufferObject makeLoadedVertexBuffer(std::vector<const AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
                                           typename std::vector<T_element>::const_iterator aFirst,
                                           typename std::vector<T_element>::const_iterator aLast)
 {
@@ -171,6 +171,7 @@ void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData, GLsi
     glBufferSubData(GL_ARRAY_BUFFER, 0, aSize, aData);
 }
 
+
 template <class T_iterator>
 void respecifyBuffer(const VertexBufferObject & aVBO, T_iterator aFirst, T_iterator aLast)
 {
@@ -178,6 +179,7 @@ void respecifyBuffer(const VertexBufferObject & aVBO, T_iterator aFirst, T_itera
                     &(*aFirst),
                     sizeof(typename T_iterator::value_type)*std::distance(aFirst, aLast));
 }
+
 
 /// \brief Respecify the buffer with the same size (allowing potential optimizations)
 template <class T_data>

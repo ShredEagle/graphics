@@ -35,7 +35,7 @@ class SpriteArea_const_iter : public boost::iterator_adaptor<SpriteArea_const_it
                                                              const SpriteArea>
 {
     // Inherit ctor
-    using SpriteArea_const_iter::iterator_adaptor_::iterator_adaptor;
+    using iterator_adaptor_::iterator_adaptor;
 
 private:
     friend class boost::iterator_core_access;
@@ -62,7 +62,7 @@ struct Scroller
                     aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{1, 1},
                     aEngine.getWindowSize()),
             mTiles(loadSheet(mTiling, aTilesheet)),
-            mRandomIndex(0, mTiles.size()-1)
+            mRandomIndex(0, static_cast<int>(mTiles.size()-1))
     {
         fillRandom(mTiling.begin(), mTiling.end());
 

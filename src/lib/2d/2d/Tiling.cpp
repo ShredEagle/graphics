@@ -172,7 +172,7 @@ Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRen
     mTiles(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}}),
     mTileSize(aCellSize),
     mGridDefinition(aGridDefinition),
-    mGridRectangleScreen{{0., 0.},
+    mGridRectangleScreen{{0.f, 0.f},
                           static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition))}
 {
     setBufferResolution(aRenderResolution);
