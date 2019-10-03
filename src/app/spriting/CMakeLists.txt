@@ -20,4 +20,5 @@ target_link_libraries(${PROJECT_NAME}
         glad::glad
         glfw
         renderer
+        resource
 )

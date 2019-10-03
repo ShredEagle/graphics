@@ -45,8 +45,8 @@ VertexSpecification makeQuad()
     specification.mVertexBuffers.emplace_back(
         makeLoadedVertexBuffer(
             {
-                {0, 2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
-                {1, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator, ShaderAccess::Integer},
+                { 0,                               2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
+                { {1, Attribute::Access::Integer}, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
             },
             sizeof(Vertex),
             sizeof(gVerticesQuad),
@@ -57,8 +57,8 @@ VertexSpecification makeQuad()
     specification.mVertexBuffers.push_back(
         makeLoadedVertexBuffer(
             {
-                {2, 2, offsetof(Instance, mPosition),    MappedGL<GLint>::enumerator},
-                {3, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator, ShaderAccess::Integer},
+                { 2,                               2, offsetof(Instance, mPosition),    MappedGL<GLint>::enumerator},
+                { {3, Attribute::Access::Integer}, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator},
             },
             0,
             0,

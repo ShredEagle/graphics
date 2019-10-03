@@ -1,11 +1,14 @@
 #pragma once
 
 #include "gl_helpers.h"
+#include "MappedGL.h"
+#include "Range.h"
 
 #include <handy/Guard.h>
 
 #include <glad/glad.h>
 
+#include <type_traits>
 #include <vector>
 
 namespace ad
@@ -47,75 +50,71 @@ struct [[nodiscard]] VertexSpecification
 };
 
 
-template <class T_scalar>
-struct MappedGL;
-
-template <> struct MappedGL<GLfloat>
-{ static const GLenum enumerator = GL_FLOAT; };
-
-template <> struct MappedGL<GLubyte>
-{ static const GLenum enumerator = GL_UNSIGNED_BYTE; };
-
-template <> struct MappedGL<GLint>
-{ static const GLenum enumerator = GL_INT; };
-
-
-template <class T_element, int N_vertices, int N_attributeDimension>
-VertexBufferObject makeLoadedVertexBuffer(
-        GLuint aAttributeId,
-        T_element (& data)[N_vertices][N_attributeDimension])
+struct Attribute
 {
-    VertexBufferObject vbo;
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+    enum class Access
+    {
+        Float,
+        Integer,
+    };
 
-    glVertexAttribPointer(aAttributeId,
-                          N_attributeDimension,
-                          MappedGL<T_element>::enumerator,
-                          GL_FALSE,
-                          0,
-                          0);
-    glEnableVertexAttribArray(aAttributeId);
+    constexpr Attribute(GLuint aValue) :
+        mIndex(aValue)
+    {}
 
-    return vbo;
-}
+    constexpr Attribute(GLuint aValue, Access aAccess, bool aNormalize=false) :
+        mIndex(aValue),
+        mTypeInShader(aAccess),
+        mNormalize(aNormalize)
+    {}
 
-enum class ShaderAccess
-{
-    Float,
-    Integer,
-};
-
-struct AttributeDescription
-{
     GLuint mIndex;
-    GLuint mDimension;
-    size_t mOffset;
-    /// \TODO clever template tricks should allow to rework this function and deduce that
-    GLenum mDataType;
-    ShaderAccess typeInShader{ShaderAccess::Float};
+    Access mTypeInShader{Access::Float};
     bool mNormalize{false};
 };
 
-/// \todo Enhance those signatures
-///       Better automatic deduction
-///       More permissive ranges for attributes and data (data could benefit from "ContiguousStorage" in C++20)
-/// \todo What is the point of the template param here?
-template <class T_data>
-VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
-                                          GLsizei aStride,
-                                          size_t aSize,
-                                          const T_data & aData)
+template <class T_element, class T_member>
+struct AttributeCompact : public Attribute
 {
+    typedef T_member member_type;
+
+    T_member T_element::* mMember;
+};
+
+struct AttributeDescription : public Attribute
+{
+    GLuint mDimension;
+    size_t mOffset;
+    GLenum mDataType;
+};
+
+inline std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription)
+{
+    return aOut << "Index " << aDescription.mIndex << " | "
+                << "Dimension " << aDescription.mDimension << " | "
+                << "Offset " << aDescription.mOffset << " | "
+                << "Data " << aDescription.mDataType
+                ;
+}
+
+
+/// \todo To the impl file?
+inline VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
+                                                 GLsizei aStride,
+                                                 size_t aSize,
+                                                 const GLvoid * aData)
+{
+    /// \todo some static assert on the PODness of the element type
+
     VertexBufferObject vbo;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, aSize, aData, GL_STATIC_DRAW);
 
     for (const auto & attribute : aAttributes)
     {
-        switch(attribute.typeInShader)
+        switch(attribute.mTypeInShader)
         {
-            case ShaderAccess::Float :
+            case Attribute::Access::Float :
             {
                 glVertexAttribPointer(attribute.mIndex,
                                       attribute.mDimension,
@@ -125,7 +124,7 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
                                       reinterpret_cast<const void*>(attribute.mOffset));
                 break;
             }
-            case ShaderAccess::Integer :
+            case Attribute::Access::Integer :
             {
                 glVertexAttribIPointer(attribute.mIndex,
                                        attribute.mDimension,
@@ -146,7 +145,7 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
 //template <class T_contiguousIterator>
 //std::enable_if<std::iterator_traits<T_contiguousIterator>::iterator_category == ...>
 template <class T_element>
-VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
                                           typename std::vector<T_element>::const_iterator aFirst,
                                           typename std::vector<T_element>::const_iterator aLast)
 {
@@ -155,6 +154,24 @@ VertexBufferObject makeLoadedVertexBuffer(std::vector<AttributeDescription> aAtt
                                   sizeof(T_element) * std::distance(aFirst, aLast),
                                   &(*aFirst));
 }
+
+
+template <class T_rangeElement>
+VertexBufferObject makeLoadedVertexBuffer(Attribute aAttribute, Range<T_rangeElement> aRange)
+{
+    AttributeDescription desc{
+        aAttribute,
+        aRange.dimension(),
+        0,
+        MappedGL<typename decltype(aRange)::scalar_type>::enumerator,
+    };
+
+    return makeLoadedVertexBuffer({desc},
+                                  sizeof(typename decltype(aRange)::element_type),
+                                  aRange.getStoredSize(),
+                                  aRange.data());
+}
+
 
 /// \see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
 
@@ -189,6 +206,46 @@ void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData)
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
     respecifyBuffer(aVBO, aData, size);
+}
+
+
+////
+
+
+template <class T_object, class T_member>
+std::enable_if_t<std::is_standard_layout<T_object>::value, std::size_t>
+offset_of(const T_object * aValidObject, T_member T_object::* aMember)
+{
+    return size_t(&(aValidObject->*aMember)) - size_t(aValidObject);
+}
+
+template <class T_element, class T_member>
+AttributeCompact<T_element, T_member> attr(GLuint aIndex, T_member T_element::*aMember)
+{
+    return { {aIndex}, aMember};
+}
+
+template <class T_element, class... VT_members>
+VertexBufferObject makeLoadedVertexBuffer(const std::vector<T_element> & aRange,
+                                          AttributeCompact<T_element, VT_members>... vaAttributes)
+{
+    /// \todo Early return on empty range (we use the first element in deduction)
+
+    /// \todo Provide a way to customise shader access (float, normalize, ...)
+    std::initializer_list<AttributeDescription> attributes = {
+        AttributeDescription {
+            {vaAttributes.mIndex},
+            combined_extents<typename decltype(vaAttributes)::member_type>::value,
+            offset_of(&aRange.front(), vaAttributes.mMember),
+            MappedGL<scalar_t<typename decltype(vaAttributes)::member_type>>::enumerator
+        }...
+    };
+
+    //for (auto attr : attributes)
+    //{
+    //    std::cout << "OFFI: " << attr.mIndex << " " << attr.mDimension << " " << attr.mOffset << std::endl;
+    //}
+    return makeLoadedVertexBuffer<T_element>({attributes}, aRange.begin(), aRange.end());
 }
 
 } // namespace ad

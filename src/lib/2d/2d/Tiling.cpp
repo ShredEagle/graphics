@@ -143,7 +143,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     specification.mVertexBuffers.push_back(
         makeLoadedVertexBuffer({
                 //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
-                {3, 4, 0, MappedGL<GLint>::enumerator, ShaderAccess::Integer}
+                { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
             },
             0,
             0,

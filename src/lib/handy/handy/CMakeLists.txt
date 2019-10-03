@@ -1,6 +1,7 @@
 project(handy)
 
 set(${PROJECT_NAME}_HEADERS
+    array_utils.h
     Guard.h
     random.h
     tuple_utils.h

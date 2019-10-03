@@ -1,5 +1,8 @@
 #pragma once
 
+
+#include <resource/PathProvider.h>
+
 #include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
@@ -111,9 +114,9 @@ Scene setupScene()
     VertexSpecification specification;
     glBindVertexArray(specification.mVertexArray);
 
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(0, gVerticesPositions));
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(1, gVerticesColors));
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(2, gVerticesUVs));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(0, range(gVerticesPositions)));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(1, range(gVerticesColors)));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(2, range(gVerticesUVs)));
 
     ////
     //// the literal texture defined above
@@ -125,9 +128,8 @@ Scene setupScene()
     //
     // From file image texture
     //
-    /// \TODO ensure correct lifetime of the image data vis-à-vis async OpenGL loading to texture
-    //static const Image ring("/tmp/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
-    static const Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+    static const Image ring(
+        pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png"));
 
     ////
     //// Whole image
