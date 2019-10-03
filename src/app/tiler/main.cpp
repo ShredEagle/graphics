@@ -96,13 +96,13 @@ int main(void)
         ad::enableDebugOutput();
     }
 
-    ad::Scene scene = ad::setupScene(engine);
+    std::unique_ptr<ad::Scene> scene = ad::setupScene(engine);
     ad::Timer timer{glfwGetTime(), 0.};
 
     while(!glfwWindowShouldClose(window))
     {
-        ad::updateScene(scene, engine, timer);
-        ad::renderScene(scene, engine);
+        ad::updateScene(*scene, engine, timer);
+        ad::renderScene(*scene, engine);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

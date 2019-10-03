@@ -57,6 +57,10 @@ std::vector<LoadedSprite> loadSheet(T & aDrawer, const path & aFile)
 
 struct Scroller
 {
+    // Non-copiable, nor movable, because it captures `this` in a lambda registered externally
+    Scroller(const Scroller &) = delete;
+    Scroller & operator=(const Scroller &) = delete;
+
     Scroller(const Size2<int> aTileSize, path aTilesheet, Engine & aEngine) :
             mTiling(aTileSize,
                     aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{1, 1},
@@ -83,8 +87,8 @@ struct Scroller
         mTiling.setPosition(mTiling.getPosition() + aDisplacement);
 
         Rectangle<GLfloat> grid(mTiling.getGridRectangle());
-        // Integral conversion
-        GLint xDiff = grid.diagonalCorner().x() - aEngine.getWindowSize().width();
+        GLint xDiff = static_cast<GLint>(grid.diagonalCorner().x())
+                      - aEngine.getWindowSize().width();
 
         if (xDiff < 0)
         {
@@ -129,6 +133,10 @@ private:
 
 struct RingDrop
 {
+    // Non-copiable, nor movable, because it captures `this` in a lambda registered externally
+    RingDrop(const RingDrop &) = delete;
+    RingDrop & operator=(const RingDrop &) = delete;
+
     RingDrop(path aSpriteSheet, Engine & aEngine) :
              mSpriting(aEngine.getWindowSize()),
              mFrames(loadSheet(mSpriting, aSpriteSheet))
@@ -158,13 +166,14 @@ struct Scene {
 
 
 
-inline Scene setupScene(Engine & aEngine)
+/// \note Scene is not copiable nor movable, hence return by pointer
+inline std::unique_ptr<Scene> setupScene(Engine & aEngine)
 {
     const Size2<int> tileSize{32, 32};
-    Scene result{
+    std::unique_ptr<Scene> result(new Scene{
         RingDrop{pathFor("tiles.bmp.meta"), aEngine},
         Scroller{tileSize, pathFor("tiles.bmp.meta"), aEngine}
-    };
+    });
 
     /*
      * Sprites
