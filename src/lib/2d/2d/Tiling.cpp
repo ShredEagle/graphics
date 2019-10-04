@@ -126,16 +126,14 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     // Per-vertex attributes
     std::vector<Vertex> quad = makeQuad(cellOffset, aGridDefinition);
     specification.mVertexBuffers.emplace_back(
-        makeLoadedVertexBuffer<Vertex>(gVertexDescription, quad.cbegin(), quad.cend()));
+        makeLoadedVertexBuffer(gVertexDescription, range(quad.cbegin(), quad.cend())));
+        // Could also be
+        //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
 
     // Per-instance attributes
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer<Position2<GLint>>({
-                {2, 2, 0, MappedGL<GLint>::enumerator}
-            },
-            positions.cbegin(),
-            positions.cend()));
+        makeLoadedVertexBuffer({ {2, 2, 0, MappedGL<GLint>::enumerator} }, ad::range(positions)));
 
     glVertexAttribDivisor(2, 1);
 
@@ -229,7 +227,7 @@ void Tiling::render(const Engine & aEngine) const
     //
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
                     mTiles.data(),
-                    getStoredSize(mTiles));
+                    static_cast<GLsizei>(getStoredSize(mTiles)));
 
     //
     // Draw

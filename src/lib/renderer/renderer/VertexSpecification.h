@@ -50,6 +50,7 @@ struct [[nodiscard]] VertexSpecification
 };
 
 
+/// \brief Describe the attribute access from the shader (layout id, value type, normalization)
 struct Attribute
 {
     enum class Access
@@ -73,6 +74,7 @@ struct Attribute
     bool mNormalize{false};
 };
 
+/// \brief Attribute and offset of the each entry inside T_element (for interleaved attributes)
 template <class T_element, class T_member>
 struct AttributeCompact : public Attribute
 {
@@ -81,6 +83,17 @@ struct AttributeCompact : public Attribute
     T_member T_element::* mMember;
 };
 
+namespace vertex {
+
+    template <class T_element, class T_member>
+    AttributeCompact<T_element, T_member> attr(Attribute aAttribute, T_member T_element::*aMember)
+    {
+        return {aAttribute, aMember};
+    }
+
+} // namespace vertex
+
+/// \brief The complete description of an attribute expected by OpenGL
 struct AttributeDescription : public Attribute
 {
     GLuint mDimension;
@@ -88,96 +101,101 @@ struct AttributeDescription : public Attribute
     GLenum mDataType;
 };
 
-inline std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription)
-{
-    return aOut << "Index " << aDescription.mIndex << " | "
-                << "Dimension " << aDescription.mDimension << " | "
-                << "Offset " << aDescription.mOffset << " | "
-                << "Data " << aDescription.mDataType
-                ;
-}
+std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
 
 
-/// \todo To the impl file?
-inline VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
-                                                 GLsizei aStride,
-                                                 size_t aSize,
-                                                 const GLvoid * aData)
-{
-    /// \todo some static assert on the PODness of the element type
-
-    VertexBufferObject vbo;
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, aSize, aData, GL_STATIC_DRAW);
-
-    for (const auto & attribute : aAttributes)
-    {
-        switch(attribute.mTypeInShader)
-        {
-            case Attribute::Access::Float :
-            {
-                glVertexAttribPointer(attribute.mIndex,
-                                      attribute.mDimension,
-                                      attribute.mDataType,
-                                      attribute.mNormalize,
-                                      aStride,
-                                      reinterpret_cast<const void*>(attribute.mOffset));
-                break;
-            }
-            case Attribute::Access::Integer :
-            {
-                glVertexAttribIPointer(attribute.mIndex,
-                                       attribute.mDimension,
-                                       attribute.mDataType,
-                                       aStride,
-                                       reinterpret_cast<const void*>(attribute.mOffset));
-                break;
-            }
-        }
-
-        glEnableVertexAttribArray(attribute.mIndex);
-    }
-
-    return vbo;
-}
-
-// Sadly C++ 20, but it would handle nicely arrays and vectors
-//template <class T_contiguousIterator>
-//std::enable_if<std::iterator_traits<T_contiguousIterator>::iterator_category == ...>
-template <class T_element>
+/// \brief Create a VertexBufferObject with provided attributes, load it with data.
+///
+/// This is the lowest level overload, with explicit attribute description and raw data pointer.
+/// Other overloads end-up calling it.
 VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
-                                          typename std::vector<T_element>::const_iterator aFirst,
-                                          typename std::vector<T_element>::const_iterator aLast)
+                                          GLsizei aStride,
+                                          size_t aSize,
+                                          const GLvoid * aData);
+
+/// \brief Overload accepting a range instead of a raw pointer.
+template <class T_iterator, class T_sentinel>
+VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
+                                          const Range<T_iterator, T_sentinel> & aRange)
 {
+    typedef typename Range<T_iterator, T_sentinel>::value_type value_type;
+
     return makeLoadedVertexBuffer(std::move(aAttributes),
-                                  sizeof(T_element),
-                                  sizeof(T_element) * std::distance(aFirst, aLast),
-                                  &(*aFirst));
+                                  sizeof(value_type),
+                                  storedSize(aRange),
+                                  data(aRange));
 }
 
 
-template <class T_rangeElement>
-VertexBufferObject makeLoadedVertexBuffer(Attribute aAttribute, Range<T_rangeElement> aRange)
+/// \brief Overload for a buffer loaded with the data for a **single** attribute.
+template <class T_iterator, class T_sentinel>
+VertexBufferObject makeLoadedVertexBuffer(Attribute aAttribute,
+                                          const Range<T_iterator, T_sentinel>  & aRange)
 {
+    typedef typename Range<T_iterator, T_sentinel>::value_type value_type;
+
     AttributeDescription desc{
         aAttribute,
-        aRange.dimension(),
+        combined_extents_v<value_type>,
         0,
-        MappedGL<typename decltype(aRange)::scalar_type>::enumerator,
+        MappedGL<scalar_t<value_type>>::enumerator,
     };
 
     return makeLoadedVertexBuffer({desc},
-                                  sizeof(typename decltype(aRange)::element_type),
-                                  aRange.getStoredSize(),
-                                  aRange.data());
+                                  sizeof(value_type),
+                                  storedSize(aRange),
+                                  data(aRange));
+}
+
+template <class T_object, class T_member>
+std::enable_if_t<std::is_standard_layout<T_object>::value, std::size_t>
+offset_of(const T_object * aValidObject, T_member T_object::* aMember)
+{
+    return size_t(&(aValidObject->*aMember)) - size_t(aValidObject);
+}
+
+/// \brief High level overload, accepting a range as data source
+///        and attributes in their compact form.
+template <class T_iterator, class T_sentinel, class... VT_members>
+VertexBufferObject makeLoadedVertexBuffer(
+        const Range<T_iterator, T_sentinel>  & aRange,
+        AttributeCompact<typename Range<T_iterator, T_sentinel>::value_type, VT_members>... vaAttributes)
+{
+    // Implementer's note:
+    //   Ideally, the AttributeCompact would not be templated on the T_member type,
+    //   and it would directly store the offset instead.
+    //   Yet, this offset computation currently requires an existing instance of T_element
+    //   (custom implementation, due to the limitations of offsetof macro,
+    //    see: http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0908r0.html)
+    //   This instance is taken in the provided range, not available at AttributeCompact construction
+    //   We are stuck with heterogeneous AttributeCompact types at the moment
+
+    // Because of the need to access first element in the range
+    if (size(aRange) == 0)
+    {
+        throw std::runtime_error(std::string("Unable to invoke ") + __func__ + " on an empty range");
+    }
+
+    std::initializer_list<AttributeDescription> attributes = {
+        AttributeDescription {
+            vaAttributes,
+            combined_extents<typename decltype(vaAttributes)::member_type>::value,
+            offset_of(&aRange.current(), vaAttributes.mMember),
+            MappedGL<scalar_t<typename decltype(vaAttributes)::member_type>>::enumerator
+        }...
+    };
+
+    return makeLoadedVertexBuffer({attributes}, aRange);
 }
 
 
-/// \see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
+/***
+ * Buffer re-specification
+ *
+ * see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
+ ***/
 
-
-template <class T_data>
-void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData, GLsizei aSize)
+inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aData, GLsizei aSize)
 {
     glBindBuffer(GL_ARRAY_BUFFER, aVBO);
 
@@ -189,18 +207,8 @@ void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData, GLsi
 }
 
 
-template <class T_iterator>
-void respecifyBuffer(const VertexBufferObject & aVBO, T_iterator aFirst, T_iterator aLast)
-{
-    respecifyBuffer(aVBO,
-                    &(*aFirst),
-                    sizeof(typename T_iterator::value_type)*std::distance(aFirst, aLast));
-}
-
-
 /// \brief Respecify the buffer with the same size (allowing potential optimizations)
-template <class T_data>
-void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData)
+inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aData)
 {
     GLint size;
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
@@ -208,44 +216,13 @@ void respecifyBuffer(const VertexBufferObject & aVBO, const T_data & aData)
     respecifyBuffer(aVBO, aData, size);
 }
 
-
-////
-
-
-template <class T_object, class T_member>
-std::enable_if_t<std::is_standard_layout<T_object>::value, std::size_t>
-offset_of(const T_object * aValidObject, T_member T_object::* aMember)
+template <class T_iterator>
+void respecifyBuffer(const VertexBufferObject & aVBO, T_iterator aFirst, T_iterator aLast)
 {
-    return size_t(&(aValidObject->*aMember)) - size_t(aValidObject);
-}
-
-template <class T_element, class T_member>
-AttributeCompact<T_element, T_member> attr(GLuint aIndex, T_member T_element::*aMember)
-{
-    return { {aIndex}, aMember};
-}
-
-template <class T_element, class... VT_members>
-VertexBufferObject makeLoadedVertexBuffer(const std::vector<T_element> & aRange,
-                                          AttributeCompact<T_element, VT_members>... vaAttributes)
-{
-    /// \todo Early return on empty range (we use the first element in deduction)
-
-    /// \todo Provide a way to customise shader access (float, normalize, ...)
-    std::initializer_list<AttributeDescription> attributes = {
-        AttributeDescription {
-            {vaAttributes.mIndex},
-            combined_extents<typename decltype(vaAttributes)::member_type>::value,
-            offset_of(&aRange.front(), vaAttributes.mMember),
-            MappedGL<scalar_t<typename decltype(vaAttributes)::member_type>>::enumerator
-        }...
-    };
-
-    //for (auto attr : attributes)
-    //{
-    //    std::cout << "OFFI: " << attr.mIndex << " " << attr.mDimension << " " << attr.mOffset << std::endl;
-    //}
-    return makeLoadedVertexBuffer<T_element>({attributes}, aRange.begin(), aRange.end());
+    respecifyBuffer(aVBO,
+                    &(*aFirst),
+                    (GLsizei)(sizeof(typename T_iterator::value_type)
+                              *std::distance(aFirst, aLast)));
 }
 
 } // namespace ad

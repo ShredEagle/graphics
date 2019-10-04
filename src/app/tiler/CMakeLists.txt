@@ -2,7 +2,6 @@ project(tiler)
 
 set(${PROJECT_NAME}_HEADERS
     scene.h
-    Terrain.h
 )
 
 set(${PROJECT_NAME}_SOURCES

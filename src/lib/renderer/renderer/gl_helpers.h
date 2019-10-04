@@ -1,5 +1,7 @@
 #pragma once
 
+#include <glad/glad.h>
+
 namespace ad {
 
     // Sadly, the glGen* symbols imported by the GL loader

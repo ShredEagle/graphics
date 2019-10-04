@@ -169,12 +169,12 @@ Scene setupScene()
     }
 
     scene.mDrawContext.mVertexSpecification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer<Ring>(
+        makeLoadedVertexBuffer(
             {
                 {2, 2, offsetof(Ring, mPosition),       MappedGL<GLfloat>::enumerator},
                 {3, 1, offsetof(Ring, mRotationsPerSec),MappedGL<GLfloat>::enumerator},
             },
-            scene.mRings.cbegin(), scene.mRings.cend()));
+            range(scene.mRings)));
 
     glVertexAttribDivisor(2, 1);
     glVertexAttribDivisor(3, 1);

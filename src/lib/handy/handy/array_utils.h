@@ -15,6 +15,7 @@ namespace detail
                                       std::extent<T, N-1>::value * combined_extents_impl<T, N-1>::value>
     {};
 
+    /// \todo Fix for ad::math types (for which it will wrongly return 1)
     template <class T>
     struct combined_extents_impl<T, 0> : public std::integral_constant<std::size_t, 1>
     {};
@@ -31,8 +32,12 @@ template <class T>
 static constexpr std::size_t combined_extents_v = combined_extents<T>::value;
 
 
-template <class T>
+template <class T, typename = void>
 struct scalar
+{};
+
+template <class T>
+struct scalar<T, std::enable_if_t<std::is_arithmetic<T>::value>>
 {
     typedef T type;
 };
@@ -48,9 +53,6 @@ struct scalar<T[N]>
 {
     typedef typename scalar<T>::type type;
 };
-
-//template <class T>
-//using scalar_t = std::remove_reference_t<decltype(*std::begin(std::declval<T&>()))>;
 
 template <class T>
 using scalar_t = typename scalar<T>::type;
