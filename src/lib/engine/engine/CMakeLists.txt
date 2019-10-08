@@ -1,25 +1,23 @@
-project(renderer)
+project(engine)
 
 set(${PROJECT_NAME}_HEADERS
     commons.h
-    Drawing.h
-    Error.h
-    gl_helpers.h
-    Image.h
-    MappedGL.h
-    Range.h
-    Shading.h
-    Texture.h
-    VertexSpecification.h
+    Engine.h
+    Sprite.h
+    Spriting.h
+    Tiling.h
+    Timer.h
+    Vertex.h
 
-    stb_image.h
+    dataformat/tiles.h
 )
 
 set(${PROJECT_NAME}_SOURCES
-    Shading.cpp
-    VertexSpecification.cpp
+    Engine.cpp
+    Spriting.cpp
+    Tiling.cpp
 
-    stb_image.c
+    dataformat/tiles.cpp
 )
 
 add_library(${PROJECT_NAME}
@@ -27,7 +25,7 @@ add_library(${PROJECT_NAME}
     ${${PROJECT_NAME}_HEADERS}
 )
 
-cmc_target_current_include_directory(${PROJECT_NAME})
+cmc_target_current_include_directory(${PROJECT_NAME}) 
 
 
 ##
@@ -36,13 +34,17 @@ cmc_target_current_include_directory(${PROJECT_NAME})
 
 cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
-set(_internal_dependencies_public handy)
+set(_internal_dependencies_private handy resource)
+set(_internal_dependencies_public  renderer) # TODO: make private?
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         ad::math
-        glad::glad
-        ${_internal_dependencies_public})
+        ${_internal_dependencies_public}
+    PRIVATE 
+        nlohmann_json::nlohmann_json
+        ${_internal_dependencies_private}
+)
 
 
 ##
@@ -57,6 +59,7 @@ cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
                          FILES ${${PROJECT_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
 cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
-                          DEPENDS_COMPONENTS ${_internal_dependencies_public}
+                          DEPENDS_COMPONENTS ${_internal_dependencies_private} 
+                                             ${_internal_dependencies_public}
                           FIND_FILE CMakeFinds.cmake.in
                           NAMESPACE ad)

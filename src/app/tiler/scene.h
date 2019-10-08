@@ -3,10 +3,11 @@
 
 #include <resource/PathProvider.h>
 
-#include <2d/Engine.h>
-#include <2d/Spriting.h>
-#include <2d/Tiling.h>
-#include <2d/dataformat/tiles.h>
+#include <engine/Engine.h>
+#include <engine/Spriting.h>
+#include <engine/Tiling.h>
+#include <engine/Timer.h>
+#include <engine/dataformat/tiles.h>
 
 #include <handy/random.h>
 
@@ -17,18 +18,6 @@
 
 namespace ad
 {
-
-struct Timer
-{
-    void mark(double aMonotonic)
-    {
-        mDelta = aMonotonic - mTime;
-        mTime = aMonotonic;
-    }
-
-    double mTime;
-    double mDelta;
-};
 
 class SpriteArea_const_iter : public boost::iterator_adaptor<SpriteArea_const_iter,
                                                              std::vector<Sprite>::const_iterator,

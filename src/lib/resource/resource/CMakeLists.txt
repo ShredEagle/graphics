@@ -17,9 +17,24 @@ add_custom_target(${PROJECT_NAME}_IDE
         ${${PROJECT_NAME}_HEADERS}
 )
 
+cmc_target_current_include_directory(${PROJECT_NAME})
+
 target_include_directories(${PROJECT_NAME}
     INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # For generated header
-        $<INSTALL_INTERFACE:include/>
 )
+
+
+##
+## Install
+##
+
+install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets)
+
+include(cmc-install)
+# Install the header files
+cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
+                         FILES ${${PROJECT_NAME}_HEADERS})
+# Prepare CMake package in both build and install trees
+cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
+                          NAMESPACE ad)

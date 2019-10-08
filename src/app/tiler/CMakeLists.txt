@@ -10,7 +10,6 @@ set(${PROJECT_NAME}_SOURCES
 
 find_package(Boost 1.71)
 find_package(glfw3 3.3 CONFIG REQUIRED)
-find_package(glad CONFIG REQUIRED)
 
 add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}
@@ -18,9 +17,9 @@ add_executable(${PROJECT_NAME}
 ) 
 
 target_link_libraries(${PROJECT_NAME}
-	PRIVATE
+    PRIVATE
         glfw
-        2d
+        engine
         resource
         Boost::boost # Target for header-only dependencies
 )

@@ -1,0 +1,2 @@
+@find_package@(glad CONFIG @REQUIRED@)
+@find_package@(math CONFIG @REQUIRED@)

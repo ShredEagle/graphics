@@ -1,0 +1,3 @@
+@find_package@(math CONFIG @REQUIRED@)
+@find_package@(nlohmann_json CONFIG 3.7.0 @REQUIRED@)
+
