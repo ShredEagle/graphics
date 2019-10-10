@@ -64,7 +64,7 @@ inline void compileShader(const Shader & aShader, const char * aSource)
                     glGetShaderInfoLog);
 }
 
-Program makeLinkedProgram(std::vector<std::pair<const GLenum/*stage*/,
-                                                const char * /*source*/>> aShaders);
+Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
+                                                          const char * /*source*/>> aShaders);
 
 } // namespace ad

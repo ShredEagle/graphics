@@ -10,7 +10,8 @@ Shader::Shader(GLenum aStage, const char * aSource) : Shader(aStage)
 }
 
 
-Program makeLinkedProgram(std::vector<std::pair<const GLenum/*stage*/, const char * /*source*/>> aShaders)
+Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
+                                                          const char * /*source*/>> aShaders)
 {
     Program program;
 

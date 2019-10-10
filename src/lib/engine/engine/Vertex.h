@@ -2,6 +2,7 @@
 
 #include "commons.h"
 
+#include <renderer/commons.h>
 #include <renderer/VertexSpecification.h>
 
 namespace ad {

@@ -216,13 +216,10 @@ inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aDat
     respecifyBuffer(aVBO, aData, size);
 }
 
-template <class T_iterator>
-void respecifyBuffer(const VertexBufferObject & aVBO, T_iterator aFirst, T_iterator aLast)
+template <class T_iterator, class T_sentinel>
+void respecifyBuffer(const VertexBufferObject & aVBO, Range<T_iterator, T_sentinel> aRange)
 {
-    respecifyBuffer(aVBO,
-                    &(*aFirst),
-                    (GLsizei)(sizeof(typename T_iterator::value_type)
-                              *std::distance(aFirst, aLast)));
+    respecifyBuffer(aVBO, data(aRange), static_cast<GLsizei>(storedSize(aRange)));
 }
 
 } // namespace ad

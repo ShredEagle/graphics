@@ -143,7 +143,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
                 //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
                 { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
             },
-            0,
+            sizeof(Tiling::tile_type),
             0,
             nullptr));
 
@@ -182,10 +182,10 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     Vec2<int> cellOffset(aCellSize);
 
     std::vector<Vertex> quad = makeQuad(cellOffset, aGridDefinition);
-    respecifyBuffer(buffers(mDrawContext).at(0), quad.begin(), quad.end());
+    respecifyBuffer(buffers(mDrawContext).at(0), range(quad));
 
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
-    respecifyBuffer(buffers(mDrawContext).at(1), positions.begin(), positions.end());
+    respecifyBuffer(buffers(mDrawContext).at(1), range(positions));
 
     mTiles.resize(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}});
     mTileSize = aCellSize;

@@ -16,6 +16,7 @@ class Tiling
     typedef std::vector<LoadedSprite> instance_data;
 
 public:
+    typedef instance_data::value_type tile_type;
     typedef instance_data::iterator iterator;
     typedef GLfloat position_t;
 
