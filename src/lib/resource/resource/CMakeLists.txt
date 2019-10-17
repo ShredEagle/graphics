@@ -6,7 +6,7 @@ configure_file(build_config.h.in build_config.h @ONLY)
 
 set(${PROJECT_NAME}_HEADERS
     PathProvider.h
-    ${CMAKE_CURRENT_BINARY_DIR}/build_config.h
+    #${CMAKE_CURRENT_BINARY_DIR}/build_config.h
 )
 
 add_library(${PROJECT_NAME} INTERFACE)

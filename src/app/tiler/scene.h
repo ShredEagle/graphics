@@ -76,7 +76,7 @@ struct Scroller
         mTiling.setPosition(mTiling.getPosition() + aDisplacement);
 
         Rectangle<GLfloat> grid(mTiling.getGridRectangle());
-        GLint xDiff = static_cast<GLint>(grid.diagonalCorner().x())
+        GLint xDiff = static_cast<GLint>(grid.topRight().x())
                       - aEngine.getWindowSize().width();
 
         if (xDiff < 0)
