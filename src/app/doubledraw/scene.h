@@ -25,38 +25,38 @@ struct Vertex
 constexpr size_t gVerticesCount{4};
 
 Vertex gVerticesEggman[gVerticesCount] = {
-    {
+    Vertex{
         {-1.0f, .0f, 0.0f, 1.0f},
         {0.0f, 0.0f},
     },
-    {
+    Vertex{
         {-1.0f,  1.0f, 0.0f, 1.0f},
         {0.0f, 1.0f},
     },
-    {
+    Vertex{
         { .0f, .0f, 0.0f, 1.0f},
         {1.0f, 0.0f},
     },
-    {
+    Vertex{
         { .0f,  1.0f, 0.0f, 1.0f},
         {1.0f, 1.0f},
     },
 };
 
 Vertex gVerticesRing[gVerticesCount] = {
-    {
+    Vertex{
         {-.3f, -1.0f, 0.0f, 1.0f},
         {0.0f, 0.0f},
     },
-    {
+    Vertex{
         {-.3f,  .3f, 0.0f, 1.0f},
         {0.0f, 1.0f},
     },
-    {
+    Vertex{
         { 1.0f, -1.0f, 0.0f, 1.0f},
         {1.0f, 0.0f},
     },
-    {
+    Vertex{
         { 1.0f,  .3f, 0.0f, 1.0f},
         {1.0f, 1.0f},
     },

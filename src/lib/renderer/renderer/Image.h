@@ -6,6 +6,7 @@
 
 #include <handy/Guard.h>
 
+#include <memory>
 #include <vector>
 
 namespace ad {

@@ -31,19 +31,19 @@ struct Vertex
 constexpr size_t gVerticesCount{4};
 
 Vertex gVerticesQuad[gVerticesCount] = {
-    {
+    Vertex{
         {-1.0f, -1.0f, 0.0f, 1.0f},
         {0.0f, 0.0f},
     },
-    {
+    Vertex{
         {-1.0f,  1.0f, 0.0f, 1.0f},
         {0.0f, 1.0f},
     },
-    {
+    Vertex{
         { 1.0f, -1.0f, 0.0f, 1.0f},
         {1.0f, 0.0f},
     },
-    {
+    Vertex{
         { 1.0f,  1.0f, 0.0f, 1.0f},
         {1.0f, 1.0f},
     },

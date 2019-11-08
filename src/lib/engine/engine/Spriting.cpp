@@ -12,23 +12,21 @@ namespace ad {
 
 
 // Note: texture_2D_rect indices are texel based (not normalized)
-// the UV value should be computed from shader and frame size
-// 10 is a quick fix
 constexpr size_t gVerticesCount{4};
 Vertex gVerticesQuad[gVerticesCount] = {
-    {
+    Vertex{
         {0.0f, 0.0f},
         {0, 0},
     },
-    {
+    Vertex{
         {0.0f,  1.0f},
         {0, 1},
     },
-    {
+    Vertex{
         { 1.0f, 0.0f},
         {1, 0},
     },
-    {
+    Vertex{
         { 1.0f,  1.0f},
         {1, 1},
     },
