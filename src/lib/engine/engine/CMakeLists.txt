@@ -1,6 +1,7 @@
 project(engine)
 
 set(${PROJECT_NAME}_HEADERS
+    Application.h
     commons.h
     Engine.h
     Sprite.h
@@ -40,6 +41,8 @@ set(_internal_dependencies_public  renderer) # TODO: make private?
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         ad::math
+        glad::glad
+        glfw
         ${_internal_dependencies_public}
     PRIVATE 
         nlohmann_json::nlohmann_json

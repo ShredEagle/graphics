@@ -82,7 +82,6 @@ private:
 };
 
 template <class T>
-ResourceGuard<T> guard(T aResource, typename ResourceGuard<T>::release_fun aReleaser)
-{
+ResourceGuard<T> guard(T aResource, typename ResourceGuard<T>::release_fun aReleaser) {
     return ResourceGuard<T>(std::move(aResource), std::move(aReleaser));
 }
