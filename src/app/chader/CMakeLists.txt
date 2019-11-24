@@ -22,4 +22,5 @@ target_link_libraries(${PROJECT_NAME}
         glad::glad
         engine
         renderer
+        gsl
 )

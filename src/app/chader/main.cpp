@@ -15,11 +15,12 @@ int main(int argc, char ** argv)
     ad::Timer timer{glfwGetTime(), 0.};
 
     Chader chad;
+    chad.loadProgram(argv[1], argv[2]);
 
     while(application.nextFrame())
     {
         //ad::updateScene(*scene, engine, timer);
-        //ad::renderScene(*scene, engine);
+        chad.render();
 
         timer.mark(glfwGetTime());
     }

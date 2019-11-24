@@ -1,7 +1,5 @@
 #include "Chader.h"
 
-#include <renderer/commons.h>
-
 #include <fstream>
 #include <sstream>
 
@@ -27,6 +25,16 @@ std::array<VertexChad, 4> gVerticesChad = {
     },
 };
 
+constexpr std::initializer_list<AttributeDescription> gVertexDescription = {
+    { 0, 2, offsetof(VertexChad, mPosition), MappedGL<GLfloat>::enumerator},
+};
+
+
+Chader::Chader() :
+    mVertexData(mDrawer.addVertexBuffer(gVertexDescription,
+                                        gsl::span<VertexChad>{gVerticesChad}))
+{}
+
 std::string readFile(const path & aPath)
 {
     std::stringstream buffer;
@@ -43,9 +51,23 @@ Program makeProgram(const path & aVertexShader, const path & aFragmentShader)
 }
 
 
-void Chader::loadProgram(const std::filesystem::path & aVertexShader, const std::filesystem::path & aFragmentShader)
+void Chader::loadProgram(const path & aVertexShader, const path & aFragmentShader)
 {
-    mDrawer.mProgram = makeProgram(aVertexShader, aFragmentShader);
+    try
+    {
+        mDrawer.mProgram = makeProgram(aVertexShader, aFragmentShader);
+        std::cout << "Successfully loaded program" << std::endl;
+    }
+    catch(const ShaderCompilationError & e)
+    {
+        std::cerr << "Error in the provied shaders: " << e.getErrorLog() << std::endl;
+        throw;
+    }
+}
+
+void Chader::render() const
+{
+    mDrawer.render();
 }
 
 } // namespace ad

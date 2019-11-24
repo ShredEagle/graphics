@@ -9,6 +9,27 @@ Shader::Shader(GLenum aStage, const char * aSource) : Shader(aStage)
     compileShader(*this, aSource);
 }
 
+void handleGlslError(GLuint objectId,
+                     GLenum aStatusEnumerator,
+                     std::function<void(GLuint, GLenum, GLint*)> statusGetter,
+                     std::function<void(GLuint, GLsizei, GLsizei*, GLchar*)> infoLogGetter)
+{
+    GLint status;
+    statusGetter(objectId, aStatusEnumerator, &status);
+    if(status == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        statusGetter(objectId, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> infoLog(maxLength);
+        infoLogGetter(objectId, maxLength, &maxLength, &infoLog[0]);
+
+        std::string errorLog(infoLog.begin(), infoLog.end());
+
+        throw ShaderCompilationError("GLSL error", errorLog);
+    }
+}
+
 
 Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
                                                           const char * /*source*/>> aShaders)

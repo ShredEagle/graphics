@@ -31,27 +31,28 @@ struct [[nodiscard]] Program : public ResourceGuard<GLuint>
     {}
 };
 
-inline void handleGlslError(GLuint objectId,
+void handleGlslError(GLuint objectId,
                      GLenum aStatusEnumerator,
                      std::function<void(GLuint, GLenum, GLint*)> statusGetter,
-                     std::function<void(GLuint, GLsizei, GLsizei*, GLchar*)> infoLogGetter)
+                     std::function<void(GLuint, GLsizei, GLsizei*, GLchar*)> infoLogGetter);
+
+class ShaderCompilationError : public std::runtime_error
 {
-    GLint status;
-    statusGetter(objectId, aStatusEnumerator, &status);
-    if(status == GL_FALSE)
+public:
+
+    ShaderCompilationError(const std::string & aWhat, const std::string & aErrorLog) :
+        std::runtime_error::runtime_error(aWhat + " Log: " + aErrorLog),
+        mErrorLog(aErrorLog)
+    {}
+
+    const std::string & getErrorLog() const
     {
-        GLint maxLength = 0;
-        statusGetter(objectId, GL_INFO_LOG_LENGTH, &maxLength);
-
-        std::vector<GLchar> infoLog(maxLength);
-        infoLogGetter(objectId, maxLength, &maxLength, &infoLog[0]);
-
-        std::string errorLog(infoLog.begin(), infoLog.end());
-        std::cerr << "GLSL error[" << maxLength << "]: " << errorLog;
-
-        throw std::runtime_error("GLSL error");
+        return mErrorLog;
     }
-}
+
+private:
+    std::string mErrorLog;
+};
 
 inline void compileShader(const Shader & aShader, const char * aSource)
 {
