@@ -2,11 +2,14 @@ project(chader)
 
 set(${PROJECT_NAME}_HEADERS
     Chader.h
+    FileWatcher.h
     GenericDrawer.h
+    Scene.h
 )
 
 set(${PROJECT_NAME}_SOURCES
     Chader.cpp
+    FileWatcher.cpp
     main.cpp
 )
 

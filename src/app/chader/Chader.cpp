@@ -61,7 +61,6 @@ void Chader::loadProgram(const path & aVertexShader, const path & aFragmentShade
     catch(const ShaderCompilationError & e)
     {
         std::cerr << "Error in the provied shaders: " << e.getErrorLog() << std::endl;
-        throw;
     }
 }
 

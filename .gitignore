@@ -3,6 +3,9 @@ build*/
 # Vim
 *.swp
 
+# Clang
+compile_commands.json
+
 # Prerequisites
 *.d
 

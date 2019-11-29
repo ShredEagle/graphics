@@ -1,4 +1,4 @@
-#include "Chader.h"
+#include "Scene.h"
 
 #include <engine/Application.h>
 #include <engine/Engine.h>
@@ -7,21 +7,17 @@
 
 using namespace ad;
 
-int main(int argc, char ** argv)
+int main(int argc, const char * argv[])
 {
     Application application("Chader", 800, 600);
 
-    //std::unique_ptr<ad::Scene> scene = ad::setupScene(engine);
     ad::Timer timer{glfwGetTime(), 0.};
 
-    Chader chad;
-    chad.loadProgram(argv[1], argv[2]);
+    Scene scene(argv);
 
     while(application.nextFrame())
     {
-        //ad::updateScene(*scene, engine, timer);
-        chad.render();
-
+        scene.step();
         timer.mark(glfwGetTime());
     }
 

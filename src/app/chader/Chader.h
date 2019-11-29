@@ -13,6 +13,7 @@ class Chader
 public:
     Chader();
     void loadProgram(const path & aVertexShader, const path & aFragmentShader);
+
     void render() const;
 
 private:

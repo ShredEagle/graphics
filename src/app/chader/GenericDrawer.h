@@ -23,7 +23,7 @@ struct GenericDrawer
     {
         if (mVertexCount)
         {
-            assert(mVertices.size() == mVertexCount);
+            assert(static_cast<std::size_t>(mVertices.size()) == mVertexCount);
         }
         else
         {
