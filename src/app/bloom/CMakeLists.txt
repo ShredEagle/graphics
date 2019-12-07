@@ -3,6 +3,7 @@ project(bloom)
 set(${PROJECT_NAME}_HEADERS
     Scene.h
     shaders.h
+    vertices.h
 )
 
 set(${PROJECT_NAME}_SOURCES

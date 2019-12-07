@@ -1,6 +1,7 @@
 #pragma once
 
 #include "shaders.h"
+#include "vertices.h"
 
 #include <engine/Engine.h>
 
@@ -12,30 +13,6 @@
 #include <gsl/span>
 
 namespace ad {
-
-struct VertexBloom
-{
-    Vec2<GLfloat> mPosition;
-};
-
-std::array<VertexBloom, 4> gVerticesBloom = {
-    VertexBloom{
-        {-1.0f, -1.0f},
-    },
-    VertexBloom{
-        {-1.0f,  1.0f},
-    },
-    VertexBloom{
-        { 1.0f, -1.0f},
-    },
-    VertexBloom{
-        { 1.0f,  1.0f},
-    },
-};
-
-constexpr std::initializer_list<AttributeDescription> gVertexDescription = {
-    { 0, 2, offsetof(VertexBloom, mPosition), MappedGL<GLfloat>::enumerator},
-};
 
 template <class T_vertex>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
@@ -60,11 +37,25 @@ struct FirstRender
 
 inline FirstRender::FirstRender() :
     mVAO(),
-    mVertexData(loadVertexBuffer(mVAO, gVertexDescription, gsl::span<VertexBloom>{gVerticesBloom})),
+    mVertexData(loadVertexBuffer(mVAO, gVertexSceneDescription, gsl::span<VertexScene>{gVerticesScene})),
     mProgram(makeLinkedProgram({
         {GL_VERTEX_SHADER, gInitialVertex},
         {GL_FRAGMENT_SHADER, gInitialFragment}}))
 {}
+
+struct ScreenQuad
+{
+    ScreenQuad();
+    VertexSpecification mVertexSpec;
+};
+
+inline ScreenQuad::ScreenQuad()
+{
+    mVertexSpec.mVertexBuffers.push_back(
+        loadVertexBuffer(mVertexSpec.mVertexArray,
+                         gVertexScreenDescription,
+                         gsl::span<VertexScreenQuad>{gVerticesScreen}));
+}
 
 struct CompleteFrameBuffer
 {
@@ -81,8 +72,8 @@ std::array<CompleteFrameBuffer, T_size> initFrameBuffers(const Engine & aEngine)
     for (auto & [frameBuffer, texture] : buffers)
     {
         bind(texture);
-        const int width{aEngine.getWindowSize().width()};
-        const int height{aEngine.getWindowSize().height()};
+        const int width{aEngine.getFramebufferSize().width()};
+        const int height{aEngine.getFramebufferSize().height()};
         allocateStorage(texture, GL_RGBA8, width, height);
         unbind(texture);
 
@@ -107,9 +98,10 @@ struct Scene
 
     const Engine * mEngine;
     FirstRender mInitial;
-    FrameBuffer mInitialFB;
+    ScreenQuad mScreenQuad;
     //std::array<Texture, 2> mColors{GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE};
     std::array<CompleteFrameBuffer, 2> mBuffers;
+    Program mBlurProgram;
     Program mScreenProgram;
 };
 
@@ -118,6 +110,9 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
     mInitial(),
     mBuffers(initFrameBuffers<2>(*aEngine))
     ,
+    mBlurProgram(makeLinkedProgram({
+        {GL_VERTEX_SHADER, gScreenVertex},
+        {GL_FRAGMENT_SHADER, gBlurFragment}})),
     mScreenProgram(makeLinkedProgram({
         {GL_VERTEX_SHADER, gScreenVertex},
         {GL_FRAGMENT_SHADER, gScreenFragment}}))
@@ -125,6 +120,9 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
 
 inline void Scene::step()
 {
+    /***
+     * Rendering the scene to a texture
+     ***/
     // TODO first render should have depth buffer enabled, to be generic
     glBindFramebuffer(GL_FRAMEBUFFER, mBuffers.at(0).frameBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -136,6 +134,37 @@ inline void Scene::step()
                           4,
                           1);
 
+
+    /* It is about rendering to screen quad now */
+    glBindVertexArray(mScreenQuad.mVertexSpec.mVertexArray);
+
+    /***
+     * Filtering the rendered texture
+     ***/
+    glUseProgram(mBlurProgram);
+
+    // TODO should select the correct texture depending on the ping pong
+    // or could be done only once if always using the same texture
+    glProgramUniform1i(mBlurProgram,
+                       glGetUniformLocation(mBlurProgram, "screenTexture"),
+                       0);
+
+    for (int i = 0; i != 10; ++i)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, mBuffers.at((i+1)%2).frameBuffer);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glActiveTexture(GL_TEXTURE0); // Already active, but good practice
+        bind(mBuffers.at(i%2).colorTexture);
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    }
+
+
+    /***
+     * Drawing to the screen
+     ***/
+    // TODO Can we reuse the program, changing only the fragment shader?
     // Binds the default (window) framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -147,13 +176,10 @@ inline void Scene::step()
                        0);
 
     glActiveTexture(GL_TEXTURE0); // Already active, but good practice
-    bind(mBuffers.at(0).colorTexture);
+    bind(mBuffers.at(1).colorTexture);
 
     // TODO: replace by the more correct non-instanced draw
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP,
-                          0,
-                          4,
-                          1);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 
