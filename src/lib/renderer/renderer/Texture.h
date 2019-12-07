@@ -8,6 +8,7 @@
 #include <glad/glad.h>
 
 #include <cassert>
+#include <string>
 
 namespace ad
 {
@@ -23,6 +24,38 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
     const GLenum mTarget;
 };
 
+inline void bind(const Texture & aTexture)
+{
+    glBindTexture(aTexture.mTarget, aTexture);
+}
+
+inline void unbind(const Texture & aTexture)
+{
+    glBindTexture(aTexture.mTarget, 0);
+}
+
+inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
+                            const GLsizei aWidth, const GLsizei aHeight)
+{
+    if (GL_ARB_texture_storage)
+    {
+        glTexStorage2D(aTexture.mTarget, 1, aInternalFormat, aWidth, aHeight);
+        { // scoping isSuccess
+            GLint isSuccess;
+            glGetTexParameteriv(aTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
+            if ( isSuccess != GL_TRUE)
+            {
+                const std::string message{"Error calling 'glTexStorage2D'"};
+                std::cerr << message << std::endl;
+                throw std::runtime_error(message);
+            }
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Not implemented" + std::to_string(__LINE__));
+    }
+}
 
 inline void loadSprite(const Texture & aTexture,
                 GLenum aTextureUnit,

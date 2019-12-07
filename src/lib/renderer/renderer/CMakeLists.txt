@@ -4,6 +4,7 @@ set(${PROJECT_NAME}_HEADERS
     commons.h
     Drawing.h
     Error.h
+    FrameBuffer.h
     gl_helpers.h
     Image.h
     MappedGL.h

@@ -19,22 +19,22 @@ struct GenericDrawer
     template <class T_vertex>
     VertexBufferObject addVertexBuffer(
         const std::initializer_list<AttributeDescription> & aAttributes,
-        gsl::span<T_vertex> mVertices)
+        gsl::span<T_vertex> aVertices)
     {
         if (mVertexCount)
         {
-            assert(static_cast<std::size_t>(mVertices.size()) == mVertexCount);
+            assert(static_cast<std::size_t>(aVertices.size()) == mVertexCount);
         }
         else
         {
-            mVertexCount = mVertices.size();
+            mVertexCount = aVertices.size();
         }
 
         glBindVertexArray(mVertexArray);
         return makeLoadedVertexBuffer(aAttributes,
                                       sizeof(T_vertex),
-                                      sizeof(T_vertex)*mVertices.size(),
-                                      mVertices.data());
+                                      sizeof(T_vertex)*aVertices.size(),
+                                      aVertices.data());
     }
 
     void render() const
