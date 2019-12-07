@@ -38,6 +38,12 @@ struct Application
         engine->callbackWindowSize(width, height);
     }
 
+    static void framebufferSize_callback(GLFWwindow * window, int width, int height)
+    {
+        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+        engine->callbackFramebufferSize(width, height);
+    }
+
     Guard initializeGlfw()
     {
         glfwSetErrorCallback(error_callback);
@@ -95,10 +101,14 @@ struct Application
             int width, height;
             glfwGetWindowSize(mWindow, &width, &height);
             windowsSize_callback(mWindow, width, height);
+
+            glfwGetFramebufferSize(mWindow, &width, &height);
+            framebufferSize_callback(mWindow, width, height);
         }
 
         glfwSetKeyCallback(mWindow, key_callback);
         glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
+        glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
         glfwShowWindow(mWindow);
 

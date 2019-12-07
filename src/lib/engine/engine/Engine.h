@@ -18,11 +18,14 @@ public:
     void clear();
 
     const Size2<int> & getWindowSize() const;
+    const Size2<int> & getFramebufferSize() const;
     void callbackWindowSize(int width, int height);
+    void callbackFramebufferSize(int width, int height);
     Listening listenResize(SizeListener aListener);
 
 private:
     Size2<int> mWindowSize;
+    Size2<int> mFramebufferSize;
     std::vector<SizeListener> mSizeCallbacks;
 };
 
@@ -30,6 +33,12 @@ private:
 inline const Size2<int> & Engine::getWindowSize() const
 {
     return mWindowSize;
+}
+
+
+inline const Size2<int> & Engine::getFramebufferSize() const
+{
+    return mFramebufferSize;
 }
 
 inline Engine::Listening Engine::listenResize(SizeListener aListener)

@@ -1,11 +1,12 @@
-#include "Engine.h" 
+#include "Engine.h"
 
 
 namespace ad {
 
 
 Engine::Engine() :
-    mWindowSize(0, 0)
+    mWindowSize(0, 0),
+    mFramebufferSize(0, 0)
 {
     //
     // General OpenGL setups
@@ -22,16 +23,27 @@ Engine::Engine() :
 
 void Engine::callbackWindowSize(int width, int height)
 {
-    glViewport(0, 0, width, height);
+    //glViewport(0, 0, width, height);
     mWindowSize.width() = width;
     mWindowSize.height() = height;
+
+    //for (auto & listener : mSizeCallbacks)
+    //{
+    //    listener({width, height});
+    //}
+}
+
+void Engine::callbackFramebufferSize(int width, int height)
+{
+    glViewport(0, 0, width, height);
+    mFramebufferSize.width() = width;
+    mFramebufferSize.height() = height;
 
     for (auto & listener : mSizeCallbacks)
     {
         listener({width, height});
     }
 }
-
 
 void Engine::clear()
 {
