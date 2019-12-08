@@ -26,23 +26,6 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                   aVertices.data());
 }
 
-struct FirstRender
-{
-    FirstRender();
-
-    VertexArrayObject mVAO;
-    VertexBufferObject mVertexData;
-    Program mProgram;
-};
-
-inline FirstRender::FirstRender() :
-    mVAO(),
-    mVertexData(loadVertexBuffer(mVAO, gVertexSceneDescription, gsl::span<VertexScene>{gVerticesScene})),
-    mProgram(makeLinkedProgram({
-        {GL_VERTEX_SHADER, gInitialVertex},
-        {GL_FRAGMENT_SHADER, gInitialFragment}}))
-{}
-
 struct ScreenQuad
 {
     ScreenQuad();
@@ -60,7 +43,7 @@ inline ScreenQuad::ScreenQuad()
 struct CompleteFrameBuffer
 {
     FrameBuffer frameBuffer;
-    Texture colorTexture{GL_TEXTURE_RECTANGLE};
+    Texture colorTexture{GL_TEXTURE_2D};
 };
 
 template <std::size_t T_size>
@@ -90,6 +73,23 @@ std::array<CompleteFrameBuffer, T_size> initFrameBuffers(const Engine & aEngine)
     return buffers;
 }
 
+struct FirstRender
+{
+    FirstRender();
+
+    VertexArrayObject mVAO;
+    VertexBufferObject mVertexData;
+    Program mProgram;
+};
+
+inline FirstRender::FirstRender() :
+    mVAO(),
+    mVertexData(loadVertexBuffer(mVAO, gVertexSceneDescription, gsl::span<VertexScene>{gVerticesScene})),
+    mProgram(makeLinkedProgram({
+        {GL_VERTEX_SHADER, gInitialVertex},
+        {GL_FRAGMENT_SHADER, gInitialFragment}}))
+{}
+
 struct Scene
 {
     Scene(const char * argv[], const Engine * aEngine);
@@ -101,22 +101,50 @@ struct Scene
     ScreenQuad mScreenQuad;
     //std::array<Texture, 2> mColors{GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE};
     std::array<CompleteFrameBuffer, 2> mBuffers;
-    Program mBlurProgram;
+    CompleteFrameBuffer mSceneFB;
+    Program mHBlurProgram;
+    Program mVBlurProgram;
     Program mScreenProgram;
 };
 
 Scene::Scene(const char * argv[], const Engine * aEngine) :
     mEngine(aEngine),
     mInitial(),
-    mBuffers(initFrameBuffers<2>(*aEngine))
-    ,
-    mBlurProgram(makeLinkedProgram({
+    mBuffers(initFrameBuffers<2>(*aEngine)),
+    mSceneFB(),
+    mHBlurProgram(makeLinkedProgram({
         {GL_VERTEX_SHADER, gScreenVertex},
-        {GL_FRAGMENT_SHADER, gBlurFragment}})),
+        {GL_FRAGMENT_SHADER, gHBlurFragment}})),
+    mVBlurProgram(makeLinkedProgram({
+        {GL_VERTEX_SHADER, gScreenVertex},
+        {GL_FRAGMENT_SHADER, gVBlurFragment}})),
     mScreenProgram(makeLinkedProgram({
         {GL_VERTEX_SHADER, gScreenVertex},
         {GL_FRAGMENT_SHADER, gScreenFragment}}))
-{}
+{
+    {
+        auto & [frameBuffer, texture] = mSceneFB;
+        bind(texture);
+        const int width{aEngine->getFramebufferSize().width()};
+        const int height{aEngine->getFramebufferSize().height()};
+        allocateStorage(texture, GL_RGBA8, width, height);
+        unbind(texture);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.mTarget, texture, 0);
+        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, mBuffers.at(0).colorTexture.mTarget, mBuffers.at(0).colorTexture, 0);
+
+        unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
+        glDrawBuffers(2, attachments);
+
+        if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            throw std::runtime_error("Incomplete framebuffer (" + std::to_string(__LINE__) + ")" );
+        }
+        // Textbook leak above, RAII this
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+}
 
 inline void Scene::step()
 {
@@ -124,7 +152,7 @@ inline void Scene::step()
      * Rendering the scene to a texture
      ***/
     // TODO first render should have depth buffer enabled, to be generic
-    glBindFramebuffer(GL_FRAMEBUFFER, mBuffers.at(0).frameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, mSceneFB.frameBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(mInitial.mVAO);
     glUseProgram(mInitial.mProgram);
@@ -141,21 +169,27 @@ inline void Scene::step()
     /***
      * Filtering the rendered texture
      ***/
-    glUseProgram(mBlurProgram);
-
     // TODO should select the correct texture depending on the ping pong
     // or could be done only once if always using the same texture
-    glProgramUniform1i(mBlurProgram,
-                       glGetUniformLocation(mBlurProgram, "screenTexture"),
+    glProgramUniform1i(mHBlurProgram,
+                       glGetUniformLocation(mHBlurProgram, "screenTexture"),
                        0);
+    glProgramUniform1i(mVBlurProgram,
+                       glGetUniformLocation(mVBlurProgram, "screenTexture"),
+                       1);
 
-    for (int i = 0; i != 10; ++i)
+    glActiveTexture(GL_TEXTURE0); // Already active, but good practice
+    bind(mBuffers.at(0).colorTexture);
+
+    glActiveTexture(GL_TEXTURE1);
+    bind(mBuffers.at(1).colorTexture);
+
+    for (int i = 0; i != 2; ++i)
     {
+        glUseProgram(i%2 ? mVBlurProgram : mHBlurProgram);
+
         glBindFramebuffer(GL_FRAMEBUFFER, mBuffers.at((i+1)%2).frameBuffer);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        glActiveTexture(GL_TEXTURE0); // Already active, but good practice
-        bind(mBuffers.at(i%2).colorTexture);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
@@ -172,11 +206,14 @@ inline void Scene::step()
     // TODO should select the correct texture depending on the ping pong
     // or could be done only once if always using the same texture
     glProgramUniform1i(mScreenProgram,
-                       glGetUniformLocation(mScreenProgram, "screenTexture"),
+                       glGetUniformLocation(mScreenProgram, "sceneTexture"),
                        0);
+    glProgramUniform1i(mScreenProgram,
+                       glGetUniformLocation(mScreenProgram, "bloomTexture"),
+                       1);
 
-    glActiveTexture(GL_TEXTURE0); // Already active, but good practice
-    bind(mBuffers.at(1).colorTexture);
+    glActiveTexture(GL_TEXTURE1); // Already active, but good
+    bind(mBuffers.at(0).colorTexture);
 
     // TODO: replace by the more correct non-instanced draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

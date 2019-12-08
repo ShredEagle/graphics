@@ -11,7 +11,7 @@ out vec4 ex_Color;
 void main(void)
 {
     gl_Position = in_Position * vec4(0.8, 0.8, 0.8, 1.0);
-    ex_Color = vec4(1.0, 0.5, 0.1, 1.0);
+    ex_Color = vec4(0.5, 0.25, 0.05, 1.0);
 }
 )#";
 
@@ -37,7 +37,7 @@ out vec2 ex_TexCoords;
 void main(void)
 {
     gl_Position = in_Position;
-    ex_TexCoords = in_TexCoords * vec2(800, 600);
+    ex_TexCoords = in_TexCoords;
 }
 )#";
 
@@ -47,29 +47,61 @@ static const char* gScreenFragment = R"#(
 in vec2 ex_TexCoords;
 out vec4 out_Color;
 
-uniform sampler2DRect screenTexture;
+uniform sampler2D sceneTexture;
+uniform sampler2D bloomTexture;
 
 void main(void)
 {
-    out_Color = texture(screenTexture, ex_TexCoords);
+    out_Color = texture(sceneTexture, ex_TexCoords)
+                + texture(bloomTexture, ex_TexCoords);
 }
 )#";
 
-static const char* gBlurFragment = R"#(
+static const char* gHBlurFragment = R"#(
 #version 400
 
 in vec2 ex_TexCoords;
 out vec4 out_Color;
 
-uniform sampler2DRect screenTexture;
+uniform sampler2D screenTexture;
+vec2 textureSize = textureSize(screenTexture, 0);
+
+float weights[4] = float[](0.3, 0.2, 0.1, 0.05);
 
 void main(void)
 {
-    //vec4 weights = vec4(0.05, 0.1, 0.2, 0.3);
-    out_Color =   0.25 * texture(screenTexture, ex_TexCoords+vec2(-1, 0))
-                + 0.50 * texture(screenTexture, ex_TexCoords)
-                + 0.25 * texture(screenTexture, ex_TexCoords+vec2(1, 0));
-    //out_Color = texture(screenTexture, ex_TexCoords);
+    out_Color = weights[0] * texture(screenTexture, ex_TexCoords);
+    vec2 texOffset = vec2(1.0/textureSize.x, 0.);
+
+    for(int i=1; i<weights.length(); ++i)
+    {
+        out_Color += weights[i] * texture(screenTexture, ex_TexCoords - (i*texOffset));
+        out_Color += weights[i] * texture(screenTexture, ex_TexCoords + (i*texOffset));
+    }
+}
+)#";
+
+static const char* gVBlurFragment = R"#(
+#version 400
+
+in vec2 ex_TexCoords;
+out vec4 out_Color;
+
+uniform sampler2D screenTexture;
+vec2 textureSize = textureSize(screenTexture, 0);
+
+float weights[4] = float[](0.3, 0.2, 0.1, 0.05);
+
+void main(void)
+{
+    out_Color = weights[0] * texture(screenTexture, ex_TexCoords);
+    vec2 texOffset = vec2(0., 1.0/textureSize.x);
+
+    for(int i=1; i<weights.length(); ++i)
+    {
+        out_Color += weights[i] * texture(screenTexture, ex_TexCoords - (i*texOffset));
+        out_Color += weights[i] * texture(screenTexture, ex_TexCoords + (i*texOffset));
+    }
 }
 )#";
 
