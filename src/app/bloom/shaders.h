@@ -6,12 +6,16 @@ static const char* gInitialVertex = R"#(
 #version 400
 
 layout(location=0) in vec4 in_Position;
+layout(location=1) in vec2 in_TexCoords;
 out vec4 ex_Color;
+out vec2 ex_TexCoords;
 
 void main(void)
 {
     gl_Position = in_Position * vec4(0.8, 0.8, 0.8, 1.0);
-    ex_Color = vec4(0.5, 0.25, 0.05, 1.0);
+    //ex_Color = vec4(0.5, 0.25, 0.05, 1.0);
+    ex_Color = vec4(0.0, 0.0, 0.0, 1.0);
+    ex_TexCoords = in_TexCoords;
 }
 )#";
 
@@ -19,11 +23,15 @@ static const char* gInitialFragment = R"#(
 #version 400
 
 in vec4 ex_Color;
-out vec4 out_Color;
+in vec2 ex_TexCoords;
+uniform sampler2D neon;
+layout (location=0) out vec4 out_Scene;
+layout (location=1) out vec4 out_Bloom;
 
 void main(void)
 {
-    out_Color = ex_Color;
+    out_Scene = ex_Color;
+    out_Bloom = texture(neon, ex_TexCoords);
 }
 )#";
 
@@ -54,6 +62,10 @@ void main(void)
 {
     out_Color = texture(sceneTexture, ex_TexCoords)
                 + texture(bloomTexture, ex_TexCoords);
+
+    //out_Color = texture(sceneTexture, ex_TexCoords);
+
+    //out_Color = texture(bloomTexture, ex_TexCoords);
 }
 )#";
 
@@ -66,7 +78,8 @@ out vec4 out_Color;
 uniform sampler2D screenTexture;
 vec2 textureSize = textureSize(screenTexture, 0);
 
-float weights[4] = float[](0.3, 0.2, 0.1, 0.05);
+//float weights[4] = float[](0.3, 0.2, 0.1, 0.05);
+float weights[] = float[](0.4, 0.2, 0.1, 0.08, 0.05, 0.05, 0.05, 0.03, 0.02, 0.01);
 
 void main(void)
 {
@@ -90,7 +103,8 @@ out vec4 out_Color;
 uniform sampler2D screenTexture;
 vec2 textureSize = textureSize(screenTexture, 0);
 
-float weights[4] = float[](0.3, 0.2, 0.1, 0.05);
+//float weights[4] = float[](0.3, 0.2, 0.1, 0.05);
+float weights[] = float[](0.4, 0.2, 0.1, 0.08, 0.05, 0.05, 0.05, 0.03, 0.02, 0.01);
 
 void main(void)
 {

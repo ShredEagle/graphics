@@ -19,7 +19,7 @@ int main(int argc, const char * argv[])
 
         while(application.nextFrame())
         {
-            scene.step();
+            scene.step(timer);
             timer.mark(glfwGetTime());
         }
     }

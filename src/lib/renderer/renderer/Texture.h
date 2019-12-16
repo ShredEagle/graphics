@@ -57,9 +57,10 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
     }
 }
 
+/// \TODO probably useless to activate a texture unit here...
 inline void loadSprite(const Texture & aTexture,
-                GLenum aTextureUnit,
-                const Image & aImage)
+                       GLenum aTextureUnit,
+                       const Image & aImage)
 {
     assert(aTexture.mTarget == GL_TEXTURE_2D);
 

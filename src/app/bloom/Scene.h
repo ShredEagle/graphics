@@ -4,11 +4,14 @@
 #include "vertices.h"
 
 #include <engine/Engine.h>
+#include <engine/Timer.h>
 
 #include <renderer/FrameBuffer.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
+
+#include <resource/PathProvider.h>
 
 #include <gsl/span>
 
@@ -94,7 +97,7 @@ struct Scene
 {
     Scene(const char * argv[], const Engine * aEngine);
     void blur();
-    void step();
+    void step(const Timer & aTimer);
 
     const Engine * mEngine;
     FirstRender mInitial;
@@ -102,6 +105,7 @@ struct Scene
     //std::array<Texture, 2> mColors{GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE};
     std::array<CompleteFrameBuffer, 2> mBuffers;
     CompleteFrameBuffer mSceneFB;
+    Texture mNeonTexture;
     Program mHBlurProgram;
     Program mVBlurProgram;
     Program mScreenProgram;
@@ -112,6 +116,7 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
     mInitial(),
     mBuffers(initFrameBuffers<2>(*aEngine)),
     mSceneFB(),
+    mNeonTexture(GL_TEXTURE_2D),
     mHBlurProgram(makeLinkedProgram({
         {GL_VERTEX_SHADER, gScreenVertex},
         {GL_FRAGMENT_SHADER, gHBlurFragment}})),
@@ -144,9 +149,14 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
         // Textbook leak above, RAII this
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    // Texture
+    {
+        loadSprite(mNeonTexture, GL_TEXTURE0, Image(pathFor("st_outline.png")));
+    }
 }
 
-inline void Scene::step()
+inline void Scene::step(const Timer & aTimer)
 {
     /***
      * Rendering the scene to a texture
@@ -154,8 +164,16 @@ inline void Scene::step()
     // TODO first render should have depth buffer enabled, to be generic
     glBindFramebuffer(GL_FRAMEBUFFER, mSceneFB.frameBuffer);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // TODO Why blur stop working if alpha is 0?
+    static const std::array<float, 4> gClearColor = {0.f, 0.f, 0.f, 1.f};
+    glClearBufferfv(GL_COLOR, 1, gClearColor.data());
+
     glBindVertexArray(mInitial.mVAO);
     glUseProgram(mInitial.mProgram);
+
+    glActiveTexture(GL_TEXTURE0); // Already active and bound
+    bind(mNeonTexture);
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
@@ -184,12 +202,13 @@ inline void Scene::step()
     glActiveTexture(GL_TEXTURE1);
     bind(mBuffers.at(1).colorTexture);
 
-    for (int i = 0; i != 2; ++i)
+    for (int i = 0;
+         i != (static_cast<int>(aTimer.mTime)%2 == 0 ? 0 : 2);
+         ++i)
     {
         glUseProgram(i%2 ? mVBlurProgram : mHBlurProgram);
 
         glBindFramebuffer(GL_FRAMEBUFFER, mBuffers.at((i+1)%2).frameBuffer);
-        glClear(GL_COLOR_BUFFER_BIT);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
@@ -201,7 +220,6 @@ inline void Scene::step()
     // TODO Can we reuse the program, changing only the fragment shader?
     // Binds the default (window) framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(mScreenProgram);
     // TODO should select the correct texture depending on the ping pong
     // or could be done only once if always using the same texture
@@ -212,7 +230,10 @@ inline void Scene::step()
                        glGetUniformLocation(mScreenProgram, "bloomTexture"),
                        1);
 
-    glActiveTexture(GL_TEXTURE1); // Already active, but good
+    glActiveTexture(GL_TEXTURE0);
+    bind(mSceneFB.colorTexture);
+
+    glActiveTexture(GL_TEXTURE1);
     bind(mBuffers.at(0).colorTexture);
 
     // TODO: replace by the more correct non-instanced draw
