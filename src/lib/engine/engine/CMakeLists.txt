@@ -26,7 +26,7 @@ add_library(${PROJECT_NAME}
     ${${PROJECT_NAME}_HEADERS}
 )
 
-cmc_target_current_include_directory(${PROJECT_NAME}) 
+cmc_target_current_include_directory(${PROJECT_NAME})
 
 
 ##
@@ -44,7 +44,7 @@ target_link_libraries(${PROJECT_NAME}
         glad::glad
         glfw
         ${_internal_dependencies_public}
-    PRIVATE 
+    PRIVATE
         nlohmann_json::nlohmann_json
         ${_internal_dependencies_private}
 )
@@ -62,7 +62,7 @@ cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
                          FILES ${${PROJECT_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
 cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
-                          DEPENDS_COMPONENTS ${_internal_dependencies_private} 
+                          DEPENDS_COMPONENTS ${_internal_dependencies_private}
                                              ${_internal_dependencies_public}
                           FIND_FILE CMakeFinds.cmake.in
-                          NAMESPACE ad)
+                          NAMESPACE ad::)

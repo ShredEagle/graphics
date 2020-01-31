@@ -11,7 +11,7 @@ class TwodConan(ConanFile):
     topics = ("opengl", "2D")
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
-    generators = "cmake_paths"
+    generators = "cmake_paths", "cmake"
     build_policy = "missing"
 
     requires = (
