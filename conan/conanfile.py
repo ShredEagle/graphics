@@ -23,7 +23,6 @@ class TwodConan(ConanFile):
 
     default_options = {
         "shared": False,
-        "boost:header_only": True,
         "glad:api_version": "4.1",
         "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }

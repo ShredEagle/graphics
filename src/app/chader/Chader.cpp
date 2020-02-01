@@ -35,14 +35,14 @@ Chader::Chader() :
                                         gsl::span<VertexChad>{gVerticesChad}))
 {}
 
-std::string readFile(const path & aPath)
+std::string readFile(const boost::filesystem::path & aPath)
 {
     std::stringstream buffer;
-    buffer << std::ifstream{aPath}.rdbuf();
+    buffer << std::ifstream{aPath.string()}.rdbuf();
     return buffer.str();
 }
 
-Program makeProgram(const path & aVertexShader, const path & aFragmentShader)
+Program makeProgram(const boost::filesystem::path & aVertexShader, const boost::filesystem::path & aFragmentShader)
 {
     return makeLinkedProgram({
       {GL_VERTEX_SHADER, readFile(aVertexShader).c_str()},
@@ -51,7 +51,7 @@ Program makeProgram(const path & aVertexShader, const path & aFragmentShader)
 }
 
 
-void Chader::loadProgram(const path & aVertexShader, const path & aFragmentShader)
+void Chader::loadProgram(const boost::filesystem::path & aVertexShader, const boost::filesystem::path & aFragmentShader)
 {
     try
     {

@@ -35,7 +35,7 @@ private:
 };
 
 template <class T>
-std::vector<LoadedSprite> loadSheet(T & aDrawer, const path & aFile)
+std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
 {
     std::ifstream ifs{aFile};
     SpriteSheet sheet = dataformat::loadMeta(ifs);
@@ -50,7 +50,7 @@ struct Scroller
     Scroller(const Scroller &) = delete;
     Scroller & operator=(const Scroller &) = delete;
 
-    Scroller(const Size2<int> aTileSize, path aTilesheet, Engine & aEngine) :
+    Scroller(const Size2<int> aTileSize, std::string aTilesheet, Engine & aEngine) :
             mTiling(aTileSize,
                     aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{1, 1},
                     aEngine.getWindowSize()),
@@ -126,7 +126,7 @@ struct RingDrop
     RingDrop(const RingDrop &) = delete;
     RingDrop & operator=(const RingDrop &) = delete;
 
-    RingDrop(path aSpriteSheet, Engine & aEngine) :
+    RingDrop(std::string aSpriteSheet, Engine & aEngine) :
              mSpriting(aEngine.getWindowSize()),
              mFrames(loadSheet(mSpriting, aSpriteSheet))
     {

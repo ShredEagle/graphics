@@ -1,14 +1,16 @@
 #include "FileWatcher.h"
 
+using path=boost::filesystem::path;
+
 namespace ad {
 
-std::map<std::filesystem::path, std::filesystem::file_time_type>
-initMap(std::initializer_list<std::filesystem::path> aWatchlist)
+std::map<path, std::time_t>
+initMap(std::initializer_list<path> aWatchlist)
 {
-    std::map<std::filesystem::path, std::filesystem::file_time_type> result;
-    for (const std::filesystem::path & path : aWatchlist)
+    std::map<path, std::time_t> result;
+    for (const path & path : aWatchlist)
     {
-        result.emplace(path, std::filesystem::last_write_time(path));
+        result.emplace(path, boost::filesystem::last_write_time(path));
     }
     return result;
 }
@@ -22,7 +24,7 @@ bool FileWatcher::check()
     bool changed{false};
     for (auto & node : mWatch)
     {
-        auto lastRead = std::filesystem::last_write_time(node.first);
+        auto lastRead = boost::filesystem::last_write_time(node.first);
         if (node.second != lastRead)
         {
             changed = true;

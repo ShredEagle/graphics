@@ -3,6 +3,8 @@
 #include "Chader.h"
 #include "FileWatcher.h"
 
+#include <boost/filesystem.hpp>
+
 namespace ad {
 
 struct Scene
@@ -10,8 +12,8 @@ struct Scene
     Scene(const char * argv[]);
     void step();
 
-    path mVertexShader;
-    path mFragmentShader;
+    boost::filesystem::path mVertexShader;
+    boost::filesystem::path mFragmentShader;
     Chader mChader;
     FileWatcher mFileWatcher;
 };

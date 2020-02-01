@@ -6,13 +6,15 @@
 
 #include <glad/glad.h>
 
+#include <boost/filesystem.hpp>
+
 namespace ad {
 
 class Chader
 {
 public:
     Chader();
-    void loadProgram(const path & aVertexShader, const path & aFragmentShader);
+    void loadProgram(const boost::filesystem::path & aVertexShader, const boost::filesystem::path & aFragmentShader);
 
     void render() const;
 

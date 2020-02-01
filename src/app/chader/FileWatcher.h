@@ -1,13 +1,13 @@
 #pragma once
 
-#include <filesystem>
+#include <boost/filesystem.hpp>
 #include <map>
 
 namespace ad {
 
 class FileWatcher
 {
-    using path=std::filesystem::path;
+    using path=boost::filesystem::path;
 
 public:
     FileWatcher(std::initializer_list<path> aWatchlist);
@@ -15,7 +15,7 @@ public:
     bool check();
 
 private:
-    std::map<path, std::filesystem::file_time_type> mWatch;
+    std::map<path, std::time_t> mWatch;
     //std::thread mWorker;
     //std::atomic<bool> mChanged{false};
 };
