@@ -24,12 +24,18 @@ struct Application
                   << std::endl;
     }
 
-    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    static void default_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         {
             glfwSetWindowShouldClose(window, GLFW_TRUE);
         }
+    }
+
+    static void custom_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+        engine->callbackKeyboard(key, scancode, action, mods);
     }
 
     static void windowsSize_callback(GLFWwindow * window, int width, int height)
@@ -106,7 +112,7 @@ struct Application
             framebufferSize_callback(mWindow, width, height);
         }
 
-        glfwSetKeyCallback(mWindow, key_callback);
+        glfwSetKeyCallback(mWindow, default_key_callback);
         glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
@@ -132,6 +138,13 @@ struct Application
         glfwSwapBuffers(mWindow);
         glfwPollEvents();
         return ! glfwWindowShouldClose(mWindow);
+    }
+
+    template <class T_keyCallback>
+    void registerKeyCallback(std::shared_ptr<T_keyCallback> mCallbackInstance)
+    {
+        mEngine->registerKeyCallback(std::move(mCallbackInstance));
+        glfwSetKeyCallback(mWindow, custom_key_callback);
     }
 
     Guard mGlfwInitialization;
