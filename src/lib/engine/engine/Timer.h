@@ -10,6 +10,11 @@ struct Timer
         mTime = aMonotonic;
     }
 
+    double delta() const
+    {
+        return mDelta;
+    }
+
     double mTime;
     double mDelta;
 };

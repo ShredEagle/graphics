@@ -6,6 +6,8 @@
 
 #include <handy/Guard.h>
 
+#include <gsl/span>
+
 #include <glad/glad.h>
 
 #include <type_traits>
@@ -103,6 +105,28 @@ struct AttributeDescription : public Attribute
 
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
 
+
+template <class T_vertex>
+VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
+                                    const std::initializer_list<AttributeDescription> & aAttributes,
+                                    gsl::span<T_vertex> aVertices)
+{
+    glBindVertexArray(aVertexArray);
+    return makeLoadedVertexBuffer(aAttributes,
+                                  sizeof(T_vertex),
+                                  sizeof(T_vertex)*aVertices.size(),
+                                  aVertices.data());
+}
+
+
+template <class T_vertex>
+void appendToVertexSpecification(VertexSpecification & aSpecification,
+                                 const std::initializer_list<AttributeDescription> & aAttributes,
+                                 gsl::span<T_vertex> aVertices)
+{
+    aSpecification.mVertexBuffers.push_back(
+            loadVertexBuffer(aSpecification.mVertexArray, aAttributes, std::move(aVertices)));
+}
 
 /// \brief Create a VertexBufferObject with provided attributes, load it with data.
 ///

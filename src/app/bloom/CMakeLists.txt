@@ -15,7 +15,7 @@ find_package(glad CONFIG REQUIRED)
 add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}
     ${${PROJECT_NAME}_HEADERS}
-) 
+)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
@@ -23,5 +23,4 @@ target_link_libraries(${PROJECT_NAME}
         engine
         renderer
         resource
-        gsl
 )

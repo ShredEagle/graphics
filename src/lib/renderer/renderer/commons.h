@@ -26,5 +26,4 @@ using Position2=math::Position<2, T_number>;
 /// \todo Replace with a proper path class, as standardised in C++17
 //typedef std::string path;
 
-
 } // namespace ad

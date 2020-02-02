@@ -13,21 +13,7 @@
 
 #include <resource/PathProvider.h>
 
-#include <gsl/span>
-
 namespace ad {
-
-template <class T_vertex>
-VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
-                                    const std::initializer_list<AttributeDescription> & aAttributes,
-                                    gsl::span<T_vertex> aVertices)
-{
-    glBindVertexArray(aVertexArray);
-    return makeLoadedVertexBuffer(aAttributes,
-                                  sizeof(T_vertex),
-                                  sizeof(T_vertex)*aVertices.size(),
-                                  aVertices.data());
-}
 
 struct ScreenQuad
 {

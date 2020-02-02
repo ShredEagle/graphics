@@ -9,7 +9,7 @@ namespace ad
 {
 
 // Only starting in 4.3 apparently
-void GLAPIENTRY
+inline void GLAPIENTRY
 MessageCallback( GLenum source,
                  GLenum type,
                  GLuint id,
@@ -27,7 +27,7 @@ MessageCallback( GLenum source,
 }
 
 // During init, can be used to enable debug output
-void enableDebugOutput()
+inline void enableDebugOutput()
 {
     glEnable              ( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( &MessageCallback, 0 );
