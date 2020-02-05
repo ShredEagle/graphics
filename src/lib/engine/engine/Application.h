@@ -17,6 +17,12 @@ namespace ad
 
 struct Application
 {
+    enum Flags
+    {
+        None = 0,
+        Window_Keep_Ratio = (1 << 1),
+    };
+
     static void error_callback(int error, const char* description)
     {
         std::cerr << "Application encountered GLFW error: "
@@ -91,10 +97,16 @@ struct Application
 
     Application(const std::string aName,
                 int aWidth, int aHeight,
+                Flags aFlags = None,
                 int aGLVersionMajor=4, int aGLVersionMinor=1) :
         mGlfwInitialization(initializeGlfw()),
         mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor))
     {
+        if (aFlags & Window_Keep_Ratio)
+        {
+            glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
+        }
+
         glfwMakeContextCurrent(mWindow);
         gladLoadGL();
 
