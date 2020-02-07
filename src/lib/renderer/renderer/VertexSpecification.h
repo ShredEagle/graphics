@@ -103,43 +103,60 @@ struct AttributeDescription : public Attribute
     GLenum mDataType;
 };
 
+typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
+
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
 
 
 template <class T_vertex>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
-                                    const std::initializer_list<AttributeDescription> & aAttributes,
-                                    gsl::span<T_vertex> aVertices)
+                                    const AttributeDescriptionList & aAttributes,
+                                    gsl::span<T_vertex> aVertices,
+                                    GLuint aAttributeDivisor = 0)
 {
     glBindVertexArray(aVertexArray);
+
+    if (aAttributeDivisor)
+    {
+        for(const auto & attribute : aAttributes)
+        {
+            glVertexAttribDivisor(attribute.mIndex, aAttributeDivisor);
+        }
+    }
+
     return makeLoadedVertexBuffer(aAttributes,
                                   sizeof(T_vertex),
                                   sizeof(T_vertex)*aVertices.size(),
                                   aVertices.data());
+
 }
 
 
 template <class T_vertex>
 void appendToVertexSpecification(VertexSpecification & aSpecification,
-                                 const std::initializer_list<AttributeDescription> & aAttributes,
-                                 gsl::span<T_vertex> aVertices)
+                                 const AttributeDescriptionList & aAttributes,
+                                 gsl::span<T_vertex> aVertices,
+                                 GLuint aAttributeDivisor = 0)
 {
     aSpecification.mVertexBuffers.push_back(
-            loadVertexBuffer(aSpecification.mVertexArray, aAttributes, std::move(aVertices)));
+            loadVertexBuffer(aSpecification.mVertexArray,
+                             aAttributes,
+                             std::move(aVertices),
+                             aAttributeDivisor));
 }
 
 /// \brief Create a VertexBufferObject with provided attributes, load it with data.
 ///
 /// This is the lowest level overload, with explicit attribute description and raw data pointer.
 /// Other overloads end-up calling it.
-VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(AttributeDescriptionList aAttributes,
                                           GLsizei aStride,
                                           size_t aSize,
                                           const GLvoid * aData);
 
 /// \brief Overload accepting a range instead of a raw pointer.
 template <class T_iterator, class T_sentinel>
-VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescription> aAttributes,
+VertexBufferObject makeLoadedVertexBuffer(AttributeDescriptionList aAttributes,
                                           const Range<T_iterator, T_sentinel> & aRange)
 {
     typedef typename Range<T_iterator, T_sentinel>::value_type value_type;
@@ -200,7 +217,7 @@ VertexBufferObject makeLoadedVertexBuffer(
         throw std::runtime_error(std::string("Unable to invoke ") + __func__ + " on an empty range");
     }
 
-    std::initializer_list<AttributeDescription> attributes = {
+    AttributeDescriptionList attributes = {
         AttributeDescription {
             vaAttributes,
             combined_extents<typename decltype(vaAttributes)::member_type>::value,
@@ -238,6 +255,14 @@ inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aDat
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
     respecifyBuffer(aVBO, aData, size);
+}
+
+template <class T_vertex>
+void respecifyBuffer(const VertexBufferObject & aVBO, gsl::span<T_vertex> aVertices)
+{
+    respecifyBuffer(aVBO,
+                    aVertices.data(),
+                    static_cast<GLsizei>(sizeof(T_vertex)*aVertices.size()));
 }
 
 template <class T_iterator, class T_sentinel>
