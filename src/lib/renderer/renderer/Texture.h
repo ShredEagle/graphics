@@ -37,6 +37,8 @@ inline void unbind(const Texture & aTexture)
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             const GLsizei aWidth, const GLsizei aHeight)
 {
+    bind_guard bound(aTexture);
+
     if (GL_ARB_texture_storage)
     {
         glTexStorage2D(aTexture.mTarget, 1, aInternalFormat, aWidth, aHeight);
@@ -55,6 +57,13 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
     {
         throw std::runtime_error("Not implemented" + std::to_string(__LINE__));
     }
+}
+
+inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
+                            math::Size<2, GLsizei> aResolution)
+{
+    return allocateStorage(aTexture, aInternalFormat,
+                           aResolution.width(), aResolution.height());
 }
 
 /// \TODO probably useless to activate a texture unit here...

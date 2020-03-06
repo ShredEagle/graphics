@@ -43,21 +43,11 @@ std::array<CompleteFrameBuffer, T_size> initFrameBuffers(const Engine & aEngine)
 
     for (auto & [frameBuffer, texture] : buffers)
     {
-        bind(texture);
         const int width{aEngine.getFramebufferSize().width()};
         const int height{aEngine.getFramebufferSize().height()};
         allocateStorage(texture, GL_RGBA8, width, height);
-        unbind(texture);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.mTarget, texture, 0);
-
-        if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        {
-            throw std::runtime_error("Incomplete framebuffer (" + std::to_string(__LINE__) + ")" );
-        }
-        // Textbook leak above, RAII this
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        attachImage(frameBuffer, texture, GL_COLOR_ATTACHMENT0, 0);
     }
     return buffers;
 }
@@ -115,11 +105,10 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
 {
     {
         auto & [frameBuffer, texture] = mSceneFB;
-        bind(texture);
+
         const int width{aEngine->getFramebufferSize().width()};
         const int height{aEngine->getFramebufferSize().height()};
         allocateStorage(texture, GL_RGBA8, width, height);
-        unbind(texture);
 
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.mTarget, texture, 0);
@@ -222,7 +211,6 @@ inline void Scene::step(const Timer & aTimer)
     glActiveTexture(GL_TEXTURE1);
     bind(mBuffers.at(0).colorTexture);
 
-    // TODO: replace by the more correct non-instanced draw
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
