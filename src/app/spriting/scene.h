@@ -6,7 +6,7 @@
 #include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
-#include <renderer/VertexSpecification.h>
+#include <renderer/VertexSpecification_deduction.h>
 
 #include <glad/glad.h>
 
@@ -114,9 +114,9 @@ Scene setupScene()
     VertexSpecification specification;
     glBindVertexArray(specification.mVertexArray);
 
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(0, range(gVerticesPositions)));
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(1, range(gVerticesColors)));
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(2, range(gVerticesUVs)));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(0, gsl::span<GLfloat[4]>(gVerticesPositions)));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(1, gsl::span<GLfloat[4]>(gVerticesColors)));
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(2, gsl::span<GLfloat[2]>(gVerticesUVs)));
 
     ////
     //// the literal texture defined above

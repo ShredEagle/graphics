@@ -126,14 +126,14 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     // Per-vertex attributes
     std::vector<Vertex> quad = makeQuad(cellOffset, aGridDefinition);
     specification.mVertexBuffers.emplace_back(
-        makeLoadedVertexBuffer(gVertexDescription, range(quad.cbegin(), quad.cend())));
+        makeLoadedVertexBuffer(gVertexDescription, gsl::make_span(quad)));
         // Could also be
         //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
 
     // Per-instance attributes
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer({ {2, 2, 0, MappedGL<GLint>::enumerator} }, ad::range(positions)));
+        makeLoadedVertexBuffer({ {2, 2, 0, MappedGL<GLint>::enumerator} }, gsl::make_span(positions)));
 
     glVertexAttribDivisor(2, 1);
 
@@ -182,10 +182,10 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     Vec2<int> cellOffset(aCellSize);
 
     std::vector<Vertex> quad = makeQuad(cellOffset, aGridDefinition);
-    respecifyBuffer(buffers(mDrawContext).at(0), range(quad));
+    respecifyBuffer(buffers(mDrawContext).at(0), gsl::make_span(quad));
 
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
-    respecifyBuffer(buffers(mDrawContext).at(1), range(positions));
+    respecifyBuffer(buffers(mDrawContext).at(1), gsl::make_span(positions));
 
     mTiles.resize(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}});
     mTileSize = aCellSize;

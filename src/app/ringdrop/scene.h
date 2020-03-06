@@ -174,7 +174,7 @@ Scene setupScene()
                 {2, 2, offsetof(Ring, mPosition),       MappedGL<GLfloat>::enumerator},
                 {3, 1, offsetof(Ring, mRotationsPerSec),MappedGL<GLfloat>::enumerator},
             },
-            range(scene.mRings)));
+            gsl::make_span(scene.mRings)));
 
     glVertexAttribDivisor(2, 1);
     glVertexAttribDivisor(3, 1);

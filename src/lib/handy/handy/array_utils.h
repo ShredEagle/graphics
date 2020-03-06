@@ -18,7 +18,10 @@ namespace detail
     /// \todo Fix for ad::math types (for which it will wrongly return 1)
     template <class T>
     struct combined_extents_impl<T, 0> : public std::integral_constant<std::size_t, 1>
-    {};
+    {
+        static_assert(std::is_array<T>::value || std::is_arithmetic<T>::value,
+                      "Only arithmetic types or arrays at the moment.");
+    };
 
 } // namespace detail
 

@@ -39,8 +39,6 @@ VertexSpecification makeQuad()
     VertexSpecification specification;
     glBindVertexArray(specification.mVertexArray);
 
-    using namespace vertex; // for vertex::attr()
-
     // Per-vertex attributes
     specification.mVertexBuffers.emplace_back(
         makeLoadedVertexBuffer(
@@ -52,7 +50,8 @@ VertexSpecification makeQuad()
             sizeof(gVerticesQuad),
             gVerticesQuad
         ));
-        /// \todo For that to work, the array_utils have to work with math type derived from MatrixBase
+        /// TODO For that to work, the array_utils have to work with math type derived from MatrixBase
+        //using namespace vertex; // for vertex::attr()
         //makeLoadedVertexBuffer(range(gVerticesQuad),
         //                       attr(0,                               &Vertex::mPosition),
         //                       attr({1, Attribute::Access::Integer}, &Vertex::mUV)));
