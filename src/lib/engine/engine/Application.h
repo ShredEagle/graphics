@@ -145,11 +145,22 @@ struct Application
         }
     }
 
-    bool nextFrame()
+    bool handleEvents()
     {
-        glfwSwapBuffers(mWindow);
         glfwPollEvents();
         return ! glfwWindowShouldClose(mWindow);
+    }
+
+    void swapBuffers()
+    {
+        glfwSwapBuffers(mWindow);
+    }
+
+    /// \brief Swap buffers then handle events
+    bool nextFrame()
+    {
+        swapBuffers();
+        return handleEvents();
     }
 
     template <class T_keyCallback>

@@ -45,7 +45,6 @@ inline void attachImage(
     {
         throw std::runtime_error("Incomplete framebuffer (" + std::to_string(__LINE__) + ")" );
     }
-
 }
 
 } // namespace ad
