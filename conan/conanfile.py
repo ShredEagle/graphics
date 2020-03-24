@@ -19,6 +19,7 @@ class TwodConan(ConanFile):
         ("glad/0.1.29@bincrafters/stable"),
         ("glfw/3.3@bincrafters/stable"),
         ("jsonformoderncpp/3.7.0@vthiery/stable"),
+        ("math/local"),
     )
 
     default_options = {
