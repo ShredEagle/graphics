@@ -1,4 +1,9 @@
-build*/
+# Cmake
+/build/
+/build_*/
+
+# Conan
+/conan/test_package/build/
 
 # Vim
 *.swp

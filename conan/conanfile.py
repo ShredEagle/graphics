@@ -1,5 +1,7 @@
 from conans import ConanFile, CMake, tools
 
+from os import path
+
 
 class TwodConan(ConanFile):
     name = "2d"
@@ -16,12 +18,13 @@ class TwodConan(ConanFile):
     default_options = {
         "shared": False,
         "build_tests": False,
+        "boost:layout": "versioned",
         "glad:api_version": "4.1",
         "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }
 
     requires = (
-        ("boost/1.71.0@conan/stable"),
+        ("boost/1.72.0"),
         ("glad/0.1.29@bincrafters/stable"),
         ("glfw/3.3@bincrafters/stable"),
         ("jsonformoderncpp/3.7.0@vthiery/stable"),
@@ -46,6 +49,7 @@ class TwodConan(ConanFile):
         cmake.definitions["CMAKE_PROJECT_2d_INCLUDE"] = \
             path.join(self.source_folder, "cmake", "conan", "customconan.cmake")
         cmake.definitions["BUILD_tests"] = self.options.build_tests
+        cmake.definitions["Boost_USE_STATIC_LIBS"] = not self.options["boost"].shared
         cmake.configure()
         return cmake
 
