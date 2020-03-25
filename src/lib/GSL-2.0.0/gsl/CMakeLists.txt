@@ -1,5 +1,17 @@
 project(gsl)
 
+set(${PROJECT_NAME}_HEADERS
+    gsl
+    gsl_algorithm
+    gsl_assert
+    gsl_byte
+    gsl_util
+    multi_span
+    pointers
+    span
+    string_span
+)
+
 add_library(${PROJECT_NAME} INTERFACE)
 
 cmc_target_current_include_directory(${PROJECT_NAME})
