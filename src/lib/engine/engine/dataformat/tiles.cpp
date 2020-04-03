@@ -4,7 +4,7 @@
 
 #include <resource/PathProvider.h>
 
-#include <Math/Range.h>
+#include <math/Range.h>
 
 #include <sstream>
 
@@ -21,12 +21,12 @@ SpriteSheet loadMeta(std::istream & aDatastream)
         {},
         Image{pathFor(content["file"])}
     };
-    
+
     const std::string prefix = content["set"]["prefix"];
 
     auto grid = content["set"]["regularGrid"];
     Size2<int> dimension{grid["width"], grid["height"]};
-    Vec2<int> tileOffset = static_cast<Vec2<int>>(dimension) 
+    Vec2<int> tileOffset = static_cast<Vec2<int>>(dimension)
                            + Vec2<int>{grid["xBorder"], grid["yBorder"]};
     Position2<int> startPosition{grid["xOffset"], grid["yOffset"]};
 
