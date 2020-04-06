@@ -5,7 +5,7 @@
 
 #include <handy/Guard.h>
 
-#include <glad/glad.h>
+#include "GL_Loader.h"
 
 #include <cassert>
 #include <string>

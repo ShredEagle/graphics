@@ -3,10 +3,10 @@
 #include "Engine.h"
 
 #include <renderer/Error.h>
+#include <renderer/GL_Loader.h>
 
 #include <handy/Guard.h>
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <memory>

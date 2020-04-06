@@ -3,7 +3,7 @@
 #include <handy/Guard.h>
 #include <handy/tuple_utils.h>
 
-#include <glad/glad.h>
+#include "GL_Loader.h"
 
 #include <functional>
 #include <vector>

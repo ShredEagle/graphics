@@ -2,7 +2,7 @@
 
 #include <handy/Guard.h>
 
-#include <glad/glad.h>
+#include "GL_Loader.h"
 
 namespace ad {
 
@@ -16,7 +16,7 @@ namespace ad {
 //    return name;
 //}
 
-inline GLuint reserve(void(*aGlGenFunction)(GLsizei, GLuint *))
+inline GLuint reserve(void(GLAPIENTRY * aGlGenFunction)(GLsizei, GLuint *))
 {
     GLuint name;
     aGlGenFunction(1, &name);

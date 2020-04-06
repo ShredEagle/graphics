@@ -6,6 +6,7 @@ set(${PROJECT_NAME}_HEADERS
     Error.h
     FrameBuffer.h
     gl_helpers.h
+    GL_Loader.h
     Image.h
     MappedGL.h
     Range.h

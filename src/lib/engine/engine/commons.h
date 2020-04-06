@@ -2,7 +2,7 @@
 
 #include <math/Vector.h>
 
-#include <glad/glad.h>
+#include <renderer/GL_Loader.h>
 
 namespace ad {
 

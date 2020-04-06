@@ -1,14 +1,13 @@
 #pragma once
 
 #include "gl_helpers.h"
+#include "GL_Loader.h"
 #include "MappedGL.h"
 #include "Range.h"
 
 #include <handy/Guard.h>
 
 #include <gsl/span>
-
-#include <glad/glad.h>
 
 #include <type_traits>
 #include <vector>
