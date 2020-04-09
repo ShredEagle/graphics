@@ -25,8 +25,8 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         glad::glad
-        engine
-        renderer
-        gsl
+        ad::engine
+        ad::renderer
+        gsl::gsl
         Boost::filesystem
 )

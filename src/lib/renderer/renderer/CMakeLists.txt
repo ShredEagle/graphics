@@ -29,6 +29,8 @@ add_library(${PROJECT_NAME}
     ${${PROJECT_NAME}_HEADERS}
 )
 
+add_library(ad::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
 cmc_target_current_include_directory(${PROJECT_NAME})
 
 

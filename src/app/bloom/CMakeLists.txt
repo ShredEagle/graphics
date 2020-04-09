@@ -20,7 +20,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         glad::glad
-        engine
-        renderer
-        resource
+        ad::engine
+        ad::renderer
+        ad::resource
 )
