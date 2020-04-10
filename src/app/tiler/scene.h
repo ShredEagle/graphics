@@ -160,8 +160,8 @@ inline std::unique_ptr<Scene> setupScene(Engine & aEngine)
 {
     const Size2<int> tileSize{32, 32};
     std::unique_ptr<Scene> result(new Scene{
-        RingDrop{pathFor("tiles.bmp.meta"), aEngine},
-        Scroller{tileSize, pathFor("tiles.bmp.meta"), aEngine}
+        RingDrop{pathFor("tiles.bmp.meta").string(), aEngine},
+        Scroller{tileSize, pathFor("tiles.bmp.meta").string(), aEngine}
     });
 
     /*

@@ -2,14 +2,24 @@
 
 #include "build_config.h"
 
+#include <platform/Filesystem.h>
+
 #include <string>
+
 
 namespace ad {
 
-inline std::string pathFor(const std::string &aAsset)
+
+inline filesystem::path pathFor(const filesystem::path &aAsset)
 {
-    return gAssetFolderPath + ("/" + aAsset);
+    auto result = gAssetFolderPath / aAsset;
+    if (!exists(result))
+    {
+        throw std::runtime_error{result.string() + " does not exist."};
+    }
+    return result;
 }
+
 
 } // namespace ad
 

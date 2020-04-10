@@ -91,7 +91,7 @@ DrawContext animatedRing()
     //
     {
         static const Image
-            ring{pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png")};
+            ring{pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string()};
 
         const Size2<int> frame {
             347-3,

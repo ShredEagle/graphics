@@ -127,7 +127,7 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
 
     // Texture
     {
-        loadSprite(mNeonTexture, GL_TEXTURE0, Image(pathFor("st_outline.png")));
+        loadSprite(mNeonTexture, GL_TEXTURE0, Image(pathFor("st_outline.png").string()));
     }
 }
 

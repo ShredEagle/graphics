@@ -1,8 +1,10 @@
 add_subdirectory(lib/handy/handy)
+add_subdirectory(lib/platform/platform)
+add_subdirectory(lib/GSL-2.0.0/gsl)
+
 add_subdirectory(lib/renderer/renderer)
 add_subdirectory(lib/resource/resource)
 add_subdirectory(lib/engine/engine)
-add_subdirectory(lib/GSL-2.0.0/gsl)
 
 option(BUILD_tests "Build the demo applications" ON)
 if(BUILD_tests)
