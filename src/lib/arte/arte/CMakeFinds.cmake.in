@@ -1,1 +1,1 @@
-@find_package@(math CONFIG @REQUIRED@)
+@find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)

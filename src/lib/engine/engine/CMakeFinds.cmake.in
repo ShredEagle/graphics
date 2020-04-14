@@ -1,4 +1,5 @@
-@find_package@(math CONFIG @REQUIRED@)
+@find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
+
 @find_package@(nlohmann_json CONFIG 3.7.0 @REQUIRED@)
 @find_package@(glad CONFIG @REQUIRED@)
 @find_package@(glfw3 3.3 CONFIG @REQUIRED@)
