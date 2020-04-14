@@ -3,13 +3,13 @@ from conans import ConanFile, CMake, tools
 from os import path
 
 
-class TwodConan(ConanFile):
-    name = "2d"
+class GraphicsConan(ConanFile):
+    name = "graphics"
     license = "The Unlicense"
     author = "adnn"
-    url = "https://github.com/Adnn/2D"
-    description = "2D graphics with OpenGL"
-    topics = ("opengl", "graphics", "2D")
+    url = "https://github.com/Adnn/graphics"
+    description = "Graphics, software and with OpenGL"
+    topics = ("opengl", "graphics", "2D", "3D")
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],
@@ -18,7 +18,7 @@ class TwodConan(ConanFile):
     default_options = {
         "shared": False,
         "build_tests": False,
-        "boost:layout": "versioned",
+        "boost:layout": "versioned", #Should be system on non-Windows
         "glad:api_version": "4.1",
         "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }
@@ -46,7 +46,7 @@ class TwodConan(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["CMAKE_PROJECT_2d_INCLUDE"] = \
+        cmake.definitions["CMAKE_PROJECT_Graphics_INCLUDE"] = \
             path.join(self.source_folder, "cmake", "conan", "customconan.cmake")
         cmake.definitions["BUILD_tests"] = self.options.build_tests
         cmake.definitions["Boost_USE_STATIC_LIBS"] = not self.options["boost"].shared
