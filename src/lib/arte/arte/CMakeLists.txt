@@ -24,10 +24,12 @@ cmc_target_current_include_directory(${PROJECT_NAME})
 
 cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
+set(_internal_dependencies_public handy)
+
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        ad::handy
-        ad::math)
+        ad::math
+        ${_internal_dependencies_public})
 
 
 ##
@@ -42,6 +44,6 @@ cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
                          FILES ${${PROJECT_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
 cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
-    #DEPENDS_COMPONENTS ${_internal_dependencies_public}
+                          DEPENDS_COMPONENTS ${_internal_dependencies_public}
                           FIND_FILE CMakeFinds.cmake.in
                           NAMESPACE ad::)

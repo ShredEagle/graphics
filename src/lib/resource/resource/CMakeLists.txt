@@ -26,9 +26,11 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # For generated header
 )
 
+set(_internal_dependencies_interface platform)
+
 target_link_libraries(${PROJECT_NAME}
     INTERFACE
-        ad::platform)
+        ${_internal_dependencies_interface})
 
 
 ##
@@ -43,4 +45,5 @@ cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
                          FILES ${${PROJECT_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
 cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
+                          DEPENDS_COMPONENTS ${_internal_dependencies_interface}
                           NAMESPACE ad::)

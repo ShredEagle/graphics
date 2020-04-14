@@ -37,4 +37,5 @@ cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
                          FILES ${${PROJECT_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
 cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
+                          FIND_FILE CMakeFinds.cmake.in
                           NAMESPACE ad::)
