@@ -14,20 +14,21 @@ public:
 
 
     // Non-copyable
-    Guard (const Guard &) = delete;
+    Guard(const Guard &) = delete;
     Guard & operator=(const Guard &) = delete;
 
     // Movable
-    Guard (Guard && aOther) :
+    Guard(Guard && aOther) :
         mReleaser{std::move(aOther.mReleaser)}
     {
         aOther.mReleaser = &Guard::turnOff;
     }
 
-    void operator=(Guard && aOther)
+    Guard & operator=(Guard && aOther)
     {
         mReleaser = std::move(aOther.mReleaser);
         aOther.mReleaser = &Guard::turnOff;
+        return *this;
     }
 
     ~Guard()
@@ -63,11 +64,7 @@ public:
     {}
 
     // Movable
-    ResourceGuard (ResourceGuard && aOther) :
-        mResource{std::move(aOther.mResource)},
-        mGuard{std::move(aOther.mGuard)}
-    {}
-
+    ResourceGuard(ResourceGuard && aOther) = default;
     ResourceGuard & operator=(ResourceGuard &&) = default;
 
     operator const T& () const

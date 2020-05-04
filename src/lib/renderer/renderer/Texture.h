@@ -21,7 +21,7 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
         mTarget(aTarget)
     {}
 
-    const GLenum mTarget;
+    GLenum mTarget;
 };
 
 inline void bind(const Texture & aTexture)
