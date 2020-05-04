@@ -3,35 +3,43 @@
 #include "commons.h"
 #include "Sprite.h"
 
+#include <handy/Observer.h>
+
 
 namespace ad {
 
 class Engine
 {
-    typedef std::function<void(Size2<int>)> SizeListener;
-    /// \todo Implement an RAII structure that removes the listening on destruction
-    struct Listening{};
-
 public:
+    using SizeListener = std::function<void(Size2<int>)>;
+
     Engine();
 
     void clear();
 
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;
-    void callbackWindowSize(int width, int height);
-    void callbackFramebufferSize(int width, int height);
-    Listening listenResize(SizeListener aListener);
 
+    [[nodiscard]] std::shared_ptr<SizeListener> listenFramebufferResize(SizeListener aListener);
 
+    /// \note Takes a callback by value, keep it until replaced or Engine instance is destructed
     template <class T_keyCallback>
-    void registerKeyCallback(std::shared_ptr<T_keyCallback> && mCallbackInstance);
+    void registerKeyCallback(T_keyCallback mCallback);
+    template <class T_keyCallback>
+    void registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback);
+
+    /// \brief To be called by the application when the Window is resized
+    void callbackWindowSize(int width, int height);
+    /// \brief To be called by the application when the Framebuffer is resized
+    void callbackFramebufferSize(int width, int height);
+
+    /// \brief To be called by the application when it has keyboard events to provide
     void callbackKeyboard(int key, int scancode, int action, int mode);
 
 private:
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
-    std::vector<SizeListener> mSizeCallbacks;
+    Subject<SizeListener> mFramebufferSizeSubject;
     std::function<void(int, int, int, int)> mKeyboardCallback;
 };
 
@@ -47,20 +55,34 @@ inline const Size2<int> & Engine::getFramebufferSize() const
     return mFramebufferSize;
 }
 
-inline Engine::Listening Engine::listenResize(SizeListener aListener)
+
+inline std::shared_ptr<Engine::SizeListener> Engine::listenFramebufferResize(SizeListener aListener)
 {
-    mSizeCallbacks.push_back(std::move(aListener));
-    return {};
+    auto result = std::make_shared<SizeListener>(std::move(aListener));
+    mFramebufferSizeSubject.mObservers.emplace_back(result);
+    return result;
 }
 
+
 template <class T_keyCallback>
-void Engine::registerKeyCallback(std::shared_ptr<T_keyCallback> && mCallbackInstance)
+void Engine::registerKeyCallback(T_keyCallback aCallback)
 {
-    mKeyboardCallback = [mCallbackInstance](int key, int scancode, int action, int mods)
+    mKeyboardCallback = [aCallback](int key, int scancode, int action, int mods)
     {
-        (*mCallbackInstance)(key, scancode, action, mods);
+        aCallback(key, scancode, action, mods);
     };
 }
+
+
+template <class T_keyCallback>
+void Engine::registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback)
+{
+    mKeyboardCallback = [aCallback](int key, int scancode, int action, int mods)
+    {
+        (*aCallback)(key, scancode, action, mods);
+    };
+}
+
 
 inline void Engine::callbackKeyboard(int key, int scancode, int action, int mode)
 {

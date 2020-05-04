@@ -15,7 +15,7 @@ int main(int argc, const char * argv[])
 
         ad::Timer timer{glfwGetTime(), 0.};
 
-        Scene scene(argv, application.mEngine.get());
+        Scene scene(argv, application.getEngine().get());
 
         while(application.nextFrame())
         {

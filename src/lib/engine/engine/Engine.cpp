@@ -38,11 +38,7 @@ void Engine::callbackFramebufferSize(int width, int height)
     glViewport(0, 0, width, height);
     mFramebufferSize.width() = width;
     mFramebufferSize.height() = height;
-
-    for (auto & listener : mSizeCallbacks)
-    {
-        listener({width, height});
-    }
+    mFramebufferSizeSubject.dispatch(Size2<int>{width, height});
 }
 
 void Engine::clear()

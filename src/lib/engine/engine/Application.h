@@ -15,14 +15,104 @@ namespace ad
 {
 
 
-struct Application
+class Application
 {
+public:
     enum Flags
     {
         None = 0,
         Window_Keep_Ratio = (1 << 1),
     };
 
+    Application(const std::string aName,
+                int aWidth, int aHeight,
+                Flags aFlags = None,
+                int aGLVersionMajor=4, int aGLVersionMinor=1) :
+        mGlfwInitialization(initializeGlfw()),
+        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor))
+    {
+        if (aFlags & Window_Keep_Ratio)
+        {
+            glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
+        }
+
+        glfwMakeContextCurrent(mWindow);
+        gladLoadGL();
+
+        mEngine = std::make_shared<Engine>();
+        glfwSetWindowUserPointer(mWindow, mEngine.get());
+        // Explicitly call size ballbacks, they are used to complete the engine setup
+        {
+            // Get the size, because the hints might not be satisfied
+            // (yet not invoking the size callback)
+            int width, height;
+            glfwGetWindowSize(mWindow, &width, &height);
+            windowsSize_callback(mWindow, width, height);
+
+            glfwGetFramebufferSize(mWindow, &width, &height);
+            framebufferSize_callback(mWindow, width, height);
+        }
+
+        glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
+        glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
+
+        namespace sp = std::placeholders;
+        mEngine->registerKeyCallback(std::bind(&Application::default_key_callback,
+                                               static_cast<GLFWwindow*>(this->mWindow),
+                                               sp::_1, sp::_2, sp::_3, sp::_4));
+        glfwSetKeyCallback(mWindow, forward_key_callback);
+
+        glfwShowWindow(mWindow);
+
+        // VSync
+        glfwSwapInterval(1);
+
+        if (!GLAD_GL_KHR_debug)
+        {
+            std::cerr << "Debug output is not available."
+                      << " Please run on a decent platform for debugging."
+                      << std::endl;
+        }
+        else
+        {
+            ad::enableDebugOutput();
+        }
+    }
+
+    bool handleEvents()
+    {
+        glfwPollEvents();
+        return ! glfwWindowShouldClose(mWindow);
+    }
+
+    void swapBuffers()
+    {
+        glfwSwapBuffers(mWindow);
+    }
+
+    /// \brief Swap buffers then handle events
+    bool nextFrame()
+    {
+        swapBuffers();
+        return handleEvents();
+    }
+
+    std::shared_ptr<Engine> getEngine()
+    {
+        return mEngine;
+    }
+
+    std::shared_ptr<const Engine> getEngine() const
+    {
+        return mEngine;
+    }
+
+    void markWindowShouldClose() const
+    {
+        glfwSetWindowShouldClose(mWindow, GLFW_TRUE);
+    }
+
+private:
     static void error_callback(int error, const char* description)
     {
         std::cerr << "Application encountered GLFW error: "
@@ -38,7 +128,7 @@ struct Application
         }
     }
 
-    static void custom_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    static void forward_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
         ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
         engine->callbackKeyboard(key, scancode, action, mods);
@@ -93,81 +183,6 @@ struct Application
         }
 
         return window;
-    }
-
-    Application(const std::string aName,
-                int aWidth, int aHeight,
-                Flags aFlags = None,
-                int aGLVersionMajor=4, int aGLVersionMinor=1) :
-        mGlfwInitialization(initializeGlfw()),
-        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor))
-    {
-        if (aFlags & Window_Keep_Ratio)
-        {
-            glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
-        }
-
-        glfwMakeContextCurrent(mWindow);
-        gladLoadGL();
-
-        mEngine = std::make_shared<Engine>();
-        glfwSetWindowUserPointer(mWindow, mEngine.get());
-        // Explicitly call it, because it is used to complete the engine setup
-        {
-            // Get the size, because the hints might not be satisfied
-            // (yet not invoking the size callback)
-            int width, height;
-            glfwGetWindowSize(mWindow, &width, &height);
-            windowsSize_callback(mWindow, width, height);
-
-            glfwGetFramebufferSize(mWindow, &width, &height);
-            framebufferSize_callback(mWindow, width, height);
-        }
-
-        glfwSetKeyCallback(mWindow, default_key_callback);
-        glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
-        glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
-
-        glfwShowWindow(mWindow);
-
-        // VSync
-        glfwSwapInterval(1);
-
-        if (!GLAD_GL_KHR_debug)
-        {
-            std::cerr << "Debug output is not available."
-                      << " Please run on a decent platform for debugging."
-                      << std::endl;
-        }
-        else
-        {
-            ad::enableDebugOutput();
-        }
-    }
-
-    bool handleEvents()
-    {
-        glfwPollEvents();
-        return ! glfwWindowShouldClose(mWindow);
-    }
-
-    void swapBuffers()
-    {
-        glfwSwapBuffers(mWindow);
-    }
-
-    /// \brief Swap buffers then handle events
-    bool nextFrame()
-    {
-        swapBuffers();
-        return handleEvents();
-    }
-
-    template <class T_keyCallback>
-    void registerKeyCallback(std::shared_ptr<T_keyCallback> mCallbackInstance)
-    {
-        mEngine->registerKeyCallback(std::move(mCallbackInstance));
-        glfwSetKeyCallback(mWindow, custom_key_callback);
     }
 
     Guard mGlfwInitialization;

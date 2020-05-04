@@ -3,6 +3,7 @@ project(handy)
 set(${PROJECT_NAME}_HEADERS
     array_utils.h
     Guard.h
+    Observer.h
     random.h
     tuple_utils.h
     vector_utils.h

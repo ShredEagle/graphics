@@ -59,7 +59,7 @@ struct Scroller
     {
         fillRandom(mTiling.begin(), mTiling.end());
 
-        aEngine.listenResize([this](Size2<int> aNewSize)
+        mSizeListener = aEngine.listenFramebufferResize([this](Size2<int> aNewSize)
         {
             mTiling.setBufferResolution(aNewSize);
             // +2 tiles on each dimension:
@@ -118,6 +118,7 @@ private:
     Tiling mTiling;
     std::vector<LoadedSprite> mTiles;
     Randomizer<> mRandomIndex;
+    std::shared_ptr<Engine::SizeListener> mSizeListener;
 };
 
 struct RingDrop
@@ -132,7 +133,7 @@ struct RingDrop
     {
         mSpriting.instanceData().push_back(Instance{{20, 10}, mFrames.front()});
 
-        aEngine.listenResize([this](Size2<int> aNewSize)
+        mSizeListener = aEngine.listenFramebufferResize([this](Size2<int> aNewSize)
         {
             mSpriting.setBufferResolution(aNewSize);
         });
@@ -146,6 +147,7 @@ struct RingDrop
 private:
     Spriting mSpriting;
     std::vector<LoadedSprite> mFrames;
+    std::shared_ptr<Engine::SizeListener> mSizeListener;
 };
 
 struct Scene {

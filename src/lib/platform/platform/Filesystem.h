@@ -4,11 +4,14 @@
 
 
 namespace ad {
-    namespace filesystem = boost::filesystem;
+
+namespace filesystem = boost::filesystem;
+
 //namespace filesystem {
 //
 //    using boost::filesystem::path path;
 //
 //
 //} // namespace filesystem
+
 } // namespace ad
