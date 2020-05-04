@@ -2,6 +2,8 @@
 
 #include <handy/ZeroOnMove.h>
 
+#include <platform/Filesystem.h>
+
 #include <math/Color.h>
 
 #include <filesystem>
@@ -11,8 +13,51 @@
 namespace ad {
 
 
-// std::filesystem::path would be better, but requires macOS >= 10.15
-using path = std::string;
+enum class ImageFormat
+{
+    Pgm,
+    Ppm,
+};
+
+
+struct FormatInfo
+{
+    std::string name;
+    filesystem::path extension;
+};
+
+
+static const std::map<ImageFormat, FormatInfo> gImageFormatMap {
+    {ImageFormat::Pgm, {"PGM", ".pgm"}},
+    {ImageFormat::Ppm, {"PPM", ".ppm"}},
+};
+
+
+inline std::string to_string(ImageFormat aFormat)
+{
+    return gImageFormatMap.at(aFormat).name;
+}
+
+
+inline filesystem::path to_extension(ImageFormat aFormat)
+{
+    return gImageFormatMap.at(aFormat).extension;
+}
+
+
+inline ImageFormat from_extension(filesystem::path aExtension)
+{
+    for(auto pair : gImageFormatMap)
+    {
+        if (pair.second.extension == aExtension)
+        {
+            return pair.first;
+        }
+    }
+    throw std::out_of_range("No ImageFormat for extension '" + aExtension.string() + "'");
+}
+
+
 
 template <class T_pixelFormat = math::sdr::Rgb>
 class Image
@@ -73,18 +118,36 @@ public:
     // \brief Creates an image
     Image(math::Size<2, int> aDimensions, pixel_format_t aBackgroundValue);
 
-    // TODO Generalize for all supported formats
-    void writePpm(std::ostream & aOut) const;
-    void writePpm(std::ostream && aOut) const
-    { return writePpm(aOut); };
+    void write(ImageFormat aFormat, std::ostream & aOut) const;
+    void write(ImageFormat aFormat, std::ostream && aOut) const
+    { return write(aFormat, aOut); };
 
-    // TODO Generalize for all supported formats
-    static Image ReadPpm(std::istream & aIn);
+    static Image Read(ImageFormat aFormat, std::istream & aIn);
+    static Image Read(ImageFormat aFormat, std::istream && aIn)
+    { return Read(aFormat, aIn); }
 
-    static Image LoadFile(const path & aImageFile);
+    static Image LoadFile(const filesystem::path & aImageFile);
 
+    void saveFile(const filesystem::path & aDestination) const;
+
+    // TODO Is it a good idea? It works with the usual image semantix, i.e. [x][y], yet
+    //   it is the opposite than for matrices. Plus the implementation creates complexity.
     Column operator[](std::size_t aColumnId);
     const_Column operator[](std::size_t aColumnId) const;
+
+    pixel_format_t & at(std::size_t aColumn, std::size_t aRow)
+    { return data()[aRow*width() + aColumn]; }
+
+    pixel_format_t at(std::size_t aColumn, std::size_t aRow) const
+    { return data()[aRow*width() + aColumn]; }
+
+    template <class T_integer>
+    pixel_format_t & at(math::Position<2, T_integer> aPosition)
+    { return at(aPosition.x(), aPosition.y()); }
+
+    template <class T_integer>
+    pixel_format_t at(math::Position<2, T_integer> aPosition) const
+    { return at(aPosition.x(), aPosition.y()); }
 
     // NOTE This is our firewall, behing this interface is encapsulated the old unsafe way
     pixel_format_t * data()
@@ -130,6 +193,9 @@ private:
     // TODO try with byte
     std::unique_ptr<char[]> mRaster{nullptr};
 };
+
+
+Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
 
 
 //

@@ -2,6 +2,8 @@ project(arte)
 
 set(${PROJECT_NAME}_HEADERS
     Image.h
+
+    details/ImageFormats/Netpbm.h
 )
 
 set(${PROJECT_NAME}_SOURCES
@@ -24,7 +26,7 @@ cmc_target_current_include_directory(${PROJECT_NAME})
 
 cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
-set(_internal_dependencies_public handy)
+set(_internal_dependencies_public handy platform)
 
 target_link_libraries(${PROJECT_NAME}
     PUBLIC

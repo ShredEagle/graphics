@@ -2,7 +2,7 @@
 
 #include "../../Image.h"
 
-#include <math/Vector.h>
+#include <math/Color.h>
 
 
 static constexpr std::size_t gChunkSize = 256/*kB*/ * 1024/*B*/;
@@ -13,17 +13,64 @@ namespace detail {
 
 
     using Rgb = math::sdr::Rgb;
+    using Grayscale = math::sdr::Grayscale;
 
 
-    struct Ppm
+    enum class NetpbmFormat
     {
+        Pgm,
+        Ppm,
+    };
+
+    constexpr const char * magicNumber(NetpbmFormat aFormat)
+    {
+        switch(aFormat)
+        {
+        case NetpbmFormat::Pgm:
+            return "P5";
+        case NetpbmFormat::Ppm:
+            return "P6";
+        }
+    };
+
+    std::string to_string(NetpbmFormat aFormat)
+    {
+        switch(aFormat)
+        {
+        case NetpbmFormat::Pgm:
+            return "PGM";
+        case NetpbmFormat::Ppm:
+            return "PPM";
+        }
+    };
+
+
+    template <NetpbmFormat N_format>
+    struct format_trait
+    {};
+
+    template <>
+    struct format_trait<NetpbmFormat::Pgm>
+    { using pixel_type = Grayscale; };
+
+    template <>
+    struct format_trait<NetpbmFormat::Ppm>
+    { using pixel_type = Rgb; };
+
+
+    template <NetpbmFormat N_format>
+    struct Netpbm
+    {
+        static constexpr const char * magic = magicNumber(N_format);
+        using pixel_type = typename format_trait<N_format>::pixel_type;
+
         static math::Size<2, int> ReadHeader(std::istream & aIn)
         {
             char magic1{0}, magic2{0};
             aIn >> magic1 >> magic2;
-            if (magic1 != 'P' || magic2 != '6')
+            if (magic1 != magic[0] || magic2 != magic[1])
             {
-                throw std::runtime_error("Invalid header for PPM content");
+                throw std::runtime_error("Invalid header for " + to_string(N_format) + " content");
             }
 
             int width{-1}, height{-1}, maxValue{0};
@@ -35,7 +82,8 @@ namespace detail {
             }
             if (maxValue != 255)
             {
-                throw std::runtime_error("Unhandled PPM maximum value of " + std::to_string(maxValue));
+                throw std::runtime_error("Unhandled " + to_string(N_format) + " maximum value of "
+                                         + std::to_string(maxValue));
             }
 
             aIn.get(); // consume the one byte appearing after max value and before raster data
@@ -44,11 +92,11 @@ namespace detail {
             return {width, height};
         }
 
-        static Image<Rgb> Read(std::istream & aIn)
+        static Image<pixel_type> Read(std::istream & aIn)
         {
             auto dimensions = ReadHeader(aIn);
 
-            std::size_t remainingBytes = dimensions.area() * sizeof(Rgb);
+            std::size_t remainingBytes = dimensions.area() * sizeof(pixel_type);
             auto data = std::make_unique<char[]>(remainingBytes);
             char * currentDestination = data.get();
 
@@ -59,7 +107,7 @@ namespace detail {
                 {
                     // If the stream is not good, but its converts to "true", it means it reached eof
                     // see: https://en.cppreference.com/w/cpp/io/basic_ios/good#see_also
-                    throw std::runtime_error(std::string{"Invalid PPM content: "} +
+                    throw std::runtime_error("Invalid " + to_string(N_format) + " content: " +
                         (aIn ? "truncated content" : "read error"));
                 }
                 remainingBytes -= readSize;
@@ -68,20 +116,21 @@ namespace detail {
 
             if (aIn.peek(), !aIn.eof())
             {
-                throw std::runtime_error("Invalid PPM content: trailing data");
+                throw std::runtime_error("Invalid " + to_string(N_format)
+                                         + " content: trailing data");
             }
 
-            return Image(dimensions, std::move(data));
+            return {dimensions, std::move(data)};
         }
 
-        static void Write(std::ostream & aOut, const Image<Rgb> & aImage)
+        static void Write(std::ostream & aOut, const Image<pixel_type> & aImage)
         {
             if(!aOut.good())
             {
                 throw std::runtime_error("Output stream is not valid for writing");
             }
 
-            aOut << "P6\n"
+            aOut << magic << '\n'
                 << aImage.width() << ' ' << aImage.height() << '\n'
                 << "255\n"
                 ;
@@ -94,7 +143,8 @@ namespace detail {
                 int writeSize = std::min(remainingBytes, gChunkSize);
                 if (!aOut.write(currentSource, writeSize).good())
                 {
-                    throw std::runtime_error("Error writing PPM pixel data to stream");
+                    throw std::runtime_error("Error writing "+ to_string(N_format)
+                                             + " pixel data to stream");
                 }
                 remainingBytes -= writeSize;
                 currentSource += writeSize;

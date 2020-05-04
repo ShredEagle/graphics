@@ -1,10 +1,11 @@
 #include "Image.h"
 
-#include "details/ImageFormats/Ppm.h"
+#include "details/ImageFormats/Netpbm.h"
 
 #include <algorithm>
 #include <string>
 #include <istream>
+#include <sstream>
 
 namespace ad {
 
@@ -42,35 +43,99 @@ Image<T_pixelFormat> & Image<T_pixelFormat>::operator=(const Image & aRhs)
 }
 
 
-template <class T_pixelFormat>
-void Image<T_pixelFormat>::writePpm(std::ostream & aOut) const
+template <>
+void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut) const
 {
-    detail::Ppm::Write(aOut, *this);
+    switch(aFormat)
+    {
+    case ImageFormat::Ppm:
+        detail::Netpbm<detail::NetpbmFormat::Ppm>::Write(aOut, *this);
+        break;
+    default:
+        throw std::runtime_error{"Unsupported write format for RGB image: "
+                                 + to_string(aFormat)};
+    }
+}
+
+
+template <>
+void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut) const
+{
+    switch(aFormat)
+    {
+    case ImageFormat::Pgm:
+        detail::Netpbm<detail::NetpbmFormat::Pgm>::Write(aOut, *this);
+        break;
+    default:
+        throw std::runtime_error{"Unsupported write format for grayscale image: "
+                                 + to_string(aFormat)};
+    }
+}
+
+
+template <>
+Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat, std::istream & aIn)
+{
+    switch(aFormat)
+    {
+    case ImageFormat::Ppm:
+        return detail::Netpbm<detail::NetpbmFormat::Ppm>::Read(aIn);
+    default:
+        throw std::runtime_error{"Unsupported read format for RGB image: "
+                                 + to_string(aFormat)};
+    }
+}
+
+
+template <>
+Image<math::sdr::Grayscale> Image<math::sdr::Grayscale>::Read(ImageFormat aFormat, std::istream & aIn)
+{
+    switch(aFormat)
+    {
+    case ImageFormat::Pgm:
+        return detail::Netpbm<detail::NetpbmFormat::Pgm>::Read(aIn);
+    default:
+        throw std::runtime_error{"Unsupported read format for grayscale image: "
+                                 + to_string(aFormat)};
+    }
 }
 
 
 template <class T_pixelFormat>
-Image<T_pixelFormat> Image<T_pixelFormat>::ReadPpm(std::istream & aIn)
+Image<T_pixelFormat> Image<T_pixelFormat>::LoadFile(const filesystem::path & aImageFile)
 {
-    return detail::Ppm::Read(aIn);
+    return Read(from_extension(aImageFile.extension()),
+                std::ifstream{aImageFile.string(), std::ios_base::in | std::ios_base::binary});
 }
 
 
-//template <class T_pixelFormat>
-//Image<T_pixelFormat> Image<T_pixelFormat>::LoadFile(const path & aImageFile)
-//{
-//    path extension = aImageFile.extension();
-//    if(extension == ".ppm")
-//    {
-//        return detail::Ppm::Read(std::ifstream(aImageFile, std::ios_base::in | std::ios_base::binary));
-//    }
-//}
+template <class T_pixelFormat>
+void Image<T_pixelFormat>::saveFile(const filesystem::path & aDestination) const
+{
+    write(from_extension(aDestination.extension()),
+          std::ofstream{aDestination.string(), std::ios_base::out | std::ios_base::binary});
+}
+
+
+Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
+{
+    auto destination = std::make_unique<char []>(aSource.dimensions().area());
+
+    std::transform(aSource.begin(), aSource.end(), destination.get(),
+                   [](math::sdr::Rgb aPixel) -> math::sdr::Grayscale
+                   {
+                       return (aPixel.r() + aPixel.g() + aPixel.b()) / 3;
+                   });
+
+    return {aSource.dimensions(), std::move(destination)};
+}
 
 
 //
 // Explicit instantiations
 //
 template class Image<>;
+template class Image<math::sdr::Grayscale>;
+
 
 } // namespace ad
-

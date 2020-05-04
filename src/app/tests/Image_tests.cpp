@@ -206,8 +206,8 @@ SCENARIO("Image files creation, read, write")
         THEN("It can be writen to a file")
         {
             auto redfile = tempFolder/"red.ppm";
-            red.writePpm(std::ofstream{redfile.string(),
-                                       std::ios_base::out | std::ios_base::binary});
+            red.write(ImageFormat::Ppm,
+                      std::ofstream{redfile.string(), std::ios_base::out | std::ios_base::binary});
 
             REQUIRE(exists(redfile));
         }
@@ -220,7 +220,7 @@ SCENARIO("Image files creation, read, write")
 
         THEN("It can be read to an Image")
         {
-            Image<> yacht{Image<>::ReadPpm(ppmInput)};
+            Image<> yacht{Image<>::Read(ImageFormat::Ppm, ppmInput)};
 
             THEN("Colors can be swapped then it can be written back to a file")
             {
@@ -234,8 +234,16 @@ SCENARIO("Image files creation, read, write")
                         });
 
                 auto resultfile = tempFolder/"color_swap_yacht.ppm";
-                yacht.writePpm(std::ofstream{resultfile.string(),
-                                             std::ios_base::out | std::ios_base::binary});
+                yacht.write(ImageFormat::Ppm,
+                            std::ofstream{resultfile.string(),
+                                          std::ios_base::out | std::ios_base::binary});
+                REQUIRE(exists(resultfile));
+            }
+
+            THEN("It can be converted to a grayscale image and written to a file")
+            {
+                filesystem::path resultfile = tempFolder/"grayscale_yacht.pgm";
+                toGrayscale(yacht).saveFile(resultfile);
                 REQUIRE(exists(resultfile));
             }
         }
