@@ -52,7 +52,7 @@ struct Scroller
 
     Scroller(const Size2<int> aTileSize, std::string aTilesheet, Engine & aEngine) :
             mTiling(aTileSize,
-                    aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{1, 1},
+                    aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2},
                     aEngine.getWindowSize()),
             mTiles(loadSheet(mTiling, aTilesheet)),
             mRandomIndex(0, static_cast<int>(mTiles.size()-1))
@@ -116,22 +116,24 @@ private:
 
 private:
     Tiling mTiling;
-    std::vector<LoadedSprite> mTiles;
+    std::vector<LoadedSprite> mTiles; // The list of available tiles
     Randomizer<> mRandomIndex;
     std::shared_ptr<Engine::SizeListener> mSizeListener;
 };
 
-struct RingDrop
+
+// For the static tile shown as a logo in the bottom left corner
+struct Tiles
 {
     // Non-copiable, nor movable, because it captures `this` in a lambda registered externally
-    RingDrop(const RingDrop &) = delete;
-    RingDrop & operator=(const RingDrop &) = delete;
+    Tiles(const Tiles &) = delete;
+    Tiles & operator=(const Tiles &) = delete;
 
-    RingDrop(std::string aSpriteSheet, Engine & aEngine) :
-             mSpriting(aEngine.getWindowSize()),
-             mFrames(loadSheet(mSpriting, aSpriteSheet))
+    Tiles(std::string aSpriteSheet, Engine & aEngine) :
+             mSpriting(aEngine.getWindowSize())
     {
-        mSpriting.instanceData().push_back(Instance{{20, 10}, mFrames.front()});
+        std::vector<LoadedSprite> frames{loadSheet(mSpriting, aSpriteSheet)};
+        mSpriting.instanceData().push_back(Instance{{20, 10}, frames.front()});
 
         mSizeListener = aEngine.listenFramebufferResize([this](Size2<int> aNewSize)
         {
@@ -146,12 +148,13 @@ struct RingDrop
 
 private:
     Spriting mSpriting;
-    std::vector<LoadedSprite> mFrames;
     std::shared_ptr<Engine::SizeListener> mSizeListener;
 };
 
-struct Scene {
-    RingDrop mRings;
+
+struct Scene
+{
+    Tiles mTiles;
     Scroller mBackground;
 };
 
@@ -162,7 +165,7 @@ inline std::unique_ptr<Scene> setupScene(Engine & aEngine)
 {
     const Size2<int> tileSize{32, 32};
     std::unique_ptr<Scene> result(new Scene{
-        RingDrop{pathFor("tiles.bmp.meta").string(), aEngine},
+        Tiles{pathFor("tiles.bmp.meta").string(), aEngine},
         Scroller{tileSize, pathFor("tiles.bmp.meta").string(), aEngine}
     });
 
@@ -173,17 +176,20 @@ inline std::unique_ptr<Scene> setupScene(Engine & aEngine)
     return result;
 }
 
+
 inline void updateScene(Scene & aScene, Engine & aEngine, const Timer & aTimer)
 {
     static const Vec2<GLfloat> scrollSpeed{-200.f, 0.f};
     aScene.mBackground.scroll((GLfloat)aTimer.mDelta*scrollSpeed, aEngine);
 }
 
+
 inline void renderScene(const Scene & aScene, Engine & aEngine)
 {
     aEngine.clear();
     aScene.mBackground.render(aEngine);
-    aScene.mRings.render();
+    aScene.mTiles.render();
 }
+
 
 } // namespace ad

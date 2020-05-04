@@ -11,6 +11,7 @@ option(BUILD_tests "Build the demo applications" ON)
 if(BUILD_tests)
     add_subdirectory(app/tests)
 
+    # In order of implementation
     add_subdirectory(app/demo)
     add_subdirectory(app/simple)
     add_subdirectory(app/spriting)

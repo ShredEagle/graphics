@@ -43,7 +43,9 @@ VertexSpecification makeQuad()
     specification.mVertexBuffers.emplace_back(
         makeLoadedVertexBuffer(
             {
+                // Postion
                 { 0,                               2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
+                // UV
                 { {1, Attribute::Access::Integer}, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
             },
             sizeof(Vertex),
@@ -60,7 +62,9 @@ VertexSpecification makeQuad()
     specification.mVertexBuffers.push_back(
         makeLoadedVertexBuffer(
             {
+                // Sprite position
                 { 2,                               2, offsetof(Instance, mPosition),    MappedGL<GLint>::enumerator},
+                // LoadedSprite (i.e. sprite rectangle cutout in the texture)
                 { {3, Attribute::Access::Integer}, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator},
             },
             0,
@@ -81,6 +85,7 @@ Program makeProgram()
                           {GL_FRAGMENT_SHADER, gAnimationFragmentShader},
                       });
 
+    // Matches GL_TEXTURE0 from Spriting::load
     glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), 0);
 
     return program;

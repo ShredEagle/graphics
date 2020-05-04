@@ -69,7 +69,7 @@ int main(void)
     if (!GLAD_GL_KHR_debug)
     {
         std::cerr << "Debug output is not available."
-                  << " Please run on a decent platform for debugging.";
+                  << " Please run on a decent platform for debugging.\n";
     }
     else
     {

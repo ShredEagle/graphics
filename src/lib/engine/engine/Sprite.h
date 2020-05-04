@@ -8,6 +8,7 @@
 
 namespace ad {
 
+// Essentially a cutout in a spritesheet image
 typedef Rectangle<int> SpriteArea;
 
 /// \todo How to address it cleanly? We don't know how client code wants to represent sprites

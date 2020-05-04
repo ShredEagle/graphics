@@ -13,7 +13,7 @@ namespace ad {
 
 struct Instance
 {
-    Instance(Position2<GLint> aPosition, Rectangle<GLint> aTextureArea):
+    Instance(Position2<GLint> aPosition, LoadedSprite aTextureArea):
         mPosition(aPosition),
         mTextureArea(aTextureArea)
     {}
@@ -28,6 +28,9 @@ struct Instance
 //};
 
 
+/// \brief Draws a list of sprites (loaded from a single spritesheet with ::load()) at given positions.
+///
+/// The instance data is a vector of association between a position and a sprite (in the spritesheet).
 class Spriting
 {
 public:
@@ -82,7 +85,7 @@ std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
     {
         Texture texture{GL_TEXTURE_RECTANGLE};
         loadSpriteSheet(texture, GL_TEXTURE0, aRasterData, aRasterData.dimension());
-        mDrawContext.mTextures.push_back(std::move(texture)); 
+        mDrawContext.mTextures.push_back(std::move(texture));
     }
 
     std::vector<LoadedSprite> loadedSprites;

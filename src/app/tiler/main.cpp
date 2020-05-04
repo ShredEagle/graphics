@@ -32,6 +32,12 @@ static void windowsSize_callback(GLFWwindow * window, int width, int height)
     engine->callbackWindowSize(width, height);
 }
 
+static void framebufferSize_callback(GLFWwindow * window, int width, int height)
+{
+    ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+    engine->callbackFramebufferSize(width, height);
+}
+
 int main(void)
 {
     glfwSetErrorCallback(error_callback);
@@ -75,10 +81,12 @@ int main(void)
         int width, height;
         glfwGetWindowSize(window, &width, &height);
         windowsSize_callback(window, width, height);
+        framebufferSize_callback(window, width, height);
     }
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetWindowSizeCallback(window, windowsSize_callback);
+    glfwSetFramebufferSizeCallback(window, framebufferSize_callback);
 
     glfwShowWindow(window);
 

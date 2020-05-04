@@ -9,43 +9,6 @@
 
 namespace ad {
 
-//const GLchar* gTilingVertexShader = R"#(
-//    #version 400
-//
-//    layout(location=0) in vec4  in_VertexPosition;
-//    layout(location=1) in ivec2 in_UV;
-//    layout(location=2) in vec2  in_InstancePosition;
-//    layout(location=3) in vec3 in_Color;
-//
-//    uniform ivec2 in_BufferResolution;
-//
-//    out vec2 ex_UV;
-//    out vec3 ex_Color;
-//
-//    void main(void)
-//    {
-//        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy;
-//        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-//                           0.0, 1.0);
-//
-//        ex_Color = in_Color;
-//    }
-//)#";
-//
-//
-//const GLchar* gTilingFragmentShader = R"#(
-//    #version 400
-//
-//    in vec2 ex_UV;
-//    in vec3 ex_Color;
-//    out vec4 out_Color;
-//    uniform sampler2DRect spriteSampler;
-//
-//    void main(void)
-//    {
-//        out_Color = vec4(ex_Color, 1.0);
-//    }
-//)#";
 
 const GLchar* gTilingVertexShader = R"#(
     #version 400
@@ -84,7 +47,9 @@ const GLchar* gTilingFragmentShader = R"#(
     }
 )#";
 
-std::vector<Vertex> makeQuad(const Vec2<int> aCellOffset, const Size2<int> aGridDefinition)
+
+// Make a quad of given size, with [0, 1] UV coordinates on Vertices
+std::vector<Vertex> makeQuad(const Size2<int> aQuadSize)
 {
     std::vector<Vec2<GLint>> UVs = {
         {0, 0},
@@ -96,7 +61,7 @@ std::vector<Vertex> makeQuad(const Vec2<int> aCellOffset, const Size2<int> aGrid
     std::vector<Vertex> quad;
     for (auto uv : UVs)
     {
-        quad.push_back({static_cast<Vec2<GLfloat>>(aCellOffset.cwMul(uv)), uv});
+        quad.push_back({static_cast<Vec2<GLfloat>>(aQuadSize.as<math::Vec>().cwMul(uv)), uv});
     }
     return quad;
 }
@@ -116,27 +81,33 @@ std::vector<Position2<GLint>> makePositions(const Vec2<int> aCellOffset,
     return positions;
 }
 
+
 VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> aGridDefinition)
 {
     VertexSpecification specification;
     glBindVertexArray(specification.mVertexArray);
 
-    const Vec2<GLint> cellOffset(aCellSize);
-
     // Per-vertex attributes
-    std::vector<Vertex> quad = makeQuad(cellOffset, aGridDefinition);
-    specification.mVertexBuffers.emplace_back(
-        makeLoadedVertexBuffer(gVertexDescription, gsl::make_span(quad)));
-        // Could also be
-        //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
+    std::vector<Vertex> quad = makeQuad(aCellSize);
+    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(gVertexDescription,
+                                                                     gsl::make_span(quad)));
+    // Could also be
+    //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
 
+    //
     // Per-instance attributes
+    //
+
+    // The tile position
+    const Vec2<GLint> cellOffset(aCellSize);
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer({ {2, 2, 0, MappedGL<GLint>::enumerator} }, gsl::make_span(positions)));
+        makeLoadedVertexBuffer({ {2, 2, 0, MappedGL<GLint>::enumerator} },
+                               gsl::make_span(positions)));
 
     glVertexAttribDivisor(2, 1);
 
+    // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
     /// \todo separate buffer specification and filling
     specification.mVertexBuffers.push_back(
         makeLoadedVertexBuffer({
@@ -160,10 +131,12 @@ Program makeProgram()
                           {GL_FRAGMENT_SHADER, gTilingFragmentShader},
                       });
 
-    glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), 0);
+    // Matches GL_TEXTURE1 from Tiling::load()
+    glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), 1);
 
     return program;
 }
+
 
 Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution) :
     mDrawContext(makeVertexGrid(aCellSize, aGridDefinition), makeProgram()),
@@ -176,14 +149,15 @@ Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRen
     setBufferResolution(aRenderResolution);
 }
 
+
 void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
 {
     bindVertexArray(mDrawContext);
-    Vec2<int> cellOffset(aCellSize);
 
-    std::vector<Vertex> quad = makeQuad(cellOffset, aGridDefinition);
+    std::vector<Vertex> quad = makeQuad(aCellSize);
     respecifyBuffer(buffers(mDrawContext).at(0), gsl::make_span(quad));
 
+    Vec2<int> cellOffset(aCellSize);
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     respecifyBuffer(buffers(mDrawContext).at(1), gsl::make_span(positions));
 
@@ -194,21 +168,25 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
         = static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition));
 }
 
+
 Tiling::iterator Tiling::begin()
 {
     return mTiles.begin();
 }
+
 
 Tiling::iterator Tiling::end()
 {
     return mTiles.end();
 }
 
+
 void Tiling::setBufferResolution(Size2<int> aNewResolution)
 {
     GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
     glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());
 }
+
 
 void Tiling::setPosition(Position2<position_t> aPosition)
 {
@@ -225,6 +203,8 @@ void Tiling::render(const Engine & aEngine) const
     //
     // Stream vertex attributes
     //
+
+    // The last buffer, i.e. the sprite corresponding to each tile
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
                     mTiles.data(),
                     static_cast<GLsizei>(getStoredSize(mTiles)));

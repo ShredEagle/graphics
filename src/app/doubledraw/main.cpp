@@ -49,7 +49,7 @@ int main(void)
 
     auto window = guard(glfwCreateWindow(gWindowWidth,
                                          gWindowHeight,
-                                         "2D Demo",
+                                         "Double Draw Demo",
                                          NULL,
                                          NULL),
                         glfwDestroyWindow);
@@ -66,9 +66,10 @@ int main(void)
     // VSync
     glfwSwapInterval(1);
 
-    if (!GL_KHR_debug)
+    if (!GLAD_GL_KHR_debug)
     {
-        throw std::runtime_error("Debug output not available");
+        std::cerr << "Debug output is not available."
+                  << " Please run on a decent platform for debugging.\n";
     }
     else
     {

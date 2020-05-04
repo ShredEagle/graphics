@@ -8,6 +8,8 @@
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
 
+#include <resource/PathProvider.h>
+
 #include <math/Vector.h>
 
 #include <glad/glad.h>
@@ -111,7 +113,7 @@ typedef std::vector<Entity> Scene;
 
 DrawContext staticEggman()
 {
-    static const Image eggman("d:/projects/sprites/ec1ccd86c2ddb52.png");
+    static const Image eggman(pathFor("ec1ccd86c2ddb52.png").string());
     DrawContext drawing = [&](){
         VertexSpecification specification;
         glBindVertexArray(specification.mVertexArray);
@@ -281,8 +283,8 @@ void noop(const Entity &)
 Scene setupScene()
 {
 
-    //static const Image ring("/tmp/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
-    static const Image ring("d:/projects/sprites/sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png");
+    static const Image ring(
+        pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
 
     //
     // Sub-parts
