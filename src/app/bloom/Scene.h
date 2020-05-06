@@ -18,6 +18,7 @@ namespace ad {
 struct ScreenQuad
 {
     ScreenQuad();
+
     VertexSpecification mVertexSpec;
 };
 
@@ -36,17 +37,14 @@ struct CompleteFrameBuffer
 };
 
 template <std::size_t T_size>
-std::array<CompleteFrameBuffer, T_size> initFrameBuffers(const Engine & aEngine)
+std::array<CompleteFrameBuffer, T_size> initFrameBuffers(Size2<int> aSize)
 {
     constexpr std::size_t gChainSize = T_size;
     std::array<CompleteFrameBuffer, gChainSize> buffers;
 
     for (auto & [frameBuffer, texture] : buffers)
     {
-        const int width{aEngine.getFramebufferSize().width()};
-        const int height{aEngine.getFramebufferSize().height()};
-        allocateStorage(texture, GL_RGBA8, width, height);
-
+        allocateStorage(texture, GL_RGBA8, aSize.width(), aSize.height());
         attachImage(frameBuffer, texture, GL_COLOR_ATTACHMENT0, 0);
     }
     return buffers;
@@ -77,6 +75,7 @@ struct Scene
 
     const Engine * mEngine;
     FirstRender mInitial;
+    Size2<int> mRenderTargetsSize;
     ScreenQuad mScreenQuad;
     //std::array<Texture, 2> mColors{GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE};
     std::array<CompleteFrameBuffer, 2> mBuffers;
@@ -90,7 +89,10 @@ struct Scene
 Scene::Scene(const char * argv[], const Engine * aEngine) :
     mEngine(aEngine),
     mInitial(),
-    mBuffers(initFrameBuffers<2>(*aEngine)),
+    // Note: Renders target are of fixed size, not changing with window's frambuffer size
+    mRenderTargetsSize(aEngine->getFramebufferSize().width(),
+                       aEngine->getFramebufferSize().height()),
+    mBuffers(initFrameBuffers<2>(mRenderTargetsSize)),
     mSceneFB(),
     mNeonTexture(GL_TEXTURE_2D),
     mHBlurProgram(makeLinkedProgram({
@@ -105,24 +107,16 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
 {
     {
         auto & [frameBuffer, texture] = mSceneFB;
+        allocateStorage(texture, GL_RGBA8, mRenderTargetsSize.width(), mRenderTargetsSize.height());
 
-        const int width{aEngine->getFramebufferSize().width()};
-        const int height{aEngine->getFramebufferSize().height()};
-        allocateStorage(texture, GL_RGBA8, width, height);
+        attachImage(frameBuffer, texture, GL_COLOR_ATTACHMENT0);
+        attachImage(frameBuffer, mBuffers.at(0).colorTexture, GL_COLOR_ATTACHMENT1);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, texture.mTarget, texture, 0);
-        glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, mBuffers.at(0).colorTexture.mTarget, mBuffers.at(0).colorTexture, 0);
-
+        // This list of draw buffer is part of the FBO state
+        // see: https://stackoverflow.com/a/34973291/1027706
+        bind_guard bound{frameBuffer};
         unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
         glDrawBuffers(2, attachments);
-
-        if (glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        {
-            throw std::runtime_error("Incomplete framebuffer (" + std::to_string(__LINE__) + ")" );
-        }
-        // Textbook leak above, RAII this
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     // Texture
@@ -134,12 +128,14 @@ Scene::Scene(const char * argv[], const Engine * aEngine) :
 inline void Scene::step(const Timer & aTimer)
 {
     /***
-     * Rendering the scene to a texture
+     * Rendering the scene to a texture (initial rendering)
      ***/
     // TODO first render should have depth buffer enabled, to be generic
     glBindFramebuffer(GL_FRAMEBUFFER, mSceneFB.frameBuffer);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // A different clear color for the GL_COLOR_ATTACHMENT1: black baground instead of blue
     // TODO Why blur stop working if alpha is 0?
     static const std::array<float, 4> gClearColor = {0.f, 0.f, 0.f, 1.f};
     glClearBufferfv(GL_COLOR, 1, gClearColor.data());
@@ -147,8 +143,15 @@ inline void Scene::step(const Timer & aTimer)
     glBindVertexArray(mInitial.mVAO);
     glUseProgram(mInitial.mProgram);
 
-    glActiveTexture(GL_TEXTURE0); // Already active and bound
+    // Neon texture is bound to GL_TEXTURE0 unit
+    glActiveTexture(GL_TEXTURE0);
     bind(mNeonTexture);
+
+    // glViewport is a global, providing the actual size of the render target
+    // It is defaulted to the default framebuffer size, so it must be explicitly set in situations
+    // where the active render target(s) size do not matche default FB size.
+    // see: https://stackoverflow.com/a/33721834/1027706
+    glViewport(0, 0, mRenderTargetsSize.width(), mRenderTargetsSize.height());
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
@@ -156,12 +159,13 @@ inline void Scene::step(const Timer & aTimer)
                           1);
 
 
-    /* It is about rendering to screen quad now */
+    /* It is about rendering to screen quad for both remaining steps */
     glBindVertexArray(mScreenQuad.mVertexSpec.mVertexArray);
 
     /***
      * Filtering the rendered texture
      ***/
+
     // TODO should select the correct texture depending on the ping pong
     // or could be done only once if always using the same texture
     glProgramUniform1i(mHBlurProgram,
@@ -178,13 +182,12 @@ inline void Scene::step(const Timer & aTimer)
     bind(mBuffers.at(1).colorTexture);
 
     for (int i = 0;
+         // The blinking effect: bloom on odd second, no bloom on even second
          i != (static_cast<int>(aTimer.mTime)%2 == 0 ? 0 : 2);
          ++i)
     {
         glUseProgram(i%2 ? mVBlurProgram : mHBlurProgram);
-
         glBindFramebuffer(GL_FRAMEBUFFER, mBuffers.at((i+1)%2).frameBuffer);
-
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     }
 
@@ -195,9 +198,12 @@ inline void Scene::step(const Timer & aTimer)
     // TODO Can we reuse the program, changing only the fragment shader?
     // Binds the default (window) framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     glUseProgram(mScreenProgram);
-    // TODO should select the correct texture depending on the ping pong
-    // or could be done only once if always using the same texture
+
+    // Scene texture (initial render) will be bound to unit 0, filtered texture to unit 1
     glProgramUniform1i(mScreenProgram,
                        glGetUniformLocation(mScreenProgram, "sceneTexture"),
                        0);
@@ -208,8 +214,14 @@ inline void Scene::step(const Timer & aTimer)
     glActiveTexture(GL_TEXTURE0);
     bind(mSceneFB.colorTexture);
 
+    // Last bloom pass rendered to first buffer
     glActiveTexture(GL_TEXTURE1);
     bind(mBuffers.at(0).colorTexture);
+
+    // Viewport is global state, needs to be restored to the windows's framebuffer size
+    const int width{mEngine->getFramebufferSize().width()};
+    const int height{mEngine->getFramebufferSize().height()};
+    glViewport(0, 0, width, height);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
