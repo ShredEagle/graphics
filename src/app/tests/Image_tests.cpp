@@ -202,7 +202,7 @@ SCENARIO("Image files creation, read, write")
 
     GIVEN("An image with uniform background color")
     {
-        Image<> red{ {512, 512}, {255, 0, 0} };
+        Image<> red{ {512, 512}, math::sdr::gRed };
         THEN("It can be writen to a file")
         {
             auto redfile = tempFolder/"red.ppm";

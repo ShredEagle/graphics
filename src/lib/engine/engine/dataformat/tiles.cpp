@@ -19,7 +19,7 @@ SpriteSheet loadMeta(std::istream & aDatastream)
 
     SpriteSheet sheet{
         {},
-        Image{pathFor(content["file"]).string()}
+        Image{pathFor(content.at("file").get<std::string>()).string()}
     };
 
     const std::string prefix = content["set"]["prefix"];
