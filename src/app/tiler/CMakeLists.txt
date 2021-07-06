@@ -9,12 +9,12 @@ set(${PROJECT_NAME}_SOURCES
 )
 
 find_package(Boost 1.71)
-find_package(glfw3 3.3 CONFIG REQUIRED)
+find_package(glfw3 3.3 REQUIRED)
 
 add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}
     ${${PROJECT_NAME}_HEADERS}
-) 
+)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE

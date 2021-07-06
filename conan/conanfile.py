@@ -19,22 +19,22 @@ class GraphicsConan(ConanFile):
         "shared": False,
         "build_tests": False,
         "boost:layout": "versioned", #Should be system on non-Windows
-        "glad:api_version": "4.1",
+        "glad:gl_version": "4.1",
         "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }
 
     requires = (
-        ("boost/1.72.0"),
-        ("glad/0.1.29@bincrafters/stable"),
-        ("glfw/3.3@bincrafters/stable"),
-        ("jsonformoderncpp/3.7.0@vthiery/stable"),
+        ("boost/1.76.0"),
+        ("glad/0.1.34"),
+        ("glfw/3.3.4"),
+        ("nlohmann_json/3.9.1"),
         ("math/local"),
     )
 
-    build_requires = ("cmake_installer/[>=3.16]@conan/stable",)
+    build_requires = ("cmake/3.20.4",)
 
     build_policy = "missing"
-    generators = "cmake_paths", "cmake"
+    generators = "cmake_paths", "cmake", "cmake_find_package"
 
     scm = {
         "type": "git",

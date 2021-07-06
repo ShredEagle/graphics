@@ -10,7 +10,7 @@ set(${PROJECT_NAME}_SOURCES
     main.cpp
 )
 
-find_package(glad CONFIG REQUIRED)
+find_package(glad REQUIRED)
 
 add_executable(${PROJECT_NAME}
     ${${PROJECT_NAME}_SOURCES}

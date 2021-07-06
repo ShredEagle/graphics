@@ -13,7 +13,7 @@ set(${PROJECT_NAME}_SOURCES
     main.cpp
 )
 
-find_package(glad CONFIG REQUIRED)
+find_package(glad REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
