@@ -4,6 +4,7 @@ env:
   # Control Conan behaviour
   CONAN_V2_MODE: 1
   CONAN_SCM_TO_CONANDATA: 1
+  CONAN_SYSREQUIRES_MODE: enabled
   # Custom variables used by the workflow
   CONAN_DEV_USER_CHANNEL: adnn/develop
 #on:
