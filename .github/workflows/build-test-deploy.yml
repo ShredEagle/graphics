@@ -39,6 +39,7 @@ jobs:
         run: conan remote add adnn ${{ secrets.CONAN_REMOTE_URL }}
       - run: >
           conan create
+          --build=missing
           -o ${{ steps.recipe.outputs.name }}:build_tests=True
           -s compiler.cppstd=${{ matrix.cppstd }}
           conan/ ${{ steps.recipe.outputs.reference }}@
