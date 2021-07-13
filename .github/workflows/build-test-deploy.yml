@@ -35,6 +35,8 @@ jobs:
         shell: bash
       - name: Get Conan
         uses: turtlebrowser/get-conan@v1.0
+      - name: Configure Conan
+        run: conan remote add adnn ${{ secrets.CONAN_REMOTE_URL }}
       - run: >
           conan create
           -o ${{ steps.recipe.outputs.name }}:build_tests=True
@@ -64,7 +66,6 @@ jobs:
       - name: Deploy recipe (develop)
         if: ${{ success() && contains('refs/heads/develop', github.ref) }}
         run: |
-          conan remote add adnn ${{ secrets.CONAN_REMOTE_URL }}
           conan user -p ${{ secrets.CONAN_USER_PASSWORD }} -r adnn ${{ secrets.CONAN_USER_NAME }}
           conan copy --all ${{ steps.recipe.outputs.reference }} ${CONAN_DEV_USER_CHANNEL}
           conan upload -r adnn --confirm ${{ steps.recipe.outputs.reference }}@${CONAN_DEV_USER_CHANNEL}
