@@ -1,25 +1,30 @@
-project(platform CXX)
+set(TARGET_NAME platform)
 
-set(${PROJECT_NAME}_HEADERS
+set(${TARGET_NAME}_HEADERS
     Filesystem.h
 )
 
 # NOTE should evolve into a compiled module
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${TARGET_NAME} INTERFACE)
 
-add_library(ad::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(ad::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
 # Custom target to have the files show up in the IDE
-add_custom_target(${PROJECT_NAME}_IDE
+add_custom_target(${TARGET_NAME}_IDE
     SOURCES
-        ${${PROJECT_NAME}_HEADERS}
+        ${${TARGET_NAME}_HEADERS}
 )
 
-cmc_target_current_include_directory(${PROJECT_NAME})
+cmc_target_current_include_directory(${TARGET_NAME})
+
+
+##
+## Dependencies
+##
 
 cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${TARGET_NAME}
     INTERFACE
         Boost::filesystem)
 
@@ -28,14 +33,14 @@ target_link_libraries(${PROJECT_NAME}
 ## Install
 ##
 
-install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS ${TARGET_NAME}
+        EXPORT ${TARGET_NAME}Targets)
 
 include(cmc-install)
 # Install the header files
-cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
-                         FILES ${${PROJECT_NAME}_HEADERS})
+cmc_install_with_folders(DESTINATION include/${TARGET_NAME}/${TARGET_NAME}
+                         FILES ${${TARGET_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
-cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
+cmc_install_packageconfig(${TARGET_NAME} ${TARGET_NAME}Targets ${PROJECT_NAME}
                           FIND_FILE CMakeFinds.cmake.in
                           NAMESPACE ad::)

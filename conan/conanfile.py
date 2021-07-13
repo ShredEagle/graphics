@@ -54,6 +54,10 @@ class GraphicsConan(ConanFile):
         return cmake
 
 
+    def layout(self):
+        self.folders.source = ".."
+
+
     def build(self):
         cmake = self._configure_cmake()
         cmake.build()

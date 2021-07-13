@@ -1,1 +1,2 @@
+@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS handy platform)
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
