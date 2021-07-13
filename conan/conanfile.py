@@ -5,10 +5,10 @@ from os import path
 
 class GraphicsConan(ConanFile):
     name = "graphics"
-    license = "The Unlicense"
+    license = "MIT"
     author = "adnn"
     url = "https://github.com/Adnn/graphics"
-    description = "Graphics, software and with OpenGL"
+    description = "Graphics rendering generic library, both software and with OpenGL"
     topics = ("opengl", "graphics", "2D", "3D")
     settings = "os", "compiler", "build_type", "arch"
     options = {
