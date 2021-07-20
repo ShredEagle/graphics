@@ -19,7 +19,6 @@ class GraphicsConan(ConanFile):
     default_options = {
         "shared": False,
         "build_tests": False,
-        "boost:layout": "versioned", #Should be system on non-Windows
         "glad:gl_version": "4.1",
         "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }
@@ -53,7 +52,6 @@ class GraphicsConan(ConanFile):
             # avoid path.join, on Windows it outputs '\', which is a string escape sequence.
             config.write("include(\"{}\")\n".format("${CMAKE_CURRENT_LIST_DIR}/conan_paths.cmake"))
             config.write("set({} {})\n".format("BUILD_tests", self.options.build_tests))
-            config.write("set({} {})\n".format("Boost_USE_STATIC_LIBS", not self.options["boost"].shared))
 
 
     def _configure_cmake(self):
