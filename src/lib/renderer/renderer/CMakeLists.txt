@@ -1,6 +1,6 @@
-project(renderer)
+set(TARGET_NAME renderer)
 
-set(${PROJECT_NAME}_HEADERS
+set(${TARGET_NAME}_HEADERS
     commons.h
     Drawing.h
     Error.h
@@ -17,21 +17,21 @@ set(${PROJECT_NAME}_HEADERS
     stb_image.h
 )
 
-set(${PROJECT_NAME}_SOURCES
+set(${TARGET_NAME}_SOURCES
     Shading.cpp
     VertexSpecification.cpp
 
     stb_image.c
 )
 
-add_library(${PROJECT_NAME}
-    ${${PROJECT_NAME}_SOURCES}
-    ${${PROJECT_NAME}_HEADERS}
+add_library(${TARGET_NAME}
+    ${${TARGET_NAME}_SOURCES}
+    ${${TARGET_NAME}_HEADERS}
 )
 
-add_library(ad::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(ad::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
-cmc_target_current_include_directory(${PROJECT_NAME})
+cmc_target_current_include_directory(${TARGET_NAME})
 
 
 ##
@@ -40,27 +40,25 @@ cmc_target_current_include_directory(${PROJECT_NAME})
 
 cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
-set(_internal_dependencies_public gsl handy)
-
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${TARGET_NAME}
     PUBLIC
+        gsl::gsl
+        ad::handy
         ad::math
-        glad::glad
-        ${_internal_dependencies_public})
+        glad::glad)
 
 
 ##
 ## Install
 ##
 
-install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS ${TARGET_NAME} EXPORT ${TARGET_NAME}Targets)
 
 include(cmc-install)
 # Install the header files
-cmc_install_with_folders(DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME}
-                         FILES ${${PROJECT_NAME}_HEADERS})
+cmc_install_with_folders(DESTINATION include/${TARGET_NAME}/${TARGET_NAME}
+                         FILES ${${TARGET_NAME}_HEADERS})
 # Prepare CMake package in both build and install trees
-cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
-                          DEPENDS_COMPONENTS ${_internal_dependencies_public}
+cmc_install_packageconfig(${TARGET_NAME} ${TARGET_NAME}Targets ${PROJECT_NAME}
                           FIND_FILE CMakeFinds.cmake.in
                           NAMESPACE ad::)

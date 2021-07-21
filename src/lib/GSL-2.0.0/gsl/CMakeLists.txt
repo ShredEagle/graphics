@@ -1,6 +1,6 @@
-project(gsl)
+set(TARGET_NAME gsl)
 
-set(${PROJECT_NAME}_HEADERS
+set(${TARGET_NAME}_HEADERS
     gsl
     gsl_algorithm
     gsl_assert
@@ -12,16 +12,19 @@ set(${PROJECT_NAME}_HEADERS
     string_span
 )
 
-add_library(${PROJECT_NAME} INTERFACE)
+add_library(${TARGET_NAME} INTERFACE)
 
-add_library(${PROJECT_NAME}::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+add_library(${TARGET_NAME}::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
-cmc_target_current_include_directory(${PROJECT_NAME})
+cmc_target_current_include_directory(${TARGET_NAME})
 
-install(TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets)
+##
+## Install
+##
+install(TARGETS ${TARGET_NAME} EXPORT ${TARGET_NAME}Targets)
 
 include(cmc-install)
-cmc_install_with_folders(FILES ${${PROJECT_NAME}_HEADERS}
-                         DESTINATION "include/${PROJECT_NAME}/${PROJECT_NAME}")
-cmc_install_packageconfig(${PROJECT_NAME} ${PROJECT_NAME}Targets
-                          NAMESPACE ${PROJECT_NAME}::)
+cmc_install_with_folders(FILES ${${TARGET_NAME}_HEADERS}
+                         DESTINATION "include/${TARGET_NAME}/${TARGET_NAME}")
+cmc_install_packageconfig(${TARGET_NAME} ${TARGET_NAME}Targets ${PROJECT_NAME}
+                          NAMESPACE ${TARGET_NAME}::)
