@@ -7,6 +7,7 @@ set(${TARGET_NAME}_HEADERS
     random.h
     tuple_utils.h
     vector_utils.h
+    ZeroOnMove.h
 )
 
 add_library(${TARGET_NAME} INTERFACE)
