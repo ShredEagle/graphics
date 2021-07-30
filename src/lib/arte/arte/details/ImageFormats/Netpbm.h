@@ -102,7 +102,7 @@ namespace detail {
 
             while (remainingBytes)
             {
-                int readSize = std::min(remainingBytes, gChunkSize);
+                std::size_t readSize = std::min(remainingBytes, gChunkSize);
                 if (!aIn.read(currentDestination, readSize).good())
                 {
                     // If the stream is not good, but its converts to "true", it means it reached eof
@@ -140,7 +140,7 @@ namespace detail {
 
             while (remainingBytes)
             {
-                int writeSize = std::min(remainingBytes, gChunkSize);
+                std::size_t writeSize = std::min(remainingBytes, gChunkSize);
                 if (!aOut.write(currentSource, writeSize).good())
                 {
                     throw std::runtime_error("Error writing "+ to_string(N_format)
