@@ -30,6 +30,16 @@ void handleGlslError(GLuint objectId,
     }
 }
 
+void compileShader(const Shader & aShader, const char * aSource)
+{
+    glShaderSource(aShader, 1, &aSource, NULL);
+    glCompileShader(aShader);
+
+    handleGlslError(aShader,
+                    GL_COMPILE_STATUS,
+                    glGetShaderiv,
+                    glGetShaderInfoLog);
+}
 
 Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
                                                           const char * /*source*/>> aShaders)
@@ -40,9 +50,7 @@ Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
     for (const auto & pair : aShaders)
     {
         attached.emplace_back(pair.first, pair.second);
-        //Shader shader{pair.first, pair.second};
         glAttachShader(program, attached.back());
-        //attached.push_back(shader);
     }
 
     glLinkProgram(program);

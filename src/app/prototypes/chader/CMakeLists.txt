@@ -1,13 +1,13 @@
-project(chader)
+set(TARGET_NAME chader)
 
-set(${PROJECT_NAME}_HEADERS
+set(${TARGET_NAME}_HEADERS
     Chader.h
     FileWatcher.h
     GenericDrawer.h
     Scene.h
 )
 
-set(${PROJECT_NAME}_SOURCES
+set(${TARGET_NAME}_SOURCES
     Chader.cpp
     FileWatcher.cpp
     main.cpp
@@ -17,12 +17,12 @@ find_package(glad REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS filesystem)
 
-add_executable(${PROJECT_NAME}
-    ${${PROJECT_NAME}_SOURCES}
-    ${${PROJECT_NAME}_HEADERS}
+add_executable(${TARGET_NAME}
+    ${${TARGET_NAME}_SOURCES}
+    ${${TARGET_NAME}_HEADERS}
 )
 
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${TARGET_NAME}
     PRIVATE
         glad::glad
         ad::engine
@@ -30,3 +30,5 @@ target_link_libraries(${PROJECT_NAME}
         gsl::gsl
         Boost::filesystem
 )
+
+set_target_properties(${TARGET_NAME} PROPERTIES FOLDER prototypes)

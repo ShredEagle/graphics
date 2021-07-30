@@ -4,6 +4,7 @@ set(${TARGET_NAME}_HEADERS
     Application.h
     commons.h
     Engine.h
+    shaders.h
     Sprite.h
     Spriting.h
     Tiling.h

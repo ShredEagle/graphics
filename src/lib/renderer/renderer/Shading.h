@@ -54,16 +54,7 @@ private:
     std::string mErrorLog;
 };
 
-inline void compileShader(const Shader & aShader, const char * aSource)
-{
-    glShaderSource(aShader, 1, &aSource, NULL);
-    glCompileShader(aShader);
-
-    handleGlslError(aShader,
-                    GL_COMPILE_STATUS,
-                    glGetShaderiv,
-                    glGetShaderInfoLog);
-}
+void compileShader(const Shader & aShader, const char * aSource);
 
 Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
                                                           const char * /*source*/>> aShaders);

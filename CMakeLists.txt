@@ -6,6 +6,9 @@ include(cmake/include.cmake)
 
 cmc_include_conan_configuration()
 
+# Enable the grouping target in folders, when available in IDE.
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 #if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 #    set(LINK_OPTIONS "/INCREMENTAL:NO")
 #endif()
