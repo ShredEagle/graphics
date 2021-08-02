@@ -196,8 +196,8 @@ void updateScene(Scene &aScene, double aTimeSeconds)
         }
     }
 
-    respecifyBuffer(aScene.mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    aScene.mRings.data());
+    respecifyBufferSameSize(aScene.mDrawContext.mVertexSpecification.mVertexBuffers.back(),
+                            aScene.mRings.data());
 }
 
 void renderScene(Scene &aScene)

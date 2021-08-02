@@ -71,17 +71,17 @@ struct Attribute
         mNormalize(aNormalize)
     {}
 
-    GLuint mIndex;
-    Access mTypeInShader{Access::Float};
-    bool mNormalize{false};
+    GLuint mIndex; // index to match in vertex shader.
+    Access mTypeInShader{Access::Float}; // destination data type
+    bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/max_value)
 };
 
 /// \brief The complete description of an attribute expected by OpenGL
 struct AttributeDescription : public Attribute
 {
-    GLuint mDimension;
-    size_t mOffset;
-    GLenum mDataType;
+    GLuint mDimension;  // from 1 to 4 (explicit distinct attributes must be used for matrix data)
+    size_t mOffset;     // offset for the attribute within the vertex data structure (interleaved)
+    GLenum mDataType;   // attribute source data type
 };
 
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
@@ -89,6 +89,10 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 
+/// \brief Load vertex data from `aVertices` into the returned `VertexBufferObject`,
+/// and associate the data to attributes of `aVertexArray`.
+///
+/// The association is described by `aAttributes`.
 template <class T_vertex>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     const AttributeDescriptionList & aAttributes,
@@ -161,7 +165,7 @@ inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aDat
 
 
 /// \brief Respecify the buffer with the same size (allowing potential optimizations)
-inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aData)
+inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoid * aData)
 {
     GLint size;
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
