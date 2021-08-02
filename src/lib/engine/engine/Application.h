@@ -41,7 +41,7 @@ public:
 
         mEngine = std::make_shared<Engine>();
         glfwSetWindowUserPointer(mWindow, mEngine.get());
-        // Explicitly call size ballbacks, they are used to complete the engine setup
+        // Explicitly call size callbacks, they are used to complete the engine setup
         {
             // Get the size, because the hints might not be satisfied
             // (yet not invoking the size callback)

@@ -15,6 +15,11 @@ struct Timer
         return mDelta;
     }
 
+    double time() const
+    {
+        return mTime;
+    }
+
     double mTime;
     double mDelta;
 };

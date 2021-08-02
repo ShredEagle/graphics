@@ -9,6 +9,7 @@ set(${TARGET_NAME}_HEADERS
     Spriting.h
     Tiling.h
     Timer.h
+    TrivialShaping.h
     Vertex.h
 
     dataformat/tiles.h
@@ -18,6 +19,7 @@ set(${TARGET_NAME}_SOURCES
     Engine.cpp
     Spriting.cpp
     Tiling.cpp
+    TrivialShaping.cpp
 
     dataformat/tiles.cpp
 )

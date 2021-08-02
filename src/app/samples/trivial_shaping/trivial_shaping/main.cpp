@@ -15,12 +15,14 @@ int main(int argc, const char * argv[])
 
         ad::Timer timer{glfwGetTime(), 0.};
 
-        //Scene scene(argv, application.getEngine().get());
+        Scene scene{ {400, 300} };
 
         while(application.nextFrame())
         {
-            //scene.step(timer);
             timer.mark(glfwGetTime());
+            scene.step(timer);
+            application.getEngine()->clear();
+            scene.render();
         }
     }
     catch(const std::exception & e)

@@ -1,18 +1,15 @@
 #pragma once
 
-#include <math/Vector.h>
+#include <math/Color.h>
 
 #include <renderer/GL_Loader.h>
 
 namespace ad {
 
-using Color = math::Vec<3, GLubyte>;
 
-// There is no literal suffix for unsigned char, making it a pain to instantiate a Color
-// from literal values. Provide a helper function for this situation.
-inline constexpr Color rgb(GLubyte r, GLubyte g, GLubyte b)
-{
-    return Color(r, g, b);
-}
+// TODO It is unclear to me if it would be incorrect to use sdr::Rgb (i.e. Rgb_base<std::uint8_t>) 
+// instead of GLubyte (which matches exactly to GL_UNSIGNED_BYTE).
+using Color = math::Rgb_base<GLubyte>;
+
 
 } // namespace ad
