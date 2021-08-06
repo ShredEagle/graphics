@@ -112,6 +112,11 @@ public:
         glfwSetWindowShouldClose(mWindow, GLFW_TRUE);
     }
 
+    ResourceGuard<GLFWwindow*> & getWindow()
+    {
+        return mWindow;
+    }
+
 private:
     static void error_callback(int error, const char* description)
     {
