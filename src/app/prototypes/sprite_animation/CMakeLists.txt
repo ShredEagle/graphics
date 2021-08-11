@@ -1,6 +1,7 @@
-set(TARGET_NAME spriting)
+set(TARGET_NAME sprite_animation)
 
 set(${TARGET_NAME}_HEADERS
+    scene.h
 )
 
 set(${TARGET_NAME}_SOURCES
