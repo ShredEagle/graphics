@@ -23,6 +23,10 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
+        # Hope to fix the sporadic conan error "Remote recipe is newer than local recipe"
+        # due to Windows pushing conanfile.py with CRLF line endings
+        # see: https://docs.conan.io/en/latest/faq/using.html?highlight=crlf#packages-got-outdated-when-uploading-an-unchanged-recipe-from-a-different-machine
+      - run: git config --system core.autocrlf input
       - uses: actions/checkout@v2
         with:
           submodules: recursive
