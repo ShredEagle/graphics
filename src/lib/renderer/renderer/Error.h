@@ -18,12 +18,12 @@ MessageCallback( GLenum source,
                  const GLchar* message,
                  const void* userParam )
 {
-    std::cerr << "GL CALLBACK: " << ((type == GL_DEBUG_TYPE_ERROR) ? "** GL ERROR **"
+    /*std::cerr << "GL CALLBACK: " << ((type == GL_DEBUG_TYPE_ERROR) ? "** GL ERROR **"
                                                                    : "")
               << "type = 0x" << type
               << ", severity = 0x" << severity
               << ", message = " << message
-              << std::endl;
+              << std::endl;*/
 }
 
 // During init, can be used to enable debug output

@@ -112,7 +112,7 @@ public:
         glfwSetWindowShouldClose(mWindow, GLFW_TRUE);
     }
 
-    ResourceGuard<GLFWwindow*> & getWindow()
+    GLFWwindow* getWindow()
     {
         return mWindow;
     }

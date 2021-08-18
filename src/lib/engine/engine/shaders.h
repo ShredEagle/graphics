@@ -87,4 +87,34 @@ inline const GLchar* gTrivialFragmentShader = R"#(
     }
 )#";
 
+//
+// Draw Line
+//
+inline const GLchar* gSolidColorLineVertexShader = R"#(
+    #version 400
+
+    layout(location=0) in vec2  in_VertexPosition;
+    layout(location=1) in vec2  in_origin;
+    layout(location=2) in vec2  in_end;
+    layout(location=3) in float in_width;
+    layout(location=4) in vec3  in_InstanceColor;
+
+    out vec3 ex_Color;
+
+    uniform ivec2 in_BufferResolution;
+    
+    out vec2 ex_UV;
+
+    void main(void)
+    {
+        vec2 direction = in_end - in_origin;
+        vec2 orthogonalVec = normalize(vec2(direction.y, -direction.x));
+        vec2 bufferSpacePosition = in_origin + in_VertexPosition.y * direction + in_width / 2 * orthogonalVec - in_width * in_VertexPosition.x * orthogonalVec;
+        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
+                           0.0, 1.0);
+
+        ex_Color = in_InstanceColor;
+    }
+)#";
+
 } // namespace ad
