@@ -112,9 +112,14 @@ public:
         glfwSetWindowShouldClose(mWindow, GLFW_TRUE);
     }
 
-    GLFWwindow* getWindow()
+    void setInputMode(int mode, int value) const
     {
-        return mWindow;
+        glfwSetInputMode(mWindow, mode, value);
+    }
+
+    int getKey(int keyCode) const
+    {
+        return glfwGetKey(mWindow, keyCode);
     }
 
 private:
