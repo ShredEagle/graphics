@@ -29,7 +29,7 @@ inline void unbind(const FrameBuffer & aFrameBuffer)
 }
 
 
-// make an system to attach a render image (with depth?)
+// make a system to attach a render image (with depth?)
 inline void attachImage(
         FrameBuffer & aFrameBuffer,
         const Texture & aTexture,

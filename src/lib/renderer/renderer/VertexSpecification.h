@@ -38,6 +38,15 @@ struct [[nodiscard]] VertexBufferObject : public ResourceGuard<GLuint>
 };
 
 
+struct [[nodiscard]] IndexBufferObject : public ResourceGuard<GLuint>
+{
+    IndexBufferObject() :
+        ResourceGuard<GLuint>{reserve(glGenBuffers),
+                              [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
+    {}
+};
+
+
 /// \brief A VertexArray with a vector of VertexBuffers
 struct [[nodiscard]] VertexSpecification
 {
@@ -146,6 +155,16 @@ VertexBufferObject makeLoadedVertexBuffer(AttributeDescriptionList aAttributes,
 }
 
 
+template <class T_index>
+IndexBufferObject makeLoadedIndexBuffer(const gsl::span<T_index> aIndices, const BufferHint aHint)
+{
+    IndexBufferObject ibo;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, aIndices.size_bytes(), aIndices.data(), getGLBufferHint(aHint));
+    return ibo;
+}
+
+
 /***
  * Buffer re-specification
  *
@@ -164,6 +183,18 @@ inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aDat
 }
 
 
+inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData, GLsizei aSize)
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIBO);
+
+    // Orphan the previous buffer
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, aSize, NULL, GL_STATIC_DRAW);
+
+    // Copy value to new buffer
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, aSize, aData);
+}
+
+
 /// \brief Respecify the buffer with the same size (allowing potential optimizations)
 inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoid * aData)
 {
@@ -173,12 +204,12 @@ inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoi
     respecifyBuffer(aVBO, aData, size);
 }
 
-template <class T_vertex>
-void respecifyBuffer(const VertexBufferObject & aVBO, const gsl::span<T_vertex> aVertices)
+template <class T_values, class T_buffer>
+void respecifyBuffer(const T_buffer & aBufferObject, const gsl::span<T_values> aValues)
 {
-    respecifyBuffer(aVBO,
-                    aVertices.data(),
-                    static_cast<GLsizei>(aVertices.size_bytes()));
+    respecifyBuffer(aBufferObject,
+                    aValues.data(),
+                    static_cast<GLsizei>(aValues.size_bytes()));
 }
 
 } // namespace ad

@@ -51,7 +51,7 @@ inline const GLchar* gAnimationFragmentShader = R"#(
 //
 // Trivial Shaping
 //
-inline const GLchar* gSolidColorVertexShader = R"#(
+inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     #version 400
 
     layout(location=0) in vec4  in_VertexPosition;
@@ -63,8 +63,6 @@ inline const GLchar* gSolidColorVertexShader = R"#(
 
     uniform ivec2 in_BufferResolution;
     
-    out vec2 ex_UV;
-
     void main(void)
     {
         vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy * in_InstanceDimension;
@@ -74,6 +72,26 @@ inline const GLchar* gSolidColorVertexShader = R"#(
         ex_Color = in_InstanceColor;
     }
 )#";
+
+
+inline const GLchar* gTrivialColorVertexShader = R"#(
+    #version 400
+
+    layout(location=0) in vec2  in_VertexPosition;
+    layout(location=1) in vec3  in_VertexColor;
+
+    out vec3 ex_Color;
+
+    uniform ivec2 in_BufferResolution;
+
+    void main(void)
+    {
+        gl_Position = vec4(2 * in_VertexPosition / in_BufferResolution - vec2(1.0, 1.0),
+                           0.0, 1.0);
+        ex_Color = in_VertexColor;
+    }
+)#";
+
 
 inline const GLchar* gTrivialFragmentShader = R"#(
     #version 400

@@ -9,6 +9,7 @@ set(${TARGET_NAME}_HEADERS
     Spriting.h
     Tiling.h
     Timer.h
+    TrivialLineStrip.h
     TrivialShaping.h
     DrawLine.h
     Vertex.h
@@ -20,6 +21,7 @@ set(${TARGET_NAME}_SOURCES
     Engine.cpp
     Spriting.cpp
     Tiling.cpp
+    TrivialLineStrip.cpp
     TrivialShaping.cpp
     DrawLine.cpp
 

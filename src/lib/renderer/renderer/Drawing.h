@@ -47,4 +47,14 @@ inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
     return aDrawContext.mVertexSpecification.mVertexBuffers;
 }
 
+
+template <class T_index>
+inline Guard scopePrimitiveRestartIndex(T_index aIndex)
+{
+    glEnable(GL_PRIMITIVE_RESTART);
+    glPrimitiveRestartIndex(aIndex);
+    return Guard{ [](){glDisable(GL_PRIMITIVE_RESTART);} };
+}
+
+
 } // namespace ad
