@@ -41,6 +41,7 @@ private:
 struct TrivialShaping::Rectangle
 {
     ad::Rectangle<GLint> mGeometry;
+    GLfloat angle;
     Color mColor;
 };
 
