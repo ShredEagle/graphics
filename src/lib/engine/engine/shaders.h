@@ -57,7 +57,8 @@ inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     layout(location=0) in vec4  in_VertexPosition;
     layout(location=1) in vec2  in_InstancePosition;
     layout(location=2) in ivec2 in_InstanceDimension;
-    layout(location=3) in vec3  in_InstanceColor;
+    layout(location=3) in float angle;
+    layout(location=4) in vec3  in_InstanceColor;
 
     out vec3 ex_Color;
 
@@ -65,7 +66,9 @@ inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     
     void main(void)
     {
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy * in_InstanceDimension;
+        vec2 direction = vec2(cos(angle), sin(angle));
+        vec2 orthVec = vec2(-direction.y, direction.x);
+        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.y * direction * in_InstanceDimension.x + in_VertexPosition.x * orthVec * in_InstanceDimension.y;
         gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
                            0.0, 1.0);
 
