@@ -2,6 +2,7 @@ set(TARGET_NAME engine)
 
 set(${TARGET_NAME}_HEADERS
     Application.h
+    CameraUtilities.h
     commons.h
     Engine.h
     shaders.h

@@ -12,6 +12,7 @@ set(${TARGET_NAME}_HEADERS
     Range.h
     Shading.h
     Texture.h
+    Uniforms.h
     VertexSpecification.h
 
     stb_image.h

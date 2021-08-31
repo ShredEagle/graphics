@@ -73,6 +73,8 @@ constexpr GLenum getGLBufferHint(const BufferHint aBufferHint)
         HINTCASE(BufferHint::DynamicDraw, GL_DYNAMIC_DRAW);
         HINTCASE(BufferHint::DynamicRead, GL_DYNAMIC_READ);
         HINTCASE(BufferHint::DynamicCopy, GL_DYNAMIC_COPY);
+    default:
+        throw std::domain_error{"Invalid BufferHint enumerator."};
     }
 }
 
