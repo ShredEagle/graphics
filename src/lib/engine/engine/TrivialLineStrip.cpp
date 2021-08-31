@@ -3,7 +3,10 @@
 #include "shaders.h"
 
 #include <renderer/Error.h>
+#include <renderer/Uniforms.h>
 #include <renderer/VertexSpecification.h>
+
+#include <math/Transformations.h>
 
 
 namespace ad {
@@ -46,7 +49,11 @@ TrivialLineStrip::TrivialLineStrip(Size2<int> aRenderResolution) :
     },
     mIbo{ makeLoadedIndexBuffer(gsl::span<Index>{}, BufferHint::StreamDraw) }
 {
-    setBufferResolution(aRenderResolution);
+    setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
+    setProjectionTransformation(math::trans2d::window<GLfloat>(
+        {{0.f, 0.f}, static_cast<math::Size<2, GLfloat>>(aRenderResolution)},
+        {{-1.f, -1.f}, {2.f, 2.f}}
+    ));
 }
 
 
@@ -111,10 +118,15 @@ void TrivialLineStrip::render()
 }
 
 
-void TrivialLineStrip::setBufferResolution(Size2<int> aNewResolution)
+void TrivialLineStrip::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
-    GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
-    glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());
+    setUniform(mDrawContext.mProgram, "camera", aTransformation); 
+}
+
+
+void TrivialLineStrip::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mDrawContext.mProgram, "projection", aTransformation); 
 }
 
 

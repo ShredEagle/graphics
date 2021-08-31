@@ -56,24 +56,28 @@ inline const GLchar* gSolidColorInstanceVertexShader = R"#(
 
     layout(location=0) in vec4  in_VertexPosition;
     layout(location=1) in vec2  in_InstancePosition;
-    layout(location=2) in ivec2 in_InstanceDimension;
+    layout(location=2) in vec2  in_InstanceDimension;
     layout(location=3) in vec3  in_InstanceColor;
 
     out vec3 ex_Color;
 
-    uniform ivec2 in_BufferResolution;
+    uniform mat3 camera;
+    uniform mat3 projection;
     
     void main(void)
     {
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy * in_InstanceDimension;
-        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        vec3 worldPosition = vec3(in_InstancePosition + in_VertexPosition.xy * in_InstanceDimension, 1.);
+        vec3 transformed = projection * camera * worldPosition;
+        gl_Position = vec4(transformed.x, transformed.y, 0., 1.);
 
         ex_Color = in_InstanceColor;
     }
 )#";
 
 
+//
+// TrivialLineStrip
+//
 inline const GLchar* gTrivialColorVertexShader = R"#(
     #version 400
 
@@ -82,12 +86,12 @@ inline const GLchar* gTrivialColorVertexShader = R"#(
 
     out vec3 ex_Color;
 
-    uniform ivec2 in_BufferResolution;
-
+    uniform mat3 camera;
+    uniform mat3 projection;
+    
     void main(void)
     {
-        gl_Position = vec4(2 * in_VertexPosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        gl_Position = vec4(projection * camera * vec3(in_VertexPosition, 1.), 1.);
         ex_Color = in_VertexColor;
     }
 )#";
@@ -104,6 +108,7 @@ inline const GLchar* gTrivialFragmentShader = R"#(
         out_Color = vec4(ex_Color, 1.);
     }
 )#";
+
 
 //
 // Draw Line

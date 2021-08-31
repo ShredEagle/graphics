@@ -3,7 +3,10 @@
 #include "shaders.h"
 
 #include <renderer/Error.h>
+#include <renderer/Uniforms.h>
 #include <renderer/VertexSpecification.h>
+
+#include <math/Transformations.h>
 
 
 namespace ad {
@@ -36,8 +39,8 @@ namespace
     // Per instance data
     //
     constexpr AttributeDescriptionList gInstanceDescription{
-        { 1,                                  2, offsetof(TrivialShaping::Rectangle, mGeometry.mPosition),  MappedGL<GLint>::enumerator},
-        {{2, Attribute::Access::Integer},     2, offsetof(TrivialShaping::Rectangle, mGeometry.mDimension), MappedGL<GLint>::enumerator},
+        { 1,                                  2, offsetof(TrivialShaping::Rectangle, mGeometry.mPosition),  MappedGL<GLfloat>::enumerator},
+        { 2,                                  2, offsetof(TrivialShaping::Rectangle, mGeometry.mDimension), MappedGL<GLfloat>::enumerator},
         {{3, Attribute::Access::Float, true}, 3, offsetof(TrivialShaping::Rectangle, mColor),               MappedGL<GLubyte>::enumerator},
     };
 
@@ -66,7 +69,11 @@ TrivialShaping::TrivialShaping(Size2<int> aRenderResolution) :
         make_Program()
     }
 {
-    setBufferResolution(aRenderResolution);
+    setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
+    setProjectionTransformation(math::trans2d::window<GLfloat>(
+        {{0.f, 0.f}, static_cast<math::Size<2, GLfloat>>(aRenderResolution)},
+        {{-1.f, -1.f}, {2.f, 2.f}}
+    ));
 }
 
 
@@ -104,10 +111,15 @@ void TrivialShaping::render()
 }
 
 
-void TrivialShaping::setBufferResolution(Size2<int> aNewResolution)
+void TrivialShaping::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
-    GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
-    glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());
+    setUniform(mDrawContext.mProgram, "camera", aTransformation); 
+}
+
+
+void TrivialShaping::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mDrawContext.mProgram, "projection", aTransformation); 
 }
 
 
