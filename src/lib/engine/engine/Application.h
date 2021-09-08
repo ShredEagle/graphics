@@ -122,6 +122,11 @@ public:
         return glfwGetKey(mWindow, keyCode);
     }
 
+    bool loadWindowIntoImGui(std::function<bool(GLFWwindow * window, bool install_callbacks)> ImGui_install)
+    {
+        return ImGui_install(mWindow, true);
+    }
+
 private:
     static void error_callback(int error, const char* description)
     {

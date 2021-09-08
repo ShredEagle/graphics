@@ -16,6 +16,7 @@ class TrivialShaping
 {
 public:
     struct Rectangle;
+    struct RectangleAngle;
 private:
     using InstanceData = std::vector<Rectangle>;
 
@@ -29,6 +30,7 @@ public:
     void clearShapes();
 
     void addRectangle(Rectangle aRectangleData);
+    void addRectangle(RectangleAngle aRectangleData);
 
     /// \brief Render all shapes that were added since the last call to `clearShapes()`.
     void render();
@@ -50,5 +52,12 @@ struct TrivialShaping::Rectangle
     Color mColor;
 };
 
+struct TrivialShaping::RectangleAngle
+{
+    ad::Rectangle<GLfloat> mGeometry;
+    Color mColor;
+    math::Radian<GLfloat> angle{0.};
+    math::Position<2, GLfloat> center = mGeometry.origin();
+};
 
 } // namespace ad

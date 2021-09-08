@@ -91,6 +91,20 @@ void TrivialShaping::addRectangle(Rectangle aRectangleData)
     mInstances.push_back(std::move(aRectangleData));
 }
 
+void TrivialShaping::addRectangle(RectangleAngle aRectangleData)
+{
+    math::Matrix<3, 3, GLfloat> transformMatrix{ 
+        cos(aRectangleData.angle),                            sin(aRectangleData.angle),                           0.f,
+        -sin(aRectangleData.angle),                           cos(aRectangleData.angle),                           0.f,
+        -aRectangleData.center.x() * cos(aRectangleData.angle) + aRectangleData.center.y() * sin(aRectangleData.angle) + aRectangleData.center.x(), -aRectangleData.center.x() * sin(aRectangleData.angle) - aRectangleData.center.y() * cos(aRectangleData.angle) + aRectangleData.center.y(), 1.f
+    };
+    mInstances.push_back({
+        aRectangleData.mGeometry,
+        transformMatrix,
+        aRectangleData.mColor,
+    });
+}
+
 
 void TrivialShaping::render()
 {
