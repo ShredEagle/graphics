@@ -57,8 +57,8 @@ inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     layout(location=0) in vec4  in_VertexPosition;
     layout(location=1) in vec2  in_InstancePosition;
     layout(location=2) in vec2  in_InstanceDimension;
-    layout(location=3) in float angle;
-    layout(location=4) in vec3  in_InstanceColor;
+    layout(location=3) in mat3  in_Transform;
+    layout(location=6) in vec3  in_InstanceColor;
 
     out vec3 ex_Color;
 
@@ -68,11 +68,11 @@ inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     void main(void)
     {
         mat3 modelTransformation = mat3(
-            cos(angle),             sin(angle),             0,
-            - sin(angle),           cos(angle),             0,
+            1,             0,             0,
+            0,           1,             0,
             in_InstancePosition.x,  in_InstancePosition.y,  1);
 
-        vec3 worldPosition = modelTransformation * vec3(in_VertexPosition.xy * in_InstanceDimension, 1.);
+        vec3 worldPosition = in_Transform * modelTransformation * vec3(in_VertexPosition.xy * in_InstanceDimension, 1.);
         vec3 transformed = projection * camera * worldPosition;
         gl_Position = vec4(transformed.x, transformed.y, 0., 1.);
 

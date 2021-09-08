@@ -41,8 +41,10 @@ namespace
     constexpr AttributeDescriptionList gInstanceDescription{
         { 1,                                  2, offsetof(TrivialShaping::Rectangle, mGeometry.mPosition),  MappedGL<GLfloat>::enumerator},
         { 2,                                  2, offsetof(TrivialShaping::Rectangle, mGeometry.mDimension), MappedGL<GLfloat>::enumerator},
-        { 3,                                  1, offsetof(TrivialShaping::Rectangle, angle),                MappedGL<GLfloat>::enumerator},
-        {{4, Attribute::Access::Float, true}, 3, offsetof(TrivialShaping::Rectangle, mColor),               MappedGL<GLubyte>::enumerator},
+        { 3,                                  3, offsetof(TrivialShaping::Rectangle, mMatrixTransform), MappedGL<GLfloat>::enumerator},
+        { 4,                                  3, offsetof(TrivialShaping::Rectangle, mMatrixTransform) + 3 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
+        { 5,                                  3, offsetof(TrivialShaping::Rectangle, mMatrixTransform) + 6 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
+        {{6, Attribute::Access::Float, true}, 3, offsetof(TrivialShaping::Rectangle, mColor),               MappedGL<GLubyte>::enumerator},
     };
 
     VertexSpecification make_VertexSpecification()

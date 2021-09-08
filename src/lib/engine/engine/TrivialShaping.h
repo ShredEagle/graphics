@@ -46,8 +46,8 @@ private:
 struct TrivialShaping::Rectangle
 {
     ad::Rectangle<GLfloat> mGeometry;
+    math::Matrix<3, 3, GLfloat> mMatrixTransform;
     Color mColor;
-    math::Radian<GLfloat> angle{0.};
 };
 
 
