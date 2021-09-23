@@ -14,10 +14,8 @@ template <class T_engine2D>
 void setViewedRectangle(T_engine2D & aEngine, math::Rectangle<GLfloat> aViewedRectangle)
 {
     aEngine.setCameraTransformation(math::trans2d::translate(- aViewedRectangle.bottomLeft().as<math::Vec>()));
-    aEngine.setProjectionTransformation(math::trans2d::window<GLfloat>(
-        { {  0.f,  0.f }, aViewedRectangle.dimension() },
-        { { -1.f, -1.f }, { 2.f, 2.f } }
-    ));
+    aEngine.setProjectionTransformation(
+        math::trans2d::orthographicProjection<GLfloat>({ {  0.f,  0.f }, aViewedRectangle.dimension() }));
 }
 
 
