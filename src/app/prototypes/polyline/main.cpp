@@ -9,8 +9,7 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        // TODO apply a viewport transform to allow non-square windows
-        ad::Application application("Polyline", 800, 800);
+        ad::Application application("Polyline", 800, 600);
 
         ad::Timer timer{glfwGetTime(), 0.};
 
@@ -20,7 +19,7 @@ int main(int argc, const char * argv[])
         {
             application.getEngine()->clear();
             scene.step(timer);
-            scene.render();
+            scene.render(application.getEngine()->getWindowSize());
             timer.mark(glfwGetTime());
         }
     }

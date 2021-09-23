@@ -18,7 +18,7 @@ const GLchar* gVertexShader = R"#(
 )#";
 
 
-// Note: No handling of joints, basically creating a concave "dent" on one side.
+// Note: No handling of joints, basically creating a concave "dent" on the convex side of the joint.
 const GLchar* gNaiveGeometryShader = R"#(
     #version 400
     #extension GL_EXT_geometry_shader4 : enable
@@ -26,22 +26,27 @@ const GLchar* gNaiveGeometryShader = R"#(
     layout(lines) in;
     layout(triangle_strip, max_vertices = 4) out;
 
+    uniform float lineHalfWidth;
+
+    uniform mat4 model;
+    uniform mat4 projection;
+
     void main()
     {
+        mat4 transformation = projection * model;
+
         vec4 normal = vec4(normalize(vec2(gl_PositionIn[0].y - gl_PositionIn[1].y,
                                           gl_PositionIn[1].x - gl_PositionIn[0].x)),
                            0.,
                            0.);
 
-        float width = 0.2;
-
-        gl_Position = gl_PositionIn[0] + normal * width;
+        gl_Position = transformation * (gl_PositionIn[0] + normal * lineHalfWidth);
         EmitVertex();
-        gl_Position = gl_PositionIn[0] - normal * width;
+        gl_Position = transformation * (gl_PositionIn[0] - normal * lineHalfWidth);
         EmitVertex();
-        gl_Position = gl_PositionIn[1] + normal * width;
+        gl_Position = transformation * (gl_PositionIn[1] + normal * lineHalfWidth);
         EmitVertex();
-        gl_Position = gl_PositionIn[1] - normal * width;
+        gl_Position = transformation * (gl_PositionIn[1] - normal * lineHalfWidth);
         EmitVertex();
     }
 
@@ -57,8 +62,15 @@ const GLchar* gMiterGeometryShader = R"#(
     layout(lines_adjacency) in;
     layout(triangle_strip, max_vertices = 4) out;
 
+    uniform float lineHalfWidth;
+
+    uniform mat4 model;
+    uniform mat4 projection;
+
     void main()
     {
+        mat4 transformation = projection * model;
+
         vec4 left  = gl_PositionIn[1] - gl_PositionIn[0];
         vec4 mid   = gl_PositionIn[2] - gl_PositionIn[1];
         vec4 right = gl_PositionIn[3] - gl_PositionIn[2];
@@ -74,17 +86,16 @@ const GLchar* gMiterGeometryShader = R"#(
                            0.,
                            0.);
 
-        float lineHalfWidth = 0.2;
         float leftLength  = lineHalfWidth / dot(normal, leftMiter);
         float rightLength = lineHalfWidth / dot(normal, rightMiter);
 
-        gl_Position = gl_PositionIn[1] + leftMiter * leftLength;
+        gl_Position = transformation * (gl_PositionIn[1] + leftMiter * leftLength);
         EmitVertex();
-        gl_Position = gl_PositionIn[1] - leftMiter * leftLength;
+        gl_Position = transformation * (gl_PositionIn[1] - leftMiter * leftLength);
         EmitVertex();
-        gl_Position = gl_PositionIn[2] + rightMiter * rightLength;
+        gl_Position = transformation * (gl_PositionIn[2] + rightMiter * rightLength);
         EmitVertex();
-        gl_Position = gl_PositionIn[2] - rightMiter * rightLength;
+        gl_Position = transformation * (gl_PositionIn[2] - rightMiter * rightLength);
         EmitVertex();
     }
 

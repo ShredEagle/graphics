@@ -20,10 +20,26 @@ namespace ad {
 
 
     inline void setUniform(Program & aProgram, const std::string & aNameInShader,
-                          const math::Matrix<4, 4, GLfloat> & aMatrix)
+                           const math::Matrix<4, 4, GLfloat> & aMatrix)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniformMatrix4fv(aProgram, location, 1, false, aMatrix.data());
+    }
+
+
+    inline void setUniformFloat(Program & aProgram, const std::string & aNameInShader,
+                                GLfloat aFloat)
+    {
+        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
+        glProgramUniform1f(aProgram, location, aFloat);
+    }
+
+
+    inline void setUniformInt(Program & aProgram, const std::string & aNameInShader,
+                              GLint aInteger)
+    {
+        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
+        glProgramUniform1i(aProgram, location, aInteger);
     }
 
 
