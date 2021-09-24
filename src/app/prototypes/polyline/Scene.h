@@ -13,6 +13,13 @@
 #include <math/VectorUtilities.h>
 
 
+// The approach is to draw miter joints with the minimal number of vertices.
+// A geometry shader is used to find the miter vector, 
+// then place the corner vertices at the correct distance along miter vector.
+// see: https://en.sfml-dev.org/forums/index.php?topic=21620.msg153681#msg153681
+// It is compared to the naive approach with overdraw and discontinuities.
+
+
 namespace ad {
 
 

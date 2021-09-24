@@ -13,6 +13,13 @@
 #include <math/VectorUtilities.h>
 
 
+// The approach is to send N*2 parameters values in [0..1] as vertice data
+// and send the bezier control points as instance data.
+// Then use a vertex shader on each vertex to interpolate its position at its associated parameter value,
+// offset by `[+/-] normal * width`.
+// see: https://discourse.libcinder.org/t/smooth-efficient-perfect-curves/925
+
+
 namespace ad {
 namespace curve {
 
