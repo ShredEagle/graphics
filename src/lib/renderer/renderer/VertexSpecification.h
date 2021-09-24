@@ -28,7 +28,7 @@ struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 ///       (likely not specially before destruction, but more when rendering other objects
 ///        since it is a current(i.e. global) VAO state)
 /// \Note Well note even that: Activated vertex attribute array are per VAO, so changing VAO
-//        Already correctly handles that.
+///       Already correctly handles that.
 struct [[nodiscard]] VertexBufferObject : public ResourceGuard<GLuint>
 {
     VertexBufferObject() :
