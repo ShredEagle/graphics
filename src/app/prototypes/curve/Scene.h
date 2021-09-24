@@ -40,14 +40,35 @@ Vec2 deCasteljau(GLfloat t, CubicBezier b)
 }
 
 
-struct Vertex
+struct LineVertex
 {
     Vec2 position;
 };
 
 
-constexpr AttributeDescriptionList gVertexDescription{
-    {0, 2, offsetof(Vertex, position), MappedGL<GLfloat>::enumerator},
+constexpr AttributeDescriptionList gLineVertexDescription{
+    {0, 2, offsetof(LineVertex, position), MappedGL<GLfloat>::enumerator},
+};
+
+
+struct GenerativeVertex
+{
+    GLfloat t;
+    GLint side;
+};
+
+
+constexpr AttributeDescriptionList gGenerativeVertexDescription{
+    {0,                               1, offsetof(GenerativeVertex, t),    MappedGL<GLfloat>::enumerator},
+    {{1, Attribute::Access::Integer}, 1, offsetof(GenerativeVertex, side), MappedGL<GLint>::enumerator},
+};
+
+
+constexpr AttributeDescriptionList gBezierInstanceDescription{
+    {2, 2, offsetof(CubicBezier, p) + 0 * sizeof(Vec2), MappedGL<GLfloat>::enumerator},
+    {3, 2, offsetof(CubicBezier, p) + 1 * sizeof(Vec2), MappedGL<GLfloat>::enumerator},
+    {4, 2, offsetof(CubicBezier, p) + 2 * sizeof(Vec2), MappedGL<GLfloat>::enumerator},
+    {5, 2, offsetof(CubicBezier, p) + 3 * sizeof(Vec2), MappedGL<GLfloat>::enumerator},
 };
 
 
@@ -60,44 +81,92 @@ struct Scene
 
     constexpr static int gSubdivisions = 20;
     
-    VertexSpecification mVertexSpecification;
-    Program  mProgram;
+    // Used to draw the bezier directly as a GL line
+    // (after subdivision on the CPU)
+    VertexSpecification mLineVertexSpecification;
+    Program  mLineProgram;
 
-    std::vector<Vertex> mVertices;
+    VertexSpecification mGenerativeVertexSpecification;
+    Program  mGenerativeProgram;
+
+    std::vector<LineVertex> mLineVertices;
     CubicBezier mBezier{ {Vec2{-0.8f, -0.5f}, Vec2{-0.3f, 1.8f}, Vec2{0.3f, -1.8f}, Vec2{0.8f, 0.5f}} };
 };
 
 
+const std::vector<GenerativeVertex> gGenerativeVertices = []()
+{
+    std::vector<GenerativeVertex> vertices;
+    for (std::size_t i = 0; i <= Scene::gSubdivisions; ++i)
+    {
+        vertices.push_back({
+            (GLfloat)i/Scene::gSubdivisions, 
+            1,
+        });
+        vertices.push_back({
+            (GLfloat)i/Scene::gSubdivisions, 
+            -1,
+        });
+    }
+    return vertices;
+}();
+
+
 inline Scene::Scene() :
-    mVertexSpecification{},
-    mProgram{makeLinkedProgram({
-              {GL_VERTEX_SHADER,   gVertexShader},
-              {GL_FRAGMENT_SHADER, gFragmentShader},
+    mLineProgram{makeLinkedProgram({
+        {GL_VERTEX_SHADER,   gLineVertexShader},
+        {GL_FRAGMENT_SHADER, gFragmentShader},
+    })},
+    mGenerativeProgram{makeLinkedProgram({
+        {GL_VERTEX_SHADER,   gGenerativeVertexShader},
+        {GL_FRAGMENT_SHADER, gFragmentShader},
     })}
 {
-    appendToVertexSpecification<const Vertex>(mVertexSpecification,
-                                              gVertexDescription,
-                                              {});
+    //
+    // Line bezier
+    //
+    appendToVertexSpecification<const LineVertex>(mLineVertexSpecification,
+                                                  gLineVertexDescription,
+                                                  {});
 
     for (std::size_t i = 0; i <= gSubdivisions; ++i)
     {
-        mVertices.push_back(Vertex{deCasteljau((GLfloat)i/gSubdivisions, mBezier)});
+        mLineVertices.push_back(LineVertex{deCasteljau((GLfloat)i/gSubdivisions, mBezier)});
     }
 
-    respecifyBuffer<Vertex>(mVertexSpecification.mVertexBuffers[0], mVertices);
+    respecifyBuffer<LineVertex>(mLineVertexSpecification.mVertexBuffers[0], mLineVertices);
+
+    //
+    // Fat bezier
+    //
+    appendToVertexSpecification<const GenerativeVertex>(
+        mGenerativeVertexSpecification,
+        gGenerativeVertexDescription,
+        gGenerativeVertices);
+
+    appendToVertexSpecification<CubicBezier>(
+        mGenerativeVertexSpecification,
+        gBezierInstanceDescription,
+        {},
+        1);
 }
 
 
 inline void Scene::step(const Timer & aTimer)
 {
-    //setUniformFloat(mProgram, "lineHalfWidth", 0.05f + 0.04f * std::cos(aTimer.time()));
+    respecifyBuffer(mGenerativeVertexSpecification.mVertexBuffers[1],
+                    gsl::make_span(mBezier.p));
 }
 
 
 inline void Scene::render(const Size2<int> aRenderSize)
 {
-    glBindVertexArray(mVertexSpecification.mVertexArray);
-    glUseProgram(mProgram);
+    //
+    // Line
+    //
+#if 0
+    glBindVertexArray(mLineVertexSpecification.mVertexArray);
+    glUseProgram(mLineProgram);
 
     math::AffineMatrix<4, GLfloat> orthographic =
         math::trans3d::orthographicProjection<GLfloat>({
@@ -108,7 +177,20 @@ inline void Scene::render(const Size2<int> aRenderSize)
 
     glDrawArrays(GL_LINE_STRIP,
                  0,
-                 static_cast<GLsizei>(mVertices.size()));
+                 static_cast<GLsizei>(mLineVertices.size()));
+#endif
+
+    //
+    // Generative construction
+    //
+    glBindVertexArray(mGenerativeVertexSpecification.mVertexArray);
+    glUseProgram(mGenerativeProgram);
+
+    glDrawArraysInstanced(
+        GL_LINE_STRIP,
+        0,
+        static_cast<GLsizei>(gGenerativeVertices.size()),
+        1);
 }
 
 
