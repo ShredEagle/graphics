@@ -9,7 +9,7 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        ad::Application application("Vurve", 800, 600);
+        ad::Application application("Curve", 800, 600);
 
         ad::Timer timer{glfwGetTime(), 0.};
 

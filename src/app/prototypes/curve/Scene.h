@@ -79,7 +79,7 @@ struct Scene
     void step(const Timer & aTimer);
     void render(const Size2<int> aRenderSize);
 
-    constexpr static int gSubdivisions = 20;
+    constexpr static int gSubdivisions = 80;
     
     // Used to draw the bezier directly as a GL line
     // (after subdivision on the CPU)
@@ -154,6 +154,7 @@ inline Scene::Scene() :
 
 inline void Scene::step(const Timer & aTimer)
 {
+    setUniformFloat(mGenerativeProgram, "halfWidth", 0.1f);
     respecifyBuffer(mGenerativeVertexSpecification.mVertexBuffers[1],
                     gsl::make_span(mBezier.p));
 }
@@ -161,24 +162,24 @@ inline void Scene::step(const Timer & aTimer)
 
 inline void Scene::render(const Size2<int> aRenderSize)
 {
-    //
-    // Line
-    //
-#if 0
-    glBindVertexArray(mLineVertexSpecification.mVertexArray);
-    glUseProgram(mLineProgram);
-
     math::AffineMatrix<4, GLfloat> orthographic =
         math::trans3d::orthographicProjection<GLfloat>({
                    {-1.f, -1.f, 1.f},
                    {2.f * math::getRatio<GLfloat>(aRenderSize), 2.f, 2.f},
                });
 
+    setUniform(mLineProgram, "projection", orthographic);
+    setUniform(mGenerativeProgram, "projection", orthographic);
+ 
+    //
+    // Line
+    //
+    glBindVertexArray(mLineVertexSpecification.mVertexArray);
+    glUseProgram(mLineProgram);
 
     glDrawArrays(GL_LINE_STRIP,
                  0,
                  static_cast<GLsizei>(mLineVertices.size()));
-#endif
 
     //
     // Generative construction
@@ -186,8 +187,10 @@ inline void Scene::render(const Size2<int> aRenderSize)
     glBindVertexArray(mGenerativeVertexSpecification.mVertexArray);
     glUseProgram(mGenerativeProgram);
 
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     glDrawArraysInstanced(
-        GL_LINE_STRIP,
+        GL_TRIANGLE_STRIP,
         0,
         static_cast<GLsizei>(gGenerativeVertices.size()),
         1);
