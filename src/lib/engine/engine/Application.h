@@ -56,11 +56,15 @@ public:
         glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
-        namespace sp = std::placeholders;
+        using namespace std::placeholders;
         mEngine->registerKeyCallback(std::bind(&Application::default_key_callback,
                                                static_cast<GLFWwindow*>(this->mWindow),
-                                               sp::_1, sp::_2, sp::_3, sp::_4));
+                                               _1, _2, _3, _4));
         glfwSetKeyCallback(mWindow, forward_key_callback);
+
+        glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
+
+        glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
 
         glfwShowWindow(mWindow);
 
@@ -147,6 +151,22 @@ private:
     {
         ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
         engine->callbackKeyboard(key, scancode, action, mods);
+    }
+
+    static void forward_mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
+    {
+        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        engine->callbackMouseButton(button, action, mods, xpos, ypos);
+    }
+
+    static void forward_cursorposition_callback(GLFWwindow* window, double xpos, double ypos)
+    {
+        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+
+        engine->callbackCursorPosition(xpos, ypos);
     }
 
     static void windowsSize_callback(GLFWwindow * window, int width, int height)
