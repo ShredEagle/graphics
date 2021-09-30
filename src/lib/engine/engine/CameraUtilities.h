@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include <glad/glad.h>
+
 #include <math/Rectangle.h>
 #include <math/Transformations.h>
 
@@ -15,7 +17,7 @@ void setViewedRectangle(T_engine2D & aEngine, math::Rectangle<GLfloat> aViewedRe
 {
     aEngine.setCameraTransformation(math::trans2d::translate(- aViewedRectangle.bottomLeft().as<math::Vec>()));
     aEngine.setProjectionTransformation(
-        math::trans2d::orthographicProjection<GLfloat>({ {  0.f,  0.f }, aViewedRectangle.dimension() }));
+        math::trans2d::orthographicProjection<GLfloat>({ { 0.f, 0.f }, aViewedRectangle.dimension() }));
 }
 
 

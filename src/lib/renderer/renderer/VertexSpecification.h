@@ -122,19 +122,6 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
 }
 
 
-template <class T_vertex>
-void appendToVertexSpecification(VertexSpecification & aSpecification,
-                                 const AttributeDescriptionList & aAttributes,
-                                 const gsl::span<T_vertex> aVertices,
-                                 GLuint aAttributeDivisor = 0)
-{
-    aSpecification.mVertexBuffers.push_back(
-            loadVertexBuffer(aSpecification.mVertexArray,
-                             aAttributes,
-                             std::move(aVertices),
-                             aAttributeDivisor));
-}
-
 /// \brief Create a VertexBufferObject with provided attributes, load it with data.
 ///
 /// This is the lowest level overload, with explicit attribute description and raw data pointer.
@@ -152,6 +139,20 @@ VertexBufferObject makeLoadedVertexBuffer(AttributeDescriptionList aAttributes,
                                   sizeof(T_vertex),
                                   aVertices.size_bytes(),
                                   aVertices.data());
+}
+
+
+template <class T_vertex>
+void appendToVertexSpecification(VertexSpecification & aSpecification,
+                                 const AttributeDescriptionList & aAttributes,
+                                 const gsl::span<T_vertex> aVertices,
+                                 GLuint aAttributeDivisor = 0)
+{
+    aSpecification.mVertexBuffers.push_back(
+            loadVertexBuffer(aSpecification.mVertexArray,
+                             aAttributes,
+                             std::move(aVertices),
+                             aAttributeDivisor));
 }
 
 

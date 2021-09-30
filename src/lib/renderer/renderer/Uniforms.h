@@ -5,6 +5,7 @@
 
 #include "GL_Loader.h"
 
+#include <math/Color.h>
 #include <math/Matrix.h>
 #include <math/Vector.h>
 
@@ -44,6 +45,15 @@ namespace ad {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform3f(aProgram, location, aVector[0], aVector[1], aVector[2]);
     }
+
+
+    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+                           const math::hdr::Rgb & aColor)
+    {
+        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
+        glProgramUniform3f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2]);
+    }
+
 
 
     template <class T_derived>

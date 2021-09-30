@@ -3,6 +3,8 @@ set(TARGET_NAME engine)
 set(${TARGET_NAME}_HEADERS
     Application.h
     CameraUtilities.h
+    Curving.h
+    Curving-shaders.h
     commons.h
     Engine.h
     shaders.h
@@ -19,6 +21,7 @@ set(${TARGET_NAME}_HEADERS
 )
 
 set(${TARGET_NAME}_SOURCES
+    Curving.cpp
     Engine.cpp
     Spriting.cpp
     Tiling.cpp
