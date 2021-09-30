@@ -17,6 +17,8 @@ int main(int argc, const char * argv[])
 
         Scene scene{ {800, 600}, application.getEngine() };
 
+        //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
         while(application.nextFrame())
         {
             timer.mark(glfwGetTime());

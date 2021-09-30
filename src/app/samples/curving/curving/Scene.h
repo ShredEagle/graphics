@@ -53,12 +53,12 @@ public:
         mCurves{
             Curving::Instance{ 
                 math::Bezier<4, 3, GLfloat>{
-                    math::Position<3, GLfloat>{-1.0f, -0.5f, 0.f},
+                    math::Position<3, GLfloat>{-1.5f, -0.5f, 0.f},
                     math::Position<3, GLfloat>{-0.3f,  0.5f, 0.f},
                     math::Position<3, GLfloat>{ 0.3f, -0.5f, 0.f},
                     math::Position<3, GLfloat>{ 0.5f,  0.5f, 0.f}
                 },
-                0.05f,
+                0.04f,
                 0.02f
             },
             { 
@@ -69,7 +69,7 @@ public:
                     math::Position<3, GLfloat>{ 1.5f,  0.5f, 0.f}
                 },
                 0.02f,
-                0.1f
+                0.04f
             },
         }
     {
@@ -80,6 +80,12 @@ public:
 
     void step(const Timer & aTimer)
     {
+        static constexpr GLfloat gCyclesPerSecond = 0.8f;
+        static constexpr GLfloat gAmplitude = 4.f;
+        GLfloat t = (std::cos(aTimer.time() * 2 * math::pi<GLfloat> * gCyclesPerSecond) + 1.f) / 2.f;
+
+        // Pumping the middle point
+        mCurves.at(0).endHalfWidth = mCurves.at(1).startHalfWidth = 0.02 * (1 + gAmplitude * t);
     }
 
     void render()

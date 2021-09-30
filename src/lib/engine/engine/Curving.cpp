@@ -89,7 +89,6 @@ void Curving::render(gsl::span<const Instance> aInstances)
     // Stream instance attributes
     respecifyBuffer(mInstanceBuffer, aInstances);
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           mVertexCount,
