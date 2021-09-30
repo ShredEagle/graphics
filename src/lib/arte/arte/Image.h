@@ -20,6 +20,13 @@ enum class ImageFormat
 };
 
 
+enum class ImageOrientation
+{
+    Default, 
+    InvertVerticalAxis,
+};
+
+
 struct FormatInfo
 {
     std::string name;
@@ -118,9 +125,11 @@ public:
     // \brief Creates an image
     Image(math::Size<2, int> aDimensions, pixel_format_t aBackgroundValue);
 
-    void write(ImageFormat aFormat, std::ostream & aOut) const;
-    void write(ImageFormat aFormat, std::ostream && aOut) const
-    { return write(aFormat, aOut); };
+    void write(ImageFormat aFormat, std::ostream & aOut,
+               ImageOrientation aOrientation = ImageOrientation::Default) const;
+    void write(ImageFormat aFormat, std::ostream && aOut,
+               ImageOrientation aOrientation = ImageOrientation::Default) const
+    { return write(aFormat, aOut, aOrientation); };
 
     static Image Read(ImageFormat aFormat, std::istream & aIn);
     static Image Read(ImageFormat aFormat, std::istream && aIn)
@@ -128,7 +137,8 @@ public:
 
     static Image LoadFile(const filesystem::path & aImageFile);
 
-    void saveFile(const filesystem::path & aDestination) const;
+    void saveFile(const filesystem::path & aDestination,
+                  ImageOrientation aOrientation = ImageOrientation::Default) const;
 
     // TODO Is it a good idea? It works with the usual image semantix, i.e. [x][y], yet
     //   it is the opposite than for matrices. Plus the implementation creates complexity.
@@ -158,6 +168,9 @@ public:
 
     std::size_t size_bytes() const
     { return dimensions().area() * pixel_size_v; }
+
+    std::size_t size_bytes_line() const
+    { return dimensions().width() * pixel_size_v; }
 
     auto begin()
     { return data(); }
