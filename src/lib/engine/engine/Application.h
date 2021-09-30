@@ -24,12 +24,15 @@ public:
         Window_Keep_Ratio = (1 << 1),
     };
 
+    using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
+
     Application(const std::string aName,
                 int aWidth, int aHeight,
                 Flags aFlags = None,
-                int aGLVersionMajor=4, int aGLVersionMinor=1) :
+                int aGLVersionMajor=4, int aGLVersionMinor=1,
+                WindowHints aCustomWindowHints = {}) :
         mGlfwInitialization(initializeGlfw()),
-        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor))
+        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints))
     {
         if (aFlags & Window_Keep_Ratio)
         {
@@ -193,7 +196,8 @@ private:
 
     ResourceGuard<GLFWwindow*> initializeWindow(const std::string & aName,
                                                 int aWidth, int aHeight,
-                                                int aGLVersionMajor, int aGLVersionMinor)
+                                                int aGLVersionMajor, int aGLVersionMinor,
+                                                WindowHints aCustomWindowHints)
     {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, aGLVersionMajor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, aGLVersionMinor);
@@ -205,6 +209,11 @@ private:
         // Only show the window after its size callback is set
         // so we cannot miss notifications
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+        for (auto hint : aCustomWindowHints)
+        {
+            glfwWindowHint(hint.first, hint.second);
+        }
 
         auto window = guard(glfwCreateWindow(aWidth,
                                              aHeight,

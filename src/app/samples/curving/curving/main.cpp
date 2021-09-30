@@ -11,7 +11,10 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Curving", 800, 600);
+        Application application("Curving", 800, 600,
+                                 Application::Flags::None,
+                                 4, 1,
+                                 { {GLFW_SAMPLES, 8} });
 
         ad::Timer timer{glfwGetTime(), 0.};
 
