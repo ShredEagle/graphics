@@ -38,12 +38,23 @@ inline const GLchar* gVertexShader = R"#(
 
         vec3 ad = (1 - t) * ac + t * bd;
 
-        vec3 tangent = ac - bd;
-        vec3 normal = normalize(vec3(-tangent.y, tangent.x, 0.));
+        // Works only when points are already in camera space
+        // (because this way the tangent is also in camera space)
+        //vec3 tangent = ac - bd;
+        //vec3 normal = normalize(vec3(-tangent.y, tangent.x, 0.));
+        //gl_Position = u_projection * u_camera * model * vec4(
+        //    ad + normal * side * mix(startHalfWidth, endHalfWidth, t),
+        //    1.);
 
-        gl_Position = u_projection * u_camera * model * vec4(
-            ad + normal * side * mix(startHalfWidth, endHalfWidth, t),
-            1.);
+        // Important: does not work when the tangent is alongside the view direction
+        // (we would need to draw a circle, i.e. the normal are all unit vectors in the screen plane)
+        mat4 transform = u_projection * u_camera * model;
+        vec4 ad_clip = transform * vec4(ad, 1.);
+        vec4 tangent_clip = transform * vec4(ac - bd, 0.);
+        vec4 normal_clip  = normalize(vec4(-tangent_clip.y, tangent_clip.x, 0., 0.));
+        
+        gl_Position = ad_clip + normal_clip * side * mix(startHalfWidth, endHalfWidth, t);
+
     }
 )#";
 
