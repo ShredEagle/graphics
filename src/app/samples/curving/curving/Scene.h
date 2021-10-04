@@ -19,8 +19,8 @@ namespace ad
 
 math::Box<GLfloat> getViewVolume(Size2<int> aRenderResolution,
                                  GLfloat aWindowHeight = 3.,   
-                                 GLfloat aNear = 0.,
-                                 GLfloat aDepth = 100.)
+                                 GLfloat aNear = 10.,
+                                 GLfloat aDepth = 20.)
 {
     math::Size<3, GLfloat> frontSize{
         math::makeSizeFromHeight(aWindowHeight, math::getRatio<GLfloat>(aRenderResolution)),
@@ -76,16 +76,23 @@ public:
         using namespace std::placeholders;
         aEngine->registerMouseButtonCallback(std::bind(&Scene::callbackMouseButton, this, _1, _2, _3, _4, _5));
         aEngine->registerCursorPositionCallback(std::bind(&Scene::callbackCursorPosition, this, _1, _2));
+        aEngine->registerKeyCallback(std::bind(&Scene::callbackKey, this, _1, _2, _3, _4));
     }
 
     void step(const Timer & aTimer)
     {
-        static constexpr GLfloat gCyclesPerSecond = 0.8f;
+        static constexpr GLfloat gCyclesPerSecond = 0.2f;
         static constexpr GLfloat gAmplitude = 4.f;
         GLfloat t = (std::cos(aTimer.time() * 2 * math::pi<GLfloat> * gCyclesPerSecond) + 1.f) / 2.f;
 
         // Pumping the middle point
         mCurves.at(0).endHalfWidth = mCurves.at(1).startHalfWidth = 0.02 * (1 + gAmplitude * t);
+
+        if (mRotate)
+        {
+            mAngle += math::Radian<GLfloat>{(GLfloat)aTimer.delta()};
+        }
+        mCurves.at(0).modelTransform = mCurves.at(1).modelTransform = math::trans3d::rotateY(mAngle);
     }
 
     void render()
@@ -129,6 +136,18 @@ private:
         }
     }
 
+    void callbackKey(int key, int scancode, int action, int mods)
+    {
+        if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+        {
+            mRotate = !mRotate;
+        }
+        if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+        {
+            mAngle = math::Radian<GLfloat>{0.};
+        }
+    }
+
     static constexpr GLsizei gCurveSubdivisions{75};
 
     math::Box<GLfloat> mViewVolume;
@@ -137,6 +156,8 @@ private:
     std::vector<Curving::Instance> mCurves;
 
     bool mHandleClicked{false};
+    bool mRotate{false};
+    math::Radian<GLfloat> mAngle{0.};
 };
 
 

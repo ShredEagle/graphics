@@ -7,6 +7,11 @@
 
 using namespace ad;
 
+// Control the middle point out handle with left button drag.
+// Press enter to alternate between rotation / side view.
+// Press backspace to reset rotation to zero.
+// Press backspace to reset rotation to zero.
+
 int main(int argc, const char * argv[])
 {
     try
