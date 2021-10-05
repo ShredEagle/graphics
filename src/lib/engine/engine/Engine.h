@@ -53,8 +53,8 @@ private:
     Size2<int> mFramebufferSize;
     Subject<SizeListener> mFramebufferSizeSubject;
     std::function<void(int, int, int, int)> mKeyboardCallback;
-    std::function<void(int, int, int, double, double)> mMouseButtonCallback;
-    std::function<void(double, double)> mCursorPositionCallback;
+    std::function<void(int, int, int, double, double)> mMouseButtonCallback = [](int, int, int, double, double){};
+    std::function<void(double, double)> mCursorPositionCallback = [](double, double){};
 };
 
 
