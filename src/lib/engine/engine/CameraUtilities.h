@@ -15,9 +15,12 @@ namespace ad {
 template <class T_engine2D>
 void setViewedRectangle(T_engine2D & aEngine, math::Rectangle<GLfloat> aViewedRectangle)
 {
-    aEngine.setCameraTransformation(math::trans2d::translate(- aViewedRectangle.bottomLeft().as<math::Vec>()));
+    aEngine.setCameraTransformation(math::trans2d::translate(- aViewedRectangle.center().as<math::Vec>()));
     aEngine.setProjectionTransformation(
-        math::trans2d::orthographicProjection<GLfloat>({ { 0.f, 0.f }, aViewedRectangle.dimension() }));
+        math::trans2d::orthographicProjection<GLfloat>({
+            -(aViewedRectangle.dimension() / 2.).as<math::Position>(),
+            aViewedRectangle.dimension() }));
+}
 }
 
 
