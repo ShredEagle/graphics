@@ -44,12 +44,13 @@ Image<T_pixelFormat> & Image<T_pixelFormat>::operator=(const Image & aRhs)
 
 
 template <>
-void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut) const
+void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut,
+                                  ImageOrientation aOrientation) const
 {
     switch(aFormat)
     {
     case ImageFormat::Ppm:
-        detail::Netpbm<detail::NetpbmFormat::Ppm>::Write(aOut, *this);
+        detail::Netpbm<detail::NetpbmFormat::Ppm>::Write(aOut, *this, aOrientation);
         break;
     default:
         throw std::runtime_error{"Unsupported write format for RGB image: "
@@ -59,12 +60,13 @@ void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut) cons
 
 
 template <>
-void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut) const
+void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut,
+                                        ImageOrientation aOrientation) const
 {
     switch(aFormat)
     {
     case ImageFormat::Pgm:
-        detail::Netpbm<detail::NetpbmFormat::Pgm>::Write(aOut, *this);
+        detail::Netpbm<detail::NetpbmFormat::Pgm>::Write(aOut, *this, aOrientation);
         break;
     default:
         throw std::runtime_error{"Unsupported write format for grayscale image: "
@@ -110,10 +112,11 @@ Image<T_pixelFormat> Image<T_pixelFormat>::LoadFile(const filesystem::path & aIm
 
 
 template <class T_pixelFormat>
-void Image<T_pixelFormat>::saveFile(const filesystem::path & aDestination) const
+void Image<T_pixelFormat>::saveFile(const filesystem::path & aDestination, ImageOrientation aOrientation) const
 {
     write(from_extension(aDestination.extension()),
-          std::ofstream{aDestination.string(), std::ios_base::out | std::ios_base::binary});
+          std::ofstream{aDestination.string(), std::ios_base::out | std::ios_base::binary},
+          aOrientation);
 }
 
 

@@ -24,12 +24,15 @@ public:
         Window_Keep_Ratio = (1 << 1),
     };
 
+    using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
+
     Application(const std::string aName,
                 int aWidth, int aHeight,
                 Flags aFlags = None,
-                int aGLVersionMajor=4, int aGLVersionMinor=1) :
+                int aGLVersionMajor=4, int aGLVersionMinor=1,
+                WindowHints aCustomWindowHints = {}) :
         mGlfwInitialization(initializeGlfw()),
-        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor))
+        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints))
     {
         if (aFlags & Window_Keep_Ratio)
         {
@@ -56,11 +59,15 @@ public:
         glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
-        namespace sp = std::placeholders;
+        using namespace std::placeholders;
         mEngine->registerKeyCallback(std::bind(&Application::default_key_callback,
                                                static_cast<GLFWwindow*>(this->mWindow),
-                                               sp::_1, sp::_2, sp::_3, sp::_4));
+                                               _1, _2, _3, _4));
         glfwSetKeyCallback(mWindow, forward_key_callback);
+
+        glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
+
+        glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
 
         glfwShowWindow(mWindow);
 
@@ -149,6 +156,22 @@ private:
         engine->callbackKeyboard(key, scancode, action, mods);
     }
 
+    static void forward_mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
+    {
+        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+
+        double xpos, ypos;
+        glfwGetCursorPos(window, &xpos, &ypos);
+        engine->callbackMouseButton(button, action, mods, xpos, ypos);
+    }
+
+    static void forward_cursorposition_callback(GLFWwindow* window, double xpos, double ypos)
+    {
+        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+
+        engine->callbackCursorPosition(xpos, ypos);
+    }
+
     static void windowsSize_callback(GLFWwindow * window, int width, int height)
     {
         ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
@@ -173,7 +196,8 @@ private:
 
     ResourceGuard<GLFWwindow*> initializeWindow(const std::string & aName,
                                                 int aWidth, int aHeight,
-                                                int aGLVersionMajor, int aGLVersionMinor)
+                                                int aGLVersionMajor, int aGLVersionMinor,
+                                                WindowHints aCustomWindowHints)
     {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, aGLVersionMajor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, aGLVersionMinor);
@@ -185,6 +209,11 @@ private:
         // Only show the window after its size callback is set
         // so we cannot miss notifications
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+        for (auto hint : aCustomWindowHints)
+        {
+            glfwWindowHint(hint.first, hint.second);
+        }
 
         auto window = guard(glfwCreateWindow(aWidth,
                                              aHeight,

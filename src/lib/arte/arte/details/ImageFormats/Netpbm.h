@@ -37,6 +37,10 @@ namespace detail {
     {
         switch(aFormat)
         {
+        default:
+            throw std::domain_error("Unsupported format (value: " 
+                                    + std::to_string(static_cast<std::underlying_type_t<NetpbmFormat>>(aFormat))
+                                    + ").");
         case NetpbmFormat::Pgm:
             return "PGM";
         case NetpbmFormat::Ppm:
@@ -123,7 +127,8 @@ namespace detail {
             return {dimensions, std::move(data)};
         }
 
-        static void Write(std::ostream & aOut, const Image<pixel_type> & aImage)
+        static void Write(std::ostream & aOut, const Image<pixel_type> & aImage,
+                          ImageOrientation aOrientation)
         {
             if(!aOut.good())
             {
@@ -135,6 +140,21 @@ namespace detail {
                 << "255\n"
                 ;
 
+            switch (aOrientation)
+            {
+            case ImageOrientation::Default:
+                WriteVerticalDefault(aOut, aImage);
+                break;
+            case ImageOrientation::InvertVerticalAxis:
+                WriteVerticalInverted(aOut, aImage);
+                break;
+            default:
+                throw std::runtime_error("Unhandled orientation on image write.");
+            }
+        }
+
+        static void WriteVerticalDefault(std::ostream & aOut, const Image<pixel_type> & aImage)
+        {
             std::size_t remainingBytes = aImage.size_bytes();
             const char * currentSource = reinterpret_cast<const char *>(aImage.data());
 
@@ -148,6 +168,28 @@ namespace detail {
                 }
                 remainingBytes -= writeSize;
                 currentSource += writeSize;
+            }
+        }
+
+        static void WriteVerticalInverted(std::ostream & aOut, const Image<pixel_type> & aImage)
+        {
+            for (int currentLine = aImage.height() - 1; currentLine >= 0; --currentLine)
+            {
+                std::size_t remainingLineBytes = aImage.size_bytes_line();
+                const char * currentSource = 
+                    reinterpret_cast<const char *>(aImage.data() + currentLine * aImage.width());
+
+                while (remainingLineBytes)
+                {
+                    std::size_t writeSize = std::min(remainingLineBytes, gChunkSize);
+                    if (!aOut.write(currentSource, writeSize).good())
+                    {
+                        throw std::runtime_error("Error writing "+ to_string(N_format)
+                                                 + " pixel data to stream");
+                    }
+                    remainingLineBytes -= writeSize;
+                    currentSource += writeSize;
+                }
             }
         }
     };
