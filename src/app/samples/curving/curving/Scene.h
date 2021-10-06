@@ -17,6 +17,9 @@ namespace ad
 {
 
 
+constexpr GLfloat gInitialHalfWidth = 0.05f;
+
+
 math::Box<GLfloat> getViewVolume(Size2<int> aRenderResolution,
                                  GLfloat aWindowHeight = 3.,   
                                  GLfloat aNear = 10.,
@@ -58,8 +61,8 @@ public:
                     math::Position<3, GLfloat>{ 0.3f, -0.5f, 0.f},
                     math::Position<3, GLfloat>{ 0.5f,  0.5f, 0.f}
                 },
-                0.04f,
-                0.02f
+                gInitialHalfWidth,
+                gInitialHalfWidth
             },
             { 
                 math::Bezier<4, 3, GLfloat>{
@@ -68,8 +71,8 @@ public:
                     math::Position<3, GLfloat>{ 1.0f,  1.0f, 0.f},
                     math::Position<3, GLfloat>{ 1.5f,  0.5f, 0.f}
                 },
-                0.02f,
-                0.04f
+                gInitialHalfWidth,
+                gInitialHalfWidth
             },
         }
     {
@@ -86,7 +89,10 @@ public:
         GLfloat t = (std::cos(aTimer.time() * 2 * math::pi<GLfloat> * gCyclesPerSecond) + 1.f) / 2.f;
 
         // Pumping the middle point
-        mCurves.at(0).endHalfWidth = mCurves.at(1).startHalfWidth = 0.02 * (1 + gAmplitude * t);
+        if (mBeating)
+        {
+            mCurves.at(0).endHalfWidth = mCurves.at(1).startHalfWidth = 0.02 * (1 + gAmplitude * t);
+        }
 
         if (mRotate)
         {
@@ -142,9 +148,27 @@ private:
         {
             mRotate = !mRotate;
         }
-        if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+        else if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
         {
             mAngle = math::Radian<GLfloat>{0.};
+        }
+        else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+        {
+            if (!(mBeating = !mBeating))
+            {
+                mCurves.at(0).endHalfWidth = mCurves.at(1).startHalfWidth = gInitialHalfWidth;
+            }
+        }
+        else if (key == GLFW_KEY_F && action == GLFW_PRESS)
+        {
+            if (mWireframe = !mWireframe)
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            }
+            else
+            {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
         }
     }
 
@@ -156,6 +180,8 @@ private:
     std::vector<Curving::Instance> mCurves;
 
     bool mHandleClicked{false};
+    bool mWireframe{false};
+    bool mBeating{true};
     bool mRotate{false};
     math::Radian<GLfloat> mAngle{0.};
 };
