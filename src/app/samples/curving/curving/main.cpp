@@ -10,22 +10,21 @@ using namespace ad;
 // Control the middle point out handle with left button drag.
 // Press enter to alternate between rotation / side view.
 // Press backspace to reset rotation to zero.
-// Press backspace to reset rotation to zero.
+// Press B to troggle curve width beating.
+// Press F to troggle wireframe rendering.
 
 int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Curving", 800, 600,
+        Application application("Curving", 1600, 1000,
                                  Application::Flags::None,
                                  4, 1,
                                  { {GLFW_SAMPLES, 8} });
 
         ad::Timer timer{glfwGetTime(), 0.};
 
-        Scene scene{ {800, 600}, application.getEngine() };
-
-        //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+        Scene scene{application.getEngine()->getFramebufferSize(), application.getEngine() };
 
         while(application.nextFrame())
         {
