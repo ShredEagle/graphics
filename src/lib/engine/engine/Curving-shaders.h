@@ -38,22 +38,36 @@ inline const GLchar* gVertexShader = R"#(
 
         vec3 ad = (1 - t) * ac + t * bd;
 
-        // Works only when points are already in camera space
-        // (because this way the tangent is also in camera space)
+        //// Works only when points are already in camera space
+        //// (because this way the tangent is also in camera space)
         //vec3 tangent = ac - bd;
         //vec3 normal = normalize(vec3(-tangent.y, tangent.x, 0.));
         //gl_Position = u_projection * u_camera * model * vec4(
         //    ad + normal * side * mix(startHalfWidth, endHalfWidth, t),
         //    1.);
 
+        //// Important: does not work when the tangent is alongside the view direction
+        //// (we would need to draw a circle, i.e. the normal are all unit vectors in the screen plane)
+        //mat4 transform = u_camera * model;
+        //vec4 ad_camera = transform * vec4(ad, 1.);
+        //vec4 tangent_camera = transform * vec4(ac - bd, 0.);
+        //vec4 normal_camera  = normalize(vec4(-tangent_camera.y, tangent_camera.x, 0., 0.));
+        //gl_Position = u_projection * (ad_camera + normal_camera * side * mix(startHalfWidth, endHalfWidth, t));
+
+
         // Important: does not work when the tangent is alongside the view direction
         // (we would need to draw a circle, i.e. the normal are all unit vectors in the screen plane)
-        mat4 transform = u_projection * u_camera * model;
-        vec4 ad_clip = transform * vec4(ad, 1.);
-        vec4 tangent_clip = transform * vec4(ac - bd, 0.);
-        vec4 normal_clip  = normalize(vec4(-tangent_clip.y, tangent_clip.x, 0., 0.));
-        
-        gl_Position = ad_clip + normal_clip * side * mix(startHalfWidth, endHalfWidth, t);
+        mat4 transform = u_camera * model;
+        vec4 ad_camera = transform * vec4(ad, 1.);
+        // Normalizing ensure the tangents is measuring 1 before transformation.
+        // This later allows to scale the normal by the transformed tangent length:
+        // it accounts for any scaling that might be embedded in modeling or camera matrices.
+        vec4 tangent_camera = transform * normalize(vec4(ac - bd, 0.));
+        // Important: needs to be normalized again, because Z component is dropped.
+        vec4 normal_camera  = normalize(vec4(-tangent_camera.y, tangent_camera.x, 0., 0.));
+        gl_Position =
+            u_projection * (ad_camera 
+                            + normal_camera * side * mix(startHalfWidth, endHalfWidth, t) * length(tangent_camera));
 
     }
 )#";
