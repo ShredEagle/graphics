@@ -53,7 +53,7 @@ jobs:
       - name: Cache Conan local data
         uses: actions/cache@v2
         env:
-          cache-name: conan-cache
+          cache-name: conan-cachea
         with:
           # Exclude opengl/system because its build is responsible to install opengl system-wide.
           # (required on current Linux runner)
