@@ -67,14 +67,7 @@ void TrivialLineStrip::clearLines()
 
 void TrivialLineStrip::addLine(std::initializer_list<LinePoint> aPoints)
 {
-    std::move(aPoints.begin(), aPoints.end(),
-              std::back_inserter(mVertexAttributes));
-
-    for (auto _ : aPoints)
-    {
-        mIndices.push_back(mNextIndex++);
-    }
-    mIndices.push_back(gRestartIndex);
+    addLine(aPoints.begin(), aPoints.end());
 }
 
 

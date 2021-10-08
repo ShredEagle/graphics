@@ -24,6 +24,9 @@ public:
     /// Should be called between each frame to implement animation.
     void clearLines();
 
+    template <class T_inputIterator>
+    void addLine(T_inputIterator aFirst, T_inputIterator aLast);
+
     void addLine(std::initializer_list<LinePoint> aPoints);
 
     void outlineRectangle(const Rectangle<GLfloat> & aRectangle, const Color aColor);
@@ -51,7 +54,21 @@ private:
 struct TrivialLineStrip::LinePoint
 {
     math::Position<2, GLfloat> mPosition;
-    Color mColor;
+    Color mColor = math::sdr::gWhite;
 };
+
+
+template <class T_inputIterator>
+void TrivialLineStrip::addLine(T_inputIterator aFirst, T_inputIterator aLast)
+{
+    std::move(aFirst, aLast, std::back_inserter(mVertexAttributes));
+
+    for (auto count = std::distance(aFirst, aLast); count != 0; --count)
+    {
+        mIndices.push_back(mNextIndex++);
+    }
+    mIndices.push_back(gRestartIndex);
+}
+
 
 } // namespace ad
