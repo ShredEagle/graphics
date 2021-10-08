@@ -26,7 +26,8 @@ public:
 
 
     /// \param aCurveSubdivisions is the number of line segments used to approximate the curve.
-    Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aProjectionTransformation);
+    explicit Curving(GLsizei aCurveSubdivisions,
+                     math::AffineMatrix<4, GLfloat> aProjectionTransformation = math::AffineMatrix<4, GLfloat>::Identity());
 
     void render(gsl::span<const Instance> aInstances);
 
