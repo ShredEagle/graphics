@@ -54,26 +54,22 @@ inline const GLchar* gAnimationFragmentShader = R"#(
 inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec4  in_VertexPosition;
+    layout(location=0) in vec4  v_VertexPosition;
     layout(location=1) in vec2  in_InstancePosition;
     layout(location=2) in vec2  in_InstanceDimension;
-    layout(location=3) in mat3  in_Transform;
+    layout(location=3) in mat3  in_ModelTransform;
     layout(location=6) in vec3  in_InstanceColor;
 
-    out vec3 ex_Color;
+    uniform mat3 u_camera;
+    uniform mat3 u_projection;
 
-    uniform mat3 camera;
-    uniform mat3 projection;
+    out vec3 ex_Color;
     
     void main(void)
     {
-        mat3 modelTransformation = mat3(
-            1,             0,             0,
-            0,           1,             0,
-            in_InstancePosition.x,  in_InstancePosition.y,  1);
-
-        vec3 worldPosition = in_Transform * modelTransformation * vec3(in_VertexPosition.xy * in_InstanceDimension, 1.);
-        vec3 transformed = projection * camera * worldPosition;
+        vec3 worldPosition = in_ModelTransform 
+                             * vec3(v_VertexPosition.xy * in_InstanceDimension + in_InstancePosition, 1.);
+        vec3 transformed = u_projection * u_camera * worldPosition;
         gl_Position = vec4(transformed.x, transformed.y, 0., 1.);
 
         ex_Color = in_InstanceColor;

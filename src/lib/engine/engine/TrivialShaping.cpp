@@ -93,14 +93,9 @@ void TrivialShaping::addRectangle(Rectangle aRectangleData)
 
 void TrivialShaping::addRectangle(RectangleAngle aRectangleData)
 {
-    math::Matrix<3, 3, GLfloat> transformMatrix{ 
-        cos(aRectangleData.angle),                            sin(aRectangleData.angle),                           0.f,
-        -sin(aRectangleData.angle),                           cos(aRectangleData.angle),                           0.f,
-        -aRectangleData.center.x() * cos(aRectangleData.angle) + aRectangleData.center.y() * sin(aRectangleData.angle) + aRectangleData.center.x(), -aRectangleData.center.x() * sin(aRectangleData.angle) - aRectangleData.center.y() * cos(aRectangleData.angle) + aRectangleData.center.y(), 1.f
-    };
     mInstances.push_back({
         aRectangleData.mGeometry,
-        transformMatrix,
+        math::trans2d::rotateAbout(aRectangleData.angle, aRectangleData.center),
         aRectangleData.mColor,
     });
 }
@@ -130,13 +125,13 @@ void TrivialShaping::render()
 
 void TrivialShaping::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
-    setUniform(mDrawContext.mProgram, "camera", aTransformation); 
+    setUniform(mDrawContext.mProgram, "u_camera", aTransformation); 
 }
 
 
 void TrivialShaping::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
-    setUniform(mDrawContext.mProgram, "projection", aTransformation); 
+    setUniform(mDrawContext.mProgram, "u_projection", aTransformation); 
 }
 
 
