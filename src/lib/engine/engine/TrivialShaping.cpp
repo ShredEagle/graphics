@@ -91,6 +91,7 @@ void TrivialShaping::addRectangle(Rectangle aRectangleData)
     mInstances.push_back(std::move(aRectangleData));
 }
 
+
 void TrivialShaping::addRectangle(RectangleAngle aRectangleData)
 {
     mInstances.push_back({
