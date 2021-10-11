@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include <engine/TrivialLineStrip.h>
-#include <engine/Timer.h>
+#include <graphics/TrivialLineStrip.h>
+#include <graphics/Timer.h>
 
 
 namespace ad

@@ -3,8 +3,8 @@
 #include "shaders.h"
 #include "vertices.h"
 
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/Engine.h>
+#include <graphics/Timer.h>
 
 #include <renderer/FrameBuffer.h>
 #include <renderer/Shading.h>

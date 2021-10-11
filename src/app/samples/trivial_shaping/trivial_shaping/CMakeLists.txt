@@ -18,7 +18,7 @@ add_executable(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     PRIVATE
         glad::glad
-        ad::engine
+        ad::graphics
 )
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER samples)

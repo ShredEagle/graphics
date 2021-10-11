@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/Spriting.h>
+#include <graphics/Spriting.h>
 
 #include <resource/PathProvider.h>
 

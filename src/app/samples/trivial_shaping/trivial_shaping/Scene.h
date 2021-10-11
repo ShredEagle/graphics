@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include <engine/TrivialShaping.h>
-#include <engine/Timer.h>
+#include <graphics/TrivialShaping.h>
+#include <graphics/Timer.h>
 
 #include <math/Angle.h>
 

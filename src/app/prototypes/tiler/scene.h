@@ -3,11 +3,11 @@
 
 #include <resource/PathProvider.h>
 
-#include <engine/Engine.h>
-#include <engine/Spriting.h>
-#include <engine/Tiling.h>
-#include <engine/Timer.h>
-#include <engine/dataformat/tiles.h>
+#include <graphics/Engine.h>
+#include <graphics/Spriting.h>
+#include <graphics/Tiling.h>
+#include <graphics/Timer.h>
+#include <graphics/dataformat/tiles.h>
 
 #include <handy/random.h>
 

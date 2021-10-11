@@ -1,8 +1,8 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/Application.h>
+#include <graphics/Engine.h>
+#include <graphics/Timer.h>
 
 
 using namespace ad;

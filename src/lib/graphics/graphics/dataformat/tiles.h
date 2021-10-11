@@ -1,6 +1,6 @@
 #pragma once
 
-#include <engine/Sprite.h>
+#include <graphics/Sprite.h>
 
 
 namespace ad {

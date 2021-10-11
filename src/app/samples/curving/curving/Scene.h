@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include <engine/Curving.h>
-#include <engine/Timer.h>
+#include <graphics/Curving.h>
+#include <graphics/Timer.h>
 
-#include <engine/Engine.h>
+#include <graphics/Engine.h>
 
 #include <math/Transformations.h>
 #include <math/VectorUtilities.h>

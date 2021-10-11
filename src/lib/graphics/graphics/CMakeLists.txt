@@ -1,4 +1,4 @@
-set(TARGET_NAME engine)
+set(TARGET_NAME graphics)
 
 set(${TARGET_NAME}_HEADERS
     Application.h
