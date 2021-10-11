@@ -29,7 +29,7 @@ class GraphicsConan(ConanFile):
         ("glfw/3.3.4"),
         ("nlohmann_json/3.9.1"),
 
-        ("math/592c3e25b5@adnn/develop"),
+        ("math/64e6aa9451@adnn/develop"),
     )
 
     build_requires = ("cmake/3.20.4",)
