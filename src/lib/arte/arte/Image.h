@@ -7,6 +7,7 @@
 #include <math/Color.h>
 
 #include <filesystem>
+#include <map>
 #include <memory>
 
 
