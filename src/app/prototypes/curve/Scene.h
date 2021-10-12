@@ -19,6 +19,7 @@
 // offset by `[+/-] normal * width`.
 // see: https://discourse.libcinder.org/t/smooth-efficient-perfect-curves/925
 
+using namespace ad::graphics;
 
 namespace ad {
 namespace curve {

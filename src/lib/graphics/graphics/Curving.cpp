@@ -8,6 +8,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 namespace {
@@ -108,5 +109,6 @@ void Curving::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> &
 }
 
 
+} // namespace graphics
 } // namespace ad
 

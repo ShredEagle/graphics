@@ -6,12 +6,13 @@
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
     ApplicationGlfw application("Chader", 800, 600);
 
-    ad::Timer timer{glfwGetTime(), 0.};
+    ad::graphics::Timer timer{glfwGetTime(), 0.};
 
     Scene scene(argv);
 

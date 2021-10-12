@@ -1,6 +1,7 @@
 #pragma once
 
 namespace ad {
+namespace graphics {
 
 static const char* gInitialVertex = R"#(
 #version 400
@@ -119,4 +120,5 @@ void main(void)
 }
 )#";
 
+} // namespace graphics
 } // namespace ad

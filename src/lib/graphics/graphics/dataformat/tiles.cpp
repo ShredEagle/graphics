@@ -10,6 +10,7 @@
 
 
 namespace ad {
+namespace graphics {
 namespace dataformat {
 
 SpriteSheet loadMeta(std::istream & aDatastream)
@@ -46,4 +47,6 @@ SpriteSheet loadMeta(std::istream & aDatastream)
     return sheet;
 }
 
-}} // namespace ad::dataformat
+} // namespace dataformat
+} // namespace graphics
+} // namespace ad

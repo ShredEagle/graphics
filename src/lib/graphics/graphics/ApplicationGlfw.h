@@ -11,8 +11,8 @@
 
 #include <memory>
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 
 class ApplicationGlfw
@@ -82,7 +82,7 @@ public:
         }
         else
         {
-            ad::enableDebugOutput();
+            enableDebugOutput();
         }
     }
 
@@ -152,13 +152,13 @@ private:
 
     static void forward_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
         appInterface->callbackKeyboard(key, scancode, action, mods);
     }
 
     static void forward_mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
     {
-        ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
 
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
@@ -167,20 +167,20 @@ private:
 
     static void forward_cursorposition_callback(GLFWwindow* window, double xpos, double ypos)
     {
-        ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
 
         appInterface->callbackCursorPosition(xpos, ypos);
     }
 
     static void windowsSize_callback(GLFWwindow * window, int width, int height)
     {
-        ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
         appInterface->callbackWindowSize(width, height);
     }
 
     static void framebufferSize_callback(GLFWwindow * window, int width, int height)
     {
-        ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
         appInterface->callbackFramebufferSize(width, height);
     }
 
@@ -234,4 +234,5 @@ private:
     std::shared_ptr<AppInterface> mAppInterface;
 };
 
+} // namespace graphics
 } // namespace ad

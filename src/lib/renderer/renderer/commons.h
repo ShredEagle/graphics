@@ -4,6 +4,8 @@
 #include <math/Vector.h>
 
 namespace ad {
+namespace graphics {
+
 
 template <class T_number>
 using Rectangle=math::Rectangle<T_number>;
@@ -25,7 +27,6 @@ using Position2=math::Position<2, T_number>;
 
 static const std::array<float, 4> gBlack = {0.f, 0.f, 0.f, 1.f};
 
-/// \todo Replace with a proper path class, as standardised in C++17
-//typedef std::string path;
 
+} // namespace graphics
 } // namespace ad

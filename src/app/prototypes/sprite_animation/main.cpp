@@ -61,9 +61,9 @@ int main(void)
     glfwSwapInterval(1);
 
 #if defined(GL_VERSION_4_3)
-    ad::enableDebugOutput();
+    ad::graphics::enableDebugOutput();
 #endif
-    ad::Scene scene = ad::setupScene();
+    ad::graphics::Scene scene = ad::graphics::setupScene();
 
     while(!glfwWindowShouldClose(window))
     {
@@ -72,8 +72,8 @@ int main(void)
         glfwGetFramebufferSize(window, &width, &height);    
         glViewport(0, 0, width, height);
 
-        ad::updateScene(scene, glfwGetTime());
-        ad::renderScene();
+        ad::graphics::updateScene(scene, glfwGetTime());
+        ad::graphics::renderScene();
 
         glfwSwapBuffers(window);
         glfwPollEvents();

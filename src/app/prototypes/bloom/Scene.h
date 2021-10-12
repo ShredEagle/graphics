@@ -14,6 +14,7 @@
 #include <resource/PathProvider.h>
 
 namespace ad {
+namespace graphics {
 
 struct ScreenQuad
 {
@@ -227,4 +228,5 @@ inline void Scene::step(const Timer & aTimer)
 }
 
 
+} // namespace graphics
 } // namespace ad

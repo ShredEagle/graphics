@@ -19,8 +19,9 @@
 #include <random>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
+
 
 struct Vertex
 {
@@ -209,4 +210,5 @@ void renderScene(Scene &aScene)
                           static_cast<GLsizei>(aScene.mRings.size()));
 }
 
+} // namespace graphics
 } // namespace ad

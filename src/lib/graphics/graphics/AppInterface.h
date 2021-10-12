@@ -7,6 +7,8 @@
 
 
 namespace ad {
+namespace graphics {
+
 
 class AppInterface
 {
@@ -127,4 +129,5 @@ inline void AppInterface::callbackCursorPosition(double xpos, double ypos)
 }
 
 
+} // namespace graphics
 } // namespace ad

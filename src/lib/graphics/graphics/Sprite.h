@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace ad {
+namespace graphics {
 
 // Essentially a cutout in a spritesheet image
 typedef Rectangle<int> SpriteArea;
@@ -27,4 +28,5 @@ struct SpriteSheet
 // Implementer's note: Leave room for potential future optimization, by changing this type
 typedef SpriteArea LoadedSprite;
 
+} // namespace graphics
 } // namespace ad

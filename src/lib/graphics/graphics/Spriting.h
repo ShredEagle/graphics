@@ -9,6 +9,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 struct Instance
@@ -93,4 +94,5 @@ std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
     return loadedSprites;
 }
 
+} // namespace graphics
 } // namespace ad

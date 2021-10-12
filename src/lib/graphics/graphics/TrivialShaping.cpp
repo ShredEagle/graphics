@@ -10,6 +10,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 namespace 
@@ -136,4 +137,5 @@ void TrivialShaping::setProjectionTransformation(const math::AffineMatrix<3, GLf
 }
 
 
+} // namespace graphics
 } // namespace ad

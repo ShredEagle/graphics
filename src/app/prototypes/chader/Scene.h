@@ -6,6 +6,7 @@
 #include <boost/filesystem.hpp>
 
 namespace ad {
+namespace graphics {
 
 struct Scene
 {
@@ -38,4 +39,5 @@ void Scene::step()
 }
 
 
+} // namespace graphics
 } // namespace ad

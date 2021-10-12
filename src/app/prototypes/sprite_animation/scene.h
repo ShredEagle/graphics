@@ -90,8 +90,8 @@ GLubyte gTextureImage[4][4][4] = {
 };
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 struct [[nodiscard]] Scene
 {
@@ -283,4 +283,5 @@ void renderScene()
     glDrawArrays(GL_TRIANGLE_STRIP, 0, gVerticesCount);
 }
 
+} // namespace graphics
 } // namespace ad

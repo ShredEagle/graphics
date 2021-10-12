@@ -1,6 +1,7 @@
 #pragma once
 
 namespace ad {
+namespace graphics {
 
 const GLchar* gVertexShader = R"#(
     #version 400
@@ -45,4 +46,5 @@ const GLchar* gAnimationFragmentShader = R"#(
     }
 )#";
 
+} // namespace graphics 
 } // namespace ad

@@ -3,6 +3,7 @@
 #include <algorithm>
 
 namespace ad {
+namespace graphics {
 
 Shader::Shader(GLenum aStage, const char * aSource) : Shader(aStage)
 {
@@ -65,4 +66,5 @@ Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
     return program;
 }
 
+} // namespace graphics
 } // namespace ad

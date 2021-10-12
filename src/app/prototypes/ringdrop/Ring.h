@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 
 namespace ad {
+namespace graphics {
 
 struct Ring
 {
@@ -12,4 +13,5 @@ struct Ring
     GLfloat mRotationsPerSec;
 };
 
+} // namespace graphics
 } // namespace ad

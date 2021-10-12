@@ -1,6 +1,8 @@
 #include "VertexSpecification.h"
 
+
 namespace ad {
+namespace graphics {
 
 
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription)
@@ -54,4 +56,5 @@ VertexBufferObject makeLoadedVertexBuffer(std::initializer_list<AttributeDescrip
     return vbo;
 }
 
+} // namespace graphics
 } // namespace ad

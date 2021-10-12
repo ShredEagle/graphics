@@ -6,6 +6,7 @@
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
@@ -13,7 +14,7 @@ int main(int argc, const char * argv[])
     {
         ApplicationGlfw application("Trivial Line Strip", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
         Scene scene{ {200, 150} };
 

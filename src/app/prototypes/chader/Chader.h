@@ -9,6 +9,7 @@
 #include <boost/filesystem.hpp>
 
 namespace ad {
+namespace graphics {
 
 class Chader
 {
@@ -23,4 +24,5 @@ private:
     VertexBufferObject mVertexData;
 };
 
+} // namespace graphics
 } // namespace ad

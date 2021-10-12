@@ -6,6 +6,7 @@
 #include <renderer/VertexSpecification.h>
 
 namespace ad {
+namespace graphics {
 
 struct Vertex
 {
@@ -19,4 +20,5 @@ constexpr std::initializer_list<AttributeDescription> gVertexDescription = {
     { {1, Attribute::Access::Integer} , 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
 };
 
+} // namespace graphics
 } // namespace ad

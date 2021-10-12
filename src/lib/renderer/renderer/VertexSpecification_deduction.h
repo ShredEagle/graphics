@@ -3,6 +3,7 @@
 #include "VertexSpecification.h"
 
 namespace ad {
+namespace graphics {
 
 /// \brief Attribute and offset of the each entry inside T_element (for interleaved attributes)
 template <class T_element, class T_member>
@@ -88,4 +89,5 @@ VertexBufferObject makeLoadedVertexBuffer(
 }
 
 
+} // namespace graphics
 } // namespace ad

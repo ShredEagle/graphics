@@ -9,11 +9,11 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        ad::ApplicationGlfw application("Polyline", 800, 600);
+        ad::graphics::ApplicationGlfw application("Polyline", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        ad::graphics::Timer timer{glfwGetTime(), 0.};
 
-        ad::Scene scene;
+        ad::graphics::Scene scene;
 
         while(application.nextFrame())
         {

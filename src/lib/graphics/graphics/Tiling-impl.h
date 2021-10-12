@@ -1,4 +1,5 @@
 namespace ad {
+namespace graphics{
 
 
 template <class T_iterator>
@@ -17,4 +18,5 @@ std::vector<LoadedSprite> Tiling::load(T_iterator aFirst, T_iterator aLast,
 }
 
 
+} // namespace graphics
 } // namespace ad

@@ -5,6 +5,7 @@
 #include <renderer/GL_Loader.h>
 
 namespace ad {
+namespace graphics {
 
 
 // TODO It is unclear to me if it would be incorrect to use sdr::Rgb (i.e. Rgb_base<std::uint8_t>) 
@@ -12,4 +13,5 @@ namespace ad {
 using Color = math::Rgb_base<GLubyte>;
 
 
+} // namespace graphics
 } // namespace ad

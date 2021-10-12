@@ -9,6 +9,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 /// \brief Setup the 2D engine `aEngine` camera to view world coordinates in `aViewedRectangle`.
@@ -72,4 +73,5 @@ math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
 }
 
 
+} // namespace graphics
 } // namespace ad

@@ -15,8 +15,9 @@
 #include <glad/glad.h>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
+
 
 struct Vertex
 {
@@ -331,4 +332,5 @@ void renderScene(Scene &aScene)
     }
 }
 
+} // namespace graphics
 } // namespace ad

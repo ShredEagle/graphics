@@ -7,6 +7,7 @@
 #include <cassert>
 
 namespace ad {
+namespace graphics {
 
 struct GenericDrawer
 {
@@ -49,4 +50,5 @@ struct GenericDrawer
     }
 };
 
+} // namespace graphics
 } // namespace ad

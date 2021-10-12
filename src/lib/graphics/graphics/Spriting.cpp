@@ -9,6 +9,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 // Note: texture_2D_rect indices are texel based (not normalized)
@@ -129,4 +130,5 @@ void Spriting::setBufferResolution(Size2<int> aNewResolution)
 }
 
 
+} // namespace graphics
 } // namespace ad

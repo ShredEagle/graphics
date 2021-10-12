@@ -11,6 +11,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
     inline void setUniform(Program & aProgram, const std::string & aNameInShader,
@@ -81,4 +82,5 @@ namespace ad {
     }
 
 
+} // namespace graphics
 } // namespace ad

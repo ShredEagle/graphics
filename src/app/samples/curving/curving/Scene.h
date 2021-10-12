@@ -13,8 +13,8 @@
 #include <GLFW/glfw3.h>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 
 constexpr GLfloat gInitialHalfWidth = 0.05f;
@@ -187,4 +187,5 @@ private:
 };
 
 
+} // namespace graphics
 } // namespace ad

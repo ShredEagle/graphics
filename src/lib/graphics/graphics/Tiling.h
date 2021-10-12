@@ -7,6 +7,8 @@
 #include <renderer/Drawing.h>
 
 namespace ad {
+namespace graphics{
+
 
 class AppInterface;
 
@@ -83,7 +85,9 @@ inline Size2<GLint> Tiling::getGridDefinition() const
     return mGridDefinition;
 }
 
+
+} // namespace graphics
 } // namespace ad
 
-#include "Tiling-impl.h"
 
+#include "Tiling-impl.h"

@@ -28,13 +28,13 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 static void windowsSize_callback(GLFWwindow * window, int width, int height)
 {
-    ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+    ad::graphics::AppInterface * appInterface = static_cast<ad::graphics::AppInterface *>(glfwGetWindowUserPointer(window));
     appInterface->callbackWindowSize(width, height);
 }
 
 static void framebufferSize_callback(GLFWwindow * window, int width, int height)
 {
-    ad::AppInterface * appInterface = static_cast<ad::AppInterface *>(glfwGetWindowUserPointer(window));
+    ad::graphics::AppInterface * appInterface = static_cast<ad::graphics::AppInterface *>(glfwGetWindowUserPointer(window));
     appInterface->callbackFramebufferSize(width, height);
 }
 
@@ -72,7 +72,7 @@ int main(void)
     glfwMakeContextCurrent(window);
     gladLoadGL();
 
-    ad::AppInterface appInterface;
+    ad::graphics::AppInterface appInterface;
     glfwSetWindowUserPointer(window, &appInterface);
     // Explicitly call it, because it is used to complete the appInterface setup
     {
@@ -101,16 +101,16 @@ int main(void)
     }
     else
     {
-        ad::enableDebugOutput();
+        ad::graphics::enableDebugOutput();
     }
 
-    std::unique_ptr<ad::Scene> scene = ad::setupScene(appInterface);
-    ad::Timer timer{glfwGetTime(), 0.};
+    std::unique_ptr<ad::graphics::Scene> scene = ad::graphics::setupScene(appInterface);
+    ad::graphics::Timer timer{glfwGetTime(), 0.};
 
     while(!glfwWindowShouldClose(window))
     {
-        ad::updateScene(*scene, appInterface, timer);
-        ad::renderScene(*scene, appInterface);
+        ad::graphics::updateScene(*scene, appInterface, timer);
+        ad::graphics::renderScene(*scene, appInterface);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

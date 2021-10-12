@@ -9,6 +9,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 class TrivialLineStrip
@@ -71,4 +72,5 @@ void TrivialLineStrip::addLine(T_inputIterator aFirst, T_inputIterator aLast)
 }
 
 
+} // namespace graphics
 } // namespace ad

@@ -7,6 +7,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 class DrawLine
@@ -40,10 +41,11 @@ private:
 
 struct DrawLine::Line
 {
-    ad::Position2<GLint> mOrigin;
-    ad::Position2<GLint> mEnd;
+    Position2<GLint> mOrigin;
+    Position2<GLint> mEnd;
     GLfloat width;
     Color mColor;
 };
 
+} // namespace graphics
 } // namespace ad

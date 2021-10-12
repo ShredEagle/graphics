@@ -21,6 +21,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 struct Vertex
@@ -136,4 +137,5 @@ inline void Scene::render(const Size2<int> aRenderSize)
 }
 
 
+} // namespace graphics
 } // namespace ad

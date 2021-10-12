@@ -8,6 +8,7 @@
 #include <math/Range.h>
 
 namespace ad {
+namespace graphics {
 
 
 const GLchar* gTilingVertexShader = R"#(
@@ -218,4 +219,5 @@ void Tiling::render(const AppInterface & aAppInterface) const
                           static_cast<GLsizei>(mTiles.size()));
 }
 
+} // namespace graphics
 } // namespace ad

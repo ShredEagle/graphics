@@ -6,6 +6,7 @@
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
@@ -13,7 +14,7 @@ int main(int argc, const char * argv[])
     {
         ApplicationGlfw application("Bloom", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
         Scene scene(argv, application.getAppInterface().get());
 

@@ -6,6 +6,7 @@
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 // Control the middle point out handle with left button drag.
 // Press enter to alternate between rotation / side view.
@@ -22,7 +23,7 @@ int main(int argc, const char * argv[])
                                  4, 1,
                                  { {GLFW_SAMPLES, 8} });
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
         Scene scene{application.getAppInterface()->getFramebufferSize(), application.getAppInterface() };
 

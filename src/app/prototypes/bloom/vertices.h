@@ -8,6 +8,7 @@
 #include <array>
 
 namespace ad {
+namespace graphics {
 
 struct VertexScreenQuad
 {
@@ -69,4 +70,5 @@ constexpr std::initializer_list<AttributeDescription> gVertexSceneDescription = 
     { 1, 2, offsetof(VertexScreenQuad, mUV),  MappedGL<GLfloat>::enumerator},
 };
 
+} // namespace graphics
 } // namespace ad

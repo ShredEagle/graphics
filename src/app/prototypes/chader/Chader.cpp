@@ -4,6 +4,7 @@
 #include <sstream>
 
 namespace ad {
+namespace graphics {
 
 struct VertexChad
 {
@@ -69,4 +70,5 @@ void Chader::render() const
     mDrawer.render();
 }
 
+} // namespace graphics
 } // namespace ad

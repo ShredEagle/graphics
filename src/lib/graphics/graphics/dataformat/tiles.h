@@ -4,8 +4,13 @@
 
 
 namespace ad {
+namespace graphics {
 namespace dataformat {
+
 
 SpriteSheet loadMeta(std::istream & aDatastream);
 
-}} // namespace ad::dataformat
+
+} // namespace dataformat
+} // namespace graphics
+} // namespace ad

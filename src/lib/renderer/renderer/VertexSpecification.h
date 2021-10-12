@@ -12,8 +12,10 @@
 #include <type_traits>
 #include <vector>
 
-namespace ad
-{
+
+namespace ad {
+namespace graphics {
+
 
 struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 {
@@ -213,4 +215,5 @@ void respecifyBuffer(const T_buffer & aBufferObject, const gsl::span<T_values> a
                     static_cast<GLsizei>(aValues.size_bytes()));
 }
 
+} // namespace graphics
 } // namespace ad

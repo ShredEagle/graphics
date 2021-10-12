@@ -7,6 +7,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 namespace 
@@ -112,4 +113,5 @@ void DrawLine::setBufferResolution(Size2<int> aNewResolution)
 }
 
 
+} // namespace graphics
 } // namespace ad

@@ -14,6 +14,7 @@ set(${TARGET_NAME}_HEADERS
     Texture.h
     Uniforms.h
     VertexSpecification.h
+    VertexSpecification_deduction.h
 
     stb_image.h
 )

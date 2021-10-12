@@ -9,9 +9,9 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        ad::ApplicationGlfw application("Curve", 800, 600);
+        ad::graphics::ApplicationGlfw application("Curve", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        ad::graphics::Timer timer{glfwGetTime(), 0.};
 
         ad::curve::Scene scene;
 

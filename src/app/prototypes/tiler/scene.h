@@ -16,8 +16,8 @@
 #include <fstream>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 class SpriteArea_const_iter : public boost::iterator_adaptor<SpriteArea_const_iter,
                                                              std::vector<Sprite>::const_iterator,
@@ -192,4 +192,5 @@ inline void renderScene(const Scene & aScene, AppInterface & aAppInterface)
 }
 
 
+} // namespace graphics
 } // namespace ad

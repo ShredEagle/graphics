@@ -3,6 +3,7 @@
 #include "GL_Loader.h"
 
 namespace ad {
+namespace graphics {
 
 template <class T_scalar>
 struct MappedGL;
@@ -83,4 +84,5 @@ constexpr GLenum getGLBufferHint(const BufferHint aBufferHint)
 template <BufferHint N_customEnum>
 constexpr GLenum BufferHint_v = BufferHintGL<N_customEnum>::enumerator;
 
+} // namespace graphics
 } // namespace ad

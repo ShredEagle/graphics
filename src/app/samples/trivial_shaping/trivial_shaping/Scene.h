@@ -7,8 +7,8 @@
 #include <math/Angle.h>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 
 class Scene
@@ -43,4 +43,5 @@ private:
 };
 
 
+} // namespace graphics
 } // namespace ad
