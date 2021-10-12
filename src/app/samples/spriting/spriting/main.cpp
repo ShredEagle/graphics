@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-#include <graphics/Application.h>
+#include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
@@ -11,7 +11,7 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Spriting", 800, 600);
+        ApplicationGlfw application("Spriting", 800, 600);
 
         ad::Timer timer{glfwGetTime(), 0.};
 

@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-#include <graphics/Application.h>
+#include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
@@ -17,8 +17,8 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Curving", 1600, 1000,
-                                 Application::Flags::None,
+        ApplicationGlfw application("Curving", 1600, 1000,
+                                 ApplicationGlfw::Flags::None,
                                  4, 1,
                                  { {GLFW_SAMPLES, 8} });
 

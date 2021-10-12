@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-#include <graphics/Application.h>
+#include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
@@ -9,7 +9,7 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        ad::Application application("Polyline", 800, 600);
+        ad::ApplicationGlfw application("Polyline", 800, 600);
 
         ad::Timer timer{glfwGetTime(), 0.};
 

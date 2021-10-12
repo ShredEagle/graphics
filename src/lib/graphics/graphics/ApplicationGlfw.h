@@ -15,7 +15,7 @@ namespace ad
 {
 
 
-class Application
+class ApplicationGlfw
 {
 public:
     enum Flags
@@ -26,7 +26,7 @@ public:
 
     using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
 
-    Application(const std::string aName,
+    ApplicationGlfw(const std::string aName,
                 int aWidth, int aHeight,
                 Flags aFlags = None,
                 int aGLVersionMajor=4, int aGLVersionMinor=1,
@@ -60,7 +60,7 @@ public:
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
         using namespace std::placeholders;
-        mAppInterface->registerKeyCallback(std::bind(&Application::default_key_callback,
+        mAppInterface->registerKeyCallback(std::bind(&ApplicationGlfw::default_key_callback,
                                                      static_cast<GLFWwindow*>(this->mWindow),
                                                      _1, _2, _3, _4));
         glfwSetKeyCallback(mWindow, forward_key_callback);
