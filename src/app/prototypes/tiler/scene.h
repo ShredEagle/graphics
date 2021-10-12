@@ -3,7 +3,7 @@
 
 #include <resource/PathProvider.h>
 
-#include <graphics/Engine.h>
+#include <graphics/AppInterface.h>
 #include <graphics/Spriting.h>
 #include <graphics/Tiling.h>
 #include <graphics/Timer.h>
@@ -50,16 +50,16 @@ struct Scroller
     Scroller(const Scroller &) = delete;
     Scroller & operator=(const Scroller &) = delete;
 
-    Scroller(const Size2<int> aTileSize, std::string aTilesheet, Engine & aEngine) :
+    Scroller(const Size2<int> aTileSize, std::string aTilesheet, AppInterface & aAppInterface) :
             mTiling(aTileSize,
-                    aEngine.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2},
-                    aEngine.getWindowSize()),
+                    aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2},
+                    aAppInterface.getWindowSize()),
             mTiles(loadSheet(mTiling, aTilesheet)),
             mRandomIndex(0, static_cast<int>(mTiles.size()-1))
     {
         fillRandom(mTiling.begin(), mTiling.end());
 
-        mSizeListener = aEngine.listenFramebufferResize([this](Size2<int> aNewSize)
+        mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
             mTiling.setBufferResolution(aNewSize);
             // +2 tiles on each dimension:
@@ -71,13 +71,13 @@ struct Scroller
         });
     }
 
-    void scroll(Vec2<GLfloat> aDisplacement, const Engine & aEngine)
+    void scroll(Vec2<GLfloat> aDisplacement, const AppInterface & aAppInterface)
     {
         mTiling.setPosition(mTiling.getPosition() + aDisplacement);
 
         Rectangle<GLfloat> grid(mTiling.getGridRectangle());
         GLint xDiff = static_cast<GLint>(grid.topRight().x())
-                      - aEngine.getWindowSize().width();
+                      - aAppInterface.getWindowSize().width();
 
         if (xDiff < 0)
         {
@@ -85,9 +85,9 @@ struct Scroller
         }
     }
 
-    void render(const Engine & aEngine) const
+    void render(const AppInterface & aAppInterface) const
     {
-        mTiling.render(aEngine);
+        mTiling.render(aAppInterface);
     }
 
 private:
@@ -118,7 +118,7 @@ private:
     Tiling mTiling;
     std::vector<LoadedSprite> mTiles; // The list of available tiles
     Randomizer<> mRandomIndex;
-    std::shared_ptr<Engine::SizeListener> mSizeListener;
+    std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
 
 
@@ -129,13 +129,13 @@ struct Tiles
     Tiles(const Tiles &) = delete;
     Tiles & operator=(const Tiles &) = delete;
 
-    Tiles(std::string aSpriteSheet, Engine & aEngine) :
-             mSpriting(aEngine.getWindowSize())
+    Tiles(std::string aSpriteSheet, AppInterface & aAppInterface) :
+             mSpriting(aAppInterface.getWindowSize())
     {
         std::vector<LoadedSprite> frames{loadSheet(mSpriting, aSpriteSheet)};
         mSpriting.instanceData().push_back(Instance{{20, 10}, frames.front()});
 
-        mSizeListener = aEngine.listenFramebufferResize([this](Size2<int> aNewSize)
+        mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
             mSpriting.setBufferResolution(aNewSize);
         });
@@ -148,7 +148,7 @@ struct Tiles
 
 private:
     Spriting mSpriting;
-    std::shared_ptr<Engine::SizeListener> mSizeListener;
+    std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
 
 
@@ -161,12 +161,12 @@ struct Scene
 
 
 /// \note Scene is not copiable nor movable, hence return by pointer
-inline std::unique_ptr<Scene> setupScene(Engine & aEngine)
+inline std::unique_ptr<Scene> setupScene(AppInterface & aAppInterface)
 {
     const Size2<int> tileSize{32, 32};
     std::unique_ptr<Scene> result(new Scene{
-        Tiles{pathFor("tiles.bmp.meta").string(), aEngine},
-        Scroller{tileSize, pathFor("tiles.bmp.meta").string(), aEngine}
+        Tiles{pathFor("tiles.bmp.meta").string(), aAppInterface},
+        Scroller{tileSize, pathFor("tiles.bmp.meta").string(), aAppInterface}
     });
 
     /*
@@ -177,17 +177,17 @@ inline std::unique_ptr<Scene> setupScene(Engine & aEngine)
 }
 
 
-inline void updateScene(Scene & aScene, Engine & aEngine, const Timer & aTimer)
+inline void updateScene(Scene & aScene, AppInterface & aAppInterface, const Timer & aTimer)
 {
     static const Vec2<GLfloat> scrollSpeed{-200.f, 0.f};
-    aScene.mBackground.scroll((GLfloat)aTimer.mDelta*scrollSpeed, aEngine);
+    aScene.mBackground.scroll((GLfloat)aTimer.mDelta*scrollSpeed, aAppInterface);
 }
 
 
-inline void renderScene(const Scene & aScene, Engine & aEngine)
+inline void renderScene(const Scene & aScene, AppInterface & aAppInterface)
 {
-    aEngine.clear();
-    aScene.mBackground.render(aEngine);
+    aAppInterface.clear();
+    aScene.mBackground.render(aAppInterface);
     aScene.mTiles.render();
 }
 

@@ -1,6 +1,6 @@
 #include "Tiling.h"
 
-#include "Engine.h"
+#include "AppInterface.h"
 #include "Vertex.h"
 
 #include <handy/vector_utils.h>
@@ -196,7 +196,7 @@ void Tiling::setPosition(Position2<position_t> aPosition)
                         static_cast<Position2<GLint>>(mGridRectangleScreen.mPosition).data());
 }
 
-void Tiling::render(const Engine & aEngine) const
+void Tiling::render(const AppInterface & aAppInterface) const
 {
     activate(mDrawContext);
 

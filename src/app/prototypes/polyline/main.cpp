@@ -1,7 +1,7 @@
 #include "Scene.h"
 
 #include <graphics/Application.h>
-#include <graphics/Engine.h>
+#include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
 
@@ -17,9 +17,9 @@ int main(int argc, const char * argv[])
 
         while(application.nextFrame())
         {
-            application.getEngine()->clear();
+            application.getAppInterface()->clear();
             scene.step(timer);
-            scene.render(application.getEngine()->getWindowSize());
+            scene.render(application.getAppInterface()->getWindowSize());
             timer.mark(glfwGetTime());
         }
     }

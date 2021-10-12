@@ -1,10 +1,10 @@
-#include "Engine.h"
+#include "AppInterface.h"
 
 
 namespace ad {
 
 
-Engine::Engine() :
+AppInterface::AppInterface() :
     mWindowSize(0, 0),
     mFramebufferSize(0, 0)
 {
@@ -21,7 +21,7 @@ Engine::Engine() :
 }
 
 
-void Engine::callbackWindowSize(int width, int height)
+void AppInterface::callbackWindowSize(int width, int height)
 {
     //glViewport(0, 0, width, height);
     mWindowSize.width() = width;
@@ -33,7 +33,7 @@ void Engine::callbackWindowSize(int width, int height)
     //}
 }
 
-void Engine::callbackFramebufferSize(int width, int height)
+void AppInterface::callbackFramebufferSize(int width, int height)
 {
     glViewport(0, 0, width, height);
     mFramebufferSize.width() = width;
@@ -41,7 +41,7 @@ void Engine::callbackFramebufferSize(int width, int height)
     mFramebufferSizeSubject.dispatch(Size2<int>{width, height});
 }
 
-void Engine::clear()
+void AppInterface::clear()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }

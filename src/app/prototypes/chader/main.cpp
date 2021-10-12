@@ -1,7 +1,7 @@
 #include "Scene.h"
 
 #include <graphics/Application.h>
-#include <graphics/Engine.h>
+#include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
 

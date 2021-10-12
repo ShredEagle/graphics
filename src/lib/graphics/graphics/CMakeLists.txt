@@ -6,7 +6,7 @@ set(${TARGET_NAME}_HEADERS
     Curving.h
     Curving-shaders.h
     commons.h
-    Engine.h
+    AppInterface.h
     shaders.h
     Sprite.h
     Spriting.h
@@ -22,7 +22,7 @@ set(${TARGET_NAME}_HEADERS
 
 set(${TARGET_NAME}_SOURCES
     Curving.cpp
-    Engine.cpp
+    AppInterface.cpp
     Spriting.cpp
     Tiling.cpp
     TrivialLineStrip.cpp

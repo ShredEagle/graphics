@@ -1,7 +1,7 @@
 #include "Scene.h"
 
 #include <graphics/Application.h>
-#include <graphics/Engine.h>
+#include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
 
@@ -15,7 +15,7 @@ int main(int argc, const char * argv[])
 
         ad::Timer timer{glfwGetTime(), 0.};
 
-        Scene scene(argv, application.getEngine().get());
+        Scene scene(argv, application.getAppInterface().get());
 
         while(application.nextFrame())
         {

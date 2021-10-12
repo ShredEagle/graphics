@@ -1,7 +1,7 @@
 #include "Scene.h"
 
 #include <graphics/Application.h>
-#include <graphics/Engine.h>
+#include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
 
@@ -21,7 +21,7 @@ int main(int argc, const char * argv[])
         {
             timer.mark(glfwGetTime());
             scene.step(timer);
-            application.getEngine()->clear();
+            application.getAppInterface()->clear();
             scene.render();
         }
     }
