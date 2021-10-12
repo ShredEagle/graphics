@@ -100,6 +100,35 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 
+/// \brief Intialize a VertexBufferObject, without providing initial data.
+VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
+                                    AttributeDescriptionList aAttributes,
+                                    GLsizei aStride,
+                                    GLuint aAttributeDivisor = 0);
+
+
+/// \brief This overload
+template <class T_vertex>
+VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
+                                    AttributeDescriptionList aAttributes,
+                                    GLuint aAttributeDivisor = 0)
+{
+    return initVertexBuffer(aVertexArray, aAttributes, sizeof(T_vertex), aAttributeDivisor);
+}
+
+/// \brief Create a VertexBufferObject with provided attributes, load it with data,
+/// and associate the data to attributes of `aVertexArray`.
+///
+/// This is the lowest level overload, with explicit attribute description and raw data pointer.
+/// Other overloads end-up calling it.
+VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
+                                    AttributeDescriptionList aAttributes,
+                                    GLsizei aStride,
+                                    size_t aSize,
+                                    const GLvoid * aData,
+                                    GLuint aAttributeDivisor = 0);
+
+
 /// \brief Load vertex data from `aVertices` into the returned `VertexBufferObject`,
 /// and associate the data to attributes of `aVertexArray`.
 ///
@@ -110,40 +139,16 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     const gsl::span<T_vertex> aVertices,
                                     GLuint aAttributeDivisor = 0)
 {
-    glBindVertexArray(aVertexArray);
-
-    if (aAttributeDivisor)
-    {
-        for(const auto & attribute : aAttributes)
-        {
-            glVertexAttribDivisor(attribute.mIndex, aAttributeDivisor);
-        }
-    }
-
-    return makeLoadedVertexBuffer(aAttributes, aVertices);
+    return loadVertexBuffer(aVertexArray,
+                            aAttributes,
+                            sizeof(T_vertex),
+                            aVertices.size_bytes(),
+                            aVertices.data(),
+                            aAttributeDivisor);
 }
 
 
-/// \brief Create a VertexBufferObject with provided attributes, load it with data.
-///
-/// This is the lowest level overload, with explicit attribute description and raw data pointer.
-/// Other overloads end-up calling it.
-VertexBufferObject makeLoadedVertexBuffer(AttributeDescriptionList aAttributes,
-                                          GLsizei aStride,
-                                          size_t aSize,
-                                          const GLvoid * aData);
-
-template <class T_vertex>
-VertexBufferObject makeLoadedVertexBuffer(AttributeDescriptionList aAttributes,
-                                          const gsl::span<T_vertex> aVertices)
-{
-    return makeLoadedVertexBuffer(aAttributes,
-                                  sizeof(T_vertex),
-                                  aVertices.size_bytes(),
-                                  aVertices.data());
-}
-
-
+/// \brief High-level function directly appending a loaded VertexBuffer to a VertexSpecification.
 template <class T_vertex>
 void appendToVertexSpecification(VertexSpecification & aSpecification,
                                  const AttributeDescriptionList & aAttributes,
@@ -174,6 +179,8 @@ IndexBufferObject makeLoadedIndexBuffer(const gsl::span<T_index> aIndices, const
  * see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
  ***/
 
+
+/// \brief Respecify content of a vertex buffer.
 inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aData, GLsizei aSize)
 {
     glBindBuffer(GL_ARRAY_BUFFER, aVBO);
@@ -186,6 +193,7 @@ inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aDat
 }
 
 
+/// \brief Respecify content of an index buffer.
 inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData, GLsizei aSize)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIBO);
@@ -198,7 +206,20 @@ inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData
 }
 
 
-/// \brief Respecify the buffer with the same size (allowing potential optimizations)
+/// \brief Overload accepting a span of generic values, instead of low-level void pointer.
+/// It works with both vertex and index buffers.
+template <class T_values, class T_buffer>
+void respecifyBuffer(const T_buffer & aBufferObject, const gsl::span<T_values> aValues)
+{
+    respecifyBuffer(aBufferObject,
+                    aValues.data(),
+                    static_cast<GLsizei>(aValues.size_bytes()));
+}
+
+
+/// \brief Respecify a vertex buffer with the exactly same size (allowing potential optimizations).
+/// \attention This is undefined behaviour is aData does not point to at least the same amount
+/// of data that was present before in the re-specified vertex buffer.
 inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoid * aData)
 {
     GLint size;
@@ -207,13 +228,6 @@ inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoi
     respecifyBuffer(aVBO, aData, size);
 }
 
-template <class T_values, class T_buffer>
-void respecifyBuffer(const T_buffer & aBufferObject, const gsl::span<T_values> aValues)
-{
-    respecifyBuffer(aBufferObject,
-                    aValues.data(),
-                    static_cast<GLsizei>(aValues.size_bytes()));
-}
 
 } // namespace graphics
 } // namespace ad

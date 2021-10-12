@@ -117,10 +117,10 @@ DrawContext staticEggman()
     static const Image eggman(pathFor("ec1ccd86c2ddb52.png").string());
     DrawContext drawing = [&](){
         VertexSpecification specification;
-        glBindVertexArray(specification.mVertexArray);
 
         specification.mVertexBuffers.emplace_back(
-                makeLoadedVertexBuffer(
+                loadVertexBuffer(
+                    specification.mVertexArray,
                     {
                         {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
                         {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},
@@ -163,10 +163,10 @@ DrawContext staticRing(const Image &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
-        glBindVertexArray(specification.mVertexArray);
 
         specification.mVertexBuffers.emplace_back(
-                makeLoadedVertexBuffer(
+                loadVertexBuffer(
+                    specification.mVertexArray,
                     {
                         {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
                         {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},
@@ -210,10 +210,10 @@ DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
-        glBindVertexArray(specification.mVertexArray);
 
         specification.mVertexBuffers.emplace_back(
-                makeLoadedVertexBuffer(
+                loadVertexBuffer(
+                    specification.mVertexArray,
                     {
                         {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
                         {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},

@@ -60,10 +60,10 @@ DrawContext animatedRing()
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
-        glBindVertexArray(specification.mVertexArray);
 
         specification.mVertexBuffers.emplace_back(
-                makeLoadedVertexBuffer(
+                loadVertexBuffer(
+                    specification.mVertexArray,
                     {
                         {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
                         {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},
@@ -170,7 +170,8 @@ Scene setupScene()
     }
 
     scene.mDrawContext.mVertexSpecification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer(
+        loadVertexBuffer(
+            scene.mDrawContext.mVertexSpecification.mVertexArray,
             {
                 {2, 2, offsetof(Ring, mPosition),       MappedGL<GLfloat>::enumerator},
                 {3, 1, offsetof(Ring, mRotationsPerSec),MappedGL<GLfloat>::enumerator},

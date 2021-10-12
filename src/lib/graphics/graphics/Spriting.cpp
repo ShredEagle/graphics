@@ -38,11 +38,11 @@ namespace {
 VertexSpecification makeQuad()
 {
     VertexSpecification specification;
-    glBindVertexArray(specification.mVertexArray);
 
     // Per-vertex attributes
     specification.mVertexBuffers.emplace_back(
-        makeLoadedVertexBuffer(
+        loadVertexBuffer(
+            specification.mVertexArray,
             {
                 // Postion
                 { 0,                               2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
@@ -61,7 +61,8 @@ VertexSpecification makeQuad()
 
     // Per-instance attributes
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer(
+        loadVertexBuffer(
+            specification.mVertexArray,
             {
                 // Sprite position
                 { 2,                               2, offsetof(Instance, mPosition),    MappedGL<GLint>::enumerator},
