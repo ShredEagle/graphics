@@ -3,7 +3,7 @@
 
 #include "shaders.h"
 
-#include <engine/Timer.h>
+#include <graphics/Timer.h>
 
 #include <renderer/Drawing.h>
 #include <renderer/Uniforms.h>
@@ -19,6 +19,7 @@
 // offset by `[+/-] normal * width`.
 // see: https://discourse.libcinder.org/t/smooth-efficient-perfect-curves/925
 
+using namespace ad::graphics;
 
 namespace ad {
 namespace curve {

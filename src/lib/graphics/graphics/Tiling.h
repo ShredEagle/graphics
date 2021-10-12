@@ -7,8 +7,10 @@
 #include <renderer/Drawing.h>
 
 namespace ad {
+namespace graphics{
 
-class Engine;
+
+class AppInterface;
 
 
 class Tiling
@@ -35,9 +37,9 @@ public:
 
     void setBufferResolution(Size2<int> aNewResolution);
 
-    /// \note Does it make sense to forward engine here?
-    ///       What is the real meaning of the Engine class
-    void render(const Engine & aEngine) const;
+    /// \note Does it make sense to forward appInterface here?
+    ///       What is the real meaning of the AppInterface class
+    void render(const AppInterface & aAppInterface) const;
 
     Position2<position_t> getPosition() const;
     void setPosition(Position2<position_t> aPosition);
@@ -83,7 +85,9 @@ inline Size2<GLint> Tiling::getGridDefinition() const
     return mGridDefinition;
 }
 
+
+} // namespace graphics
 } // namespace ad
 
-#include "Tiling-impl.h"
 
+#include "Tiling-impl.h"

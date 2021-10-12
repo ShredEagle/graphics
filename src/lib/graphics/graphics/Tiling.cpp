@@ -1,6 +1,6 @@
 #include "Tiling.h"
 
-#include "Engine.h"
+#include "AppInterface.h"
 #include "Vertex.h"
 
 #include <handy/vector_utils.h>
@@ -8,6 +8,7 @@
 #include <math/Range.h>
 
 namespace ad {
+namespace graphics {
 
 
 const GLchar* gTilingVertexShader = R"#(
@@ -85,12 +86,12 @@ std::vector<Position2<GLint>> makePositions(const Vec2<int> aCellOffset,
 VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> aGridDefinition)
 {
     VertexSpecification specification;
-    glBindVertexArray(specification.mVertexArray);
 
     // Per-vertex attributes
     std::vector<Vertex> quad = makeQuad(aCellSize);
-    specification.mVertexBuffers.emplace_back(makeLoadedVertexBuffer(gVertexDescription,
-                                                                     gsl::make_span(quad)));
+    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray,
+                                                               gVertexDescription,
+                                                               gsl::make_span(quad)));
     // Could also be
     //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
 
@@ -102,21 +103,24 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     const Vec2<GLint> cellOffset(aCellSize);
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer({ {2, 2, 0, MappedGL<GLint>::enumerator} },
-                               gsl::make_span(positions)));
+        loadVertexBuffer(specification.mVertexArray,
+                         { {2, 2, 0, MappedGL<GLint>::enumerator} },
+                         gsl::make_span(positions)));
 
     glVertexAttribDivisor(2, 1);
 
     // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
     /// \todo separate buffer specification and filling
     specification.mVertexBuffers.push_back(
-        makeLoadedVertexBuffer({
-                //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
-                { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
-            },
-            sizeof(Tiling::tile_type),
-            0,
-            nullptr));
+        loadVertexBuffer(specification.mVertexArray,
+                         {
+                         
+                             //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
+                             { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
+                         },
+                         sizeof(Tiling::tile_type),
+                         0,
+                         nullptr));
 
     glVertexAttribDivisor(3, 1);
 
@@ -196,7 +200,7 @@ void Tiling::setPosition(Position2<position_t> aPosition)
                         static_cast<Position2<GLint>>(mGridRectangleScreen.mPosition).data());
 }
 
-void Tiling::render(const Engine & aEngine) const
+void Tiling::render(const AppInterface & aAppInterface) const
 {
     activate(mDrawContext);
 
@@ -218,4 +222,5 @@ void Tiling::render(const Engine & aEngine) const
                           static_cast<GLsizei>(mTiles.size()));
 }
 
+} // namespace graphics
 } // namespace ad

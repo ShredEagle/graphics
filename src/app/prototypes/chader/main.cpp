@@ -1,17 +1,18 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/ApplicationGlfw.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
-    Application application("Chader", 800, 600);
+    ApplicationGlfw application("Chader", 800, 600);
 
-    ad::Timer timer{glfwGetTime(), 0.};
+    ad::graphics::Timer timer{glfwGetTime(), 0.};
 
     Scene scene(argv);
 

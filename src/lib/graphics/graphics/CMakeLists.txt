@@ -1,12 +1,12 @@
-set(TARGET_NAME engine)
+set(TARGET_NAME graphics)
 
 set(${TARGET_NAME}_HEADERS
-    Application.h
+    AppInterface.h
+    ApplicationGlfw.h
     CameraUtilities.h
     Curving.h
     Curving-shaders.h
     commons.h
-    Engine.h
     shaders.h
     Sprite.h
     Spriting.h
@@ -22,7 +22,7 @@ set(${TARGET_NAME}_HEADERS
 
 set(${TARGET_NAME}_SOURCES
     Curving.cpp
-    Engine.cpp
+    AppInterface.cpp
     Spriting.cpp
     Tiling.cpp
     TrivialLineStrip.cpp

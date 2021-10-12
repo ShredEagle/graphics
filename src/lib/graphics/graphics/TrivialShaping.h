@@ -10,6 +10,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 class TrivialShaping
@@ -47,17 +48,19 @@ private:
 
 struct TrivialShaping::Rectangle
 {
-    ad::Rectangle<GLfloat> mGeometry;
+    math::Rectangle<GLfloat> mGeometry;
     math::Matrix<3, 3, GLfloat> mMatrixTransform;
     Color mColor;
 };
 
 struct TrivialShaping::RectangleAngle
 {
-    ad::Rectangle<GLfloat> mGeometry;
+    math::Rectangle<GLfloat> mGeometry;
     Color mColor;
     math::Radian<GLfloat> angle{0.};
     math::Position<2, GLfloat> center = mGeometry.origin();
 };
 
+
+} // namespace graphics
 } // namespace ad

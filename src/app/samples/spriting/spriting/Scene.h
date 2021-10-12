@@ -1,12 +1,12 @@
 #pragma once
 
-#include <engine/Spriting.h>
+#include <graphics/Spriting.h>
 
 #include <resource/PathProvider.h>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 
 class Scene
@@ -58,4 +58,5 @@ private:
 };
 
 
+} // namespace graphics
 } // namespace ad

@@ -1,11 +1,12 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/ApplicationGlfw.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 // Control the middle point out handle with left button drag.
 // Press enter to alternate between rotation / side view.
@@ -17,20 +18,20 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Curving", 1600, 1000,
-                                 Application::Flags::None,
+        ApplicationGlfw application("Curving", 1600, 1000,
+                                 ApplicationGlfw::Flags::None,
                                  4, 1,
                                  { {GLFW_SAMPLES, 8} });
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
-        Scene scene{application.getEngine()->getFramebufferSize(), application.getEngine() };
+        Scene scene{application.getAppInterface()->getFramebufferSize(), application.getAppInterface() };
 
         while(application.nextFrame())
         {
             timer.mark(glfwGetTime());
             scene.step(timer);
-            application.getEngine()->clear();
+            application.getAppInterface()->clear();
             scene.render();
         }
     }

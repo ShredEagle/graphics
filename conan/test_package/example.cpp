@@ -1,8 +1,8 @@
-#include <engine/Timer.h>
+#include <graphics/Timer.h>
 #include <renderer/VertexSpecification.h>
 
 int main()
 {
-    ad::Timer timer;
+    ad::graphics::Timer timer;
     return EXIT_SUCCESS;
 }

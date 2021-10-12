@@ -3,6 +3,7 @@
 #include "VertexSpecification.h"
 
 namespace ad {
+namespace graphics {
 
 /// \brief Attribute and offset of the each entry inside T_element (for interleaved attributes)
 template <class T_element, class T_member>
@@ -24,7 +25,10 @@ namespace vertex {
 } // namespace vertex
 
 template <class T_vertex>
-VertexBufferObject makeLoadedVertexBuffer(Attribute aAttribute, const gsl::span<T_vertex> aVertices)
+VertexBufferObject loadVertexBuffer(
+    const VertexArrayObject & aVertexArray,
+    Attribute aAttribute,
+    const gsl::span<T_vertex> aVertices)
 {
     static_assert(std::is_array<T_vertex>::value || std::is_arithmetic<T_vertex>::value,
                   "Currently only supports spans of arrays or arithmetic types");
@@ -36,10 +40,11 @@ VertexBufferObject makeLoadedVertexBuffer(Attribute aAttribute, const gsl::span<
         MappedGL<scalar_t<T_vertex>>::enumerator,
     };
 
-    return makeLoadedVertexBuffer({desc},
-                                  sizeof(T_vertex),
-                                  aVertices.size_bytes(),
-                                  aVertices.data());
+    return loadVertexBuffer(aVertexArray,
+                            {desc},
+                            sizeof(T_vertex),
+                            aVertices.size_bytes(),
+                            aVertices.data());
 }
 
 template <class T_object, class T_member>
@@ -88,4 +93,5 @@ VertexBufferObject makeLoadedVertexBuffer(
 }
 
 
+} // namespace graphics
 } // namespace ad

@@ -28,14 +28,14 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 static void windowsSize_callback(GLFWwindow * window, int width, int height)
 {
-    ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
-    engine->callbackWindowSize(width, height);
+    ad::graphics::AppInterface * appInterface = static_cast<ad::graphics::AppInterface *>(glfwGetWindowUserPointer(window));
+    appInterface->callbackWindowSize(width, height);
 }
 
 static void framebufferSize_callback(GLFWwindow * window, int width, int height)
 {
-    ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
-    engine->callbackFramebufferSize(width, height);
+    ad::graphics::AppInterface * appInterface = static_cast<ad::graphics::AppInterface *>(glfwGetWindowUserPointer(window));
+    appInterface->callbackFramebufferSize(width, height);
 }
 
 int main(void)
@@ -72,9 +72,9 @@ int main(void)
     glfwMakeContextCurrent(window);
     gladLoadGL();
 
-    ad::Engine engine;
-    glfwSetWindowUserPointer(window, &engine);
-    // Explicitly call it, because it is used to complete the engine setup
+    ad::graphics::AppInterface appInterface;
+    glfwSetWindowUserPointer(window, &appInterface);
+    // Explicitly call it, because it is used to complete the appInterface setup
     {
         // Get the size, because the hints might not be satisfied
         // (yet not invoking the size callback)
@@ -101,16 +101,16 @@ int main(void)
     }
     else
     {
-        ad::enableDebugOutput();
+        ad::graphics::enableDebugOutput();
     }
 
-    std::unique_ptr<ad::Scene> scene = ad::setupScene(engine);
-    ad::Timer timer{glfwGetTime(), 0.};
+    std::unique_ptr<ad::graphics::Scene> scene = ad::graphics::setupScene(appInterface);
+    ad::graphics::Timer timer{glfwGetTime(), 0.};
 
     while(!glfwWindowShouldClose(window))
     {
-        ad::updateScene(*scene, engine, timer);
-        ad::renderScene(*scene, engine);
+        ad::graphics::updateScene(*scene, appInterface, timer);
+        ad::graphics::renderScene(*scene, appInterface);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

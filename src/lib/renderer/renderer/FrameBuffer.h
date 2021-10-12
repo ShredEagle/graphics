@@ -9,6 +9,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 struct [[nodiscard]] FrameBuffer : public ResourceGuard<GLuint>
 {
@@ -47,4 +48,5 @@ inline void attachImage(
     }
 }
 
+} // namespace graphics
 } // namespace ad

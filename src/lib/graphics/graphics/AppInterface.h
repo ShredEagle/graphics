@@ -7,13 +7,15 @@
 
 
 namespace ad {
+namespace graphics {
 
-class Engine
+
+class AppInterface
 {
 public:
     using SizeListener = std::function<void(Size2<int>)>;
 
-    Engine();
+    AppInterface();
 
     void clear();
 
@@ -22,7 +24,7 @@ public:
 
     [[nodiscard]] std::shared_ptr<SizeListener> listenFramebufferResize(SizeListener aListener);
 
-    /// \note Takes a callback by value, keep it until replaced or Engine instance is destructed
+    /// \note Takes a callback by value, keep it until replaced or AppInterface instance is destructed
     template <class T_keyCallback>
     void registerKeyCallback(T_keyCallback && mCallback);
     template <class T_keyCallback>
@@ -58,19 +60,19 @@ private:
 };
 
 
-inline const Size2<int> & Engine::getWindowSize() const
+inline const Size2<int> & AppInterface::getWindowSize() const
 {
     return mWindowSize;
 }
 
 
-inline const Size2<int> & Engine::getFramebufferSize() const
+inline const Size2<int> & AppInterface::getFramebufferSize() const
 {
     return mFramebufferSize;
 }
 
 
-inline std::shared_ptr<Engine::SizeListener> Engine::listenFramebufferResize(SizeListener aListener)
+inline std::shared_ptr<AppInterface::SizeListener> AppInterface::listenFramebufferResize(SizeListener aListener)
 {
     auto result = std::make_shared<SizeListener>(std::move(aListener));
     mFramebufferSizeSubject.mObservers.emplace_back(result);
@@ -79,14 +81,14 @@ inline std::shared_ptr<Engine::SizeListener> Engine::listenFramebufferResize(Siz
 
 
 template <class T_keyCallback>
-void Engine::registerKeyCallback(T_keyCallback && aCallback)
+void AppInterface::registerKeyCallback(T_keyCallback && aCallback)
 {
     mKeyboardCallback = std::forward<T_keyCallback>(aCallback);
 }
 
 
 template <class T_keyCallback>
-void Engine::registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback)
+void AppInterface::registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback)
 {
     mKeyboardCallback = [aCallback](int key, int scancode, int action, int mods)
     {
@@ -96,35 +98,36 @@ void Engine::registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback)
 
 
 template <class T_mouseButtonCallback>
-void Engine::registerMouseButtonCallback(T_mouseButtonCallback && mCallback)
+void AppInterface::registerMouseButtonCallback(T_mouseButtonCallback && mCallback)
 {
     mMouseButtonCallback = std::forward<T_mouseButtonCallback>(mCallback);
 }
 
 
 template <class T_cursorPositionCallback>
-void Engine::registerCursorPositionCallback(T_cursorPositionCallback && mCallback)
+void AppInterface::registerCursorPositionCallback(T_cursorPositionCallback && mCallback)
 {
     mCursorPositionCallback = std::forward<T_cursorPositionCallback>(mCallback);
 }
 
 
-inline void Engine::callbackKeyboard(int key, int scancode, int action, int mods)
+inline void AppInterface::callbackKeyboard(int key, int scancode, int action, int mods)
 {
     mKeyboardCallback(key, scancode, action, mods);
 }
 
 
-inline void Engine::callbackMouseButton(int button, int action, int mods, double xpos, double ypos)
+inline void AppInterface::callbackMouseButton(int button, int action, int mods, double xpos, double ypos)
 {
     mMouseButtonCallback(button, action, mods, xpos, ypos);
 }
 
 
-inline void Engine::callbackCursorPosition(double xpos, double ypos)
+inline void AppInterface::callbackCursorPosition(double xpos, double ypos)
 {
     mCursorPositionCallback(xpos, ypos);
 }
 
 
+} // namespace graphics
 } // namespace ad

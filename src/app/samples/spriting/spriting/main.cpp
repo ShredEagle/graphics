@@ -1,25 +1,26 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/ApplicationGlfw.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Spriting", 800, 600);
+        ApplicationGlfw application("Spriting", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
         Scene scene{ {400, 300} };
 
         while(application.nextFrame())
         {
-            application.getEngine()->clear();
+            application.getAppInterface()->clear();
             timer.mark(glfwGetTime());
             scene.update(timer.time());
             scene.render();

@@ -5,8 +5,8 @@
 #include <iostream>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 // Only starting in 4.3 apparently
 inline void GLAPIENTRY
@@ -52,4 +52,5 @@ struct [[nodiscard]] ErrorCheck
     }
 };
 
+} // namespace graphics
 } // namespace ad;

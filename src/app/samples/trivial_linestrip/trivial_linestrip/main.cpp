@@ -1,19 +1,20 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/ApplicationGlfw.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Trivial Line Strip", 800, 600);
+        ApplicationGlfw application("Trivial Line Strip", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
         Scene scene{ {200, 150} };
 
@@ -21,7 +22,7 @@ int main(int argc, const char * argv[])
         {
             timer.mark(glfwGetTime());
             scene.step(timer);
-            application.getEngine()->clear();
+            application.getAppInterface()->clear();
             scene.render();
         }
     }

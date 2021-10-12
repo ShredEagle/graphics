@@ -8,8 +8,8 @@
 #include <functional>
 #include <vector>
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
 {
@@ -60,4 +60,5 @@ Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
                                                           const char * /*source*/>> aShaders);
 
 
+} // namespace graphics
 } // namespace ad

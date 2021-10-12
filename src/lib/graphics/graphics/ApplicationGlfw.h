@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine.h"
+#include "AppInterface.h"
 
 #include <renderer/Error.h>
 #include <renderer/GL_Loader.h>
@@ -11,11 +11,11 @@
 
 #include <memory>
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 
-class Application
+class ApplicationGlfw
 {
 public:
     enum Flags
@@ -26,7 +26,7 @@ public:
 
     using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
 
-    Application(const std::string aName,
+    ApplicationGlfw(const std::string aName,
                 int aWidth, int aHeight,
                 Flags aFlags = None,
                 int aGLVersionMajor=4, int aGLVersionMinor=1,
@@ -42,9 +42,9 @@ public:
         glfwMakeContextCurrent(mWindow);
         gladLoadGL();
 
-        mEngine = std::make_shared<Engine>();
-        glfwSetWindowUserPointer(mWindow, mEngine.get());
-        // Explicitly call size callbacks, they are used to complete the engine setup
+        mAppInterface = std::make_shared<AppInterface>();
+        glfwSetWindowUserPointer(mWindow, mAppInterface.get());
+        // Explicitly call size callbacks, they are used to complete the appInterface setup
         {
             // Get the size, because the hints might not be satisfied
             // (yet not invoking the size callback)
@@ -60,9 +60,9 @@ public:
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
         using namespace std::placeholders;
-        mEngine->registerKeyCallback(std::bind(&Application::default_key_callback,
-                                               static_cast<GLFWwindow*>(this->mWindow),
-                                               _1, _2, _3, _4));
+        mAppInterface->registerKeyCallback(std::bind(&ApplicationGlfw::default_key_callback,
+                                                     static_cast<GLFWwindow*>(this->mWindow),
+                                                     _1, _2, _3, _4));
         glfwSetKeyCallback(mWindow, forward_key_callback);
 
         glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
@@ -82,7 +82,7 @@ public:
         }
         else
         {
-            ad::enableDebugOutput();
+            enableDebugOutput();
         }
     }
 
@@ -104,14 +104,14 @@ public:
         return handleEvents();
     }
 
-    std::shared_ptr<Engine> getEngine()
+    std::shared_ptr<AppInterface> getAppInterface()
     {
-        return mEngine;
+        return mAppInterface;
     }
 
-    std::shared_ptr<const Engine> getEngine() const
+    std::shared_ptr<const AppInterface> getAppInterface() const
     {
-        return mEngine;
+        return mAppInterface;
     }
 
     void markWindowShouldClose() const
@@ -152,36 +152,36 @@ private:
 
     static void forward_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
-        engine->callbackKeyboard(key, scancode, action, mods);
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        appInterface->callbackKeyboard(key, scancode, action, mods);
     }
 
     static void forward_mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
     {
-        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
 
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        engine->callbackMouseButton(button, action, mods, xpos, ypos);
+        appInterface->callbackMouseButton(button, action, mods, xpos, ypos);
     }
 
     static void forward_cursorposition_callback(GLFWwindow* window, double xpos, double ypos)
     {
-        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
 
-        engine->callbackCursorPosition(xpos, ypos);
+        appInterface->callbackCursorPosition(xpos, ypos);
     }
 
     static void windowsSize_callback(GLFWwindow * window, int width, int height)
     {
-        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
-        engine->callbackWindowSize(width, height);
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        appInterface->callbackWindowSize(width, height);
     }
 
     static void framebufferSize_callback(GLFWwindow * window, int width, int height)
     {
-        ad::Engine * engine = static_cast<ad::Engine *>(glfwGetWindowUserPointer(window));
-        engine->callbackFramebufferSize(width, height);
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        appInterface->callbackFramebufferSize(width, height);
     }
 
     Guard initializeGlfw()
@@ -231,7 +231,8 @@ private:
 
     Guard mGlfwInitialization;
     ResourceGuard<GLFWwindow*> mWindow;
-    std::shared_ptr<Engine> mEngine;
+    std::shared_ptr<AppInterface> mAppInterface;
 };
 
+} // namespace graphics
 } // namespace ad

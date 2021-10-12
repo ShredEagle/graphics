@@ -10,6 +10,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 namespace 
@@ -123,4 +124,5 @@ void TrivialLineStrip::setProjectionTransformation(const math::AffineMatrix<3, G
 }
 
 
+} // namespace graphics
 } // namespace ad

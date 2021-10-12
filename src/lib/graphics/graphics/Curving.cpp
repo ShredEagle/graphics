@@ -8,6 +8,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 namespace {
@@ -65,10 +66,9 @@ Curving::Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aPro
         mVertexArray,
         gVertexDescription,
         gsl::make_span(generateVertices(aCurveSubdivisions)))},
-    mInstanceBuffer{loadVertexBuffer(
+    mInstanceBuffer{initVertexBuffer<Curving::Instance>(
         mVertexArray,
         gBezierInstanceDescription, 
-        gsl::span<Curving::Instance>{},
         1)},
     mGpuProgram{makeLinkedProgram({
         {GL_VERTEX_SHADER,   gVertexShader},
@@ -108,5 +108,6 @@ void Curving::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> &
 }
 
 
+} // namespace graphics
 } // namespace ad
 

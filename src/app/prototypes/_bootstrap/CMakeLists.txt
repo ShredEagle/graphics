@@ -22,7 +22,7 @@ target_link_libraries(${TARGET_NAME}
         glad::glad
         glfw
 
-        ad::engine
+        ad::graphics
         ad::math
         ad::renderer
 )

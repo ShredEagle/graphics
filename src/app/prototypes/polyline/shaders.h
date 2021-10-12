@@ -5,6 +5,8 @@
 
 
 namespace ad {
+namespace graphics {
+
 
 const GLchar* gVertexShader = R"#(
     #version 400
@@ -114,4 +116,5 @@ const GLchar* gFragmentShader = R"#(
 )#";
 
 
+} // namespace graphics
 } // namespace ad

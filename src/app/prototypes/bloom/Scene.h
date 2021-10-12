@@ -3,8 +3,8 @@
 #include "shaders.h"
 #include "vertices.h"
 
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 #include <renderer/FrameBuffer.h>
 #include <renderer/Shading.h>
@@ -14,6 +14,7 @@
 #include <resource/PathProvider.h>
 
 namespace ad {
+namespace graphics {
 
 struct ScreenQuad
 {
@@ -69,11 +70,11 @@ inline FirstRender::FirstRender() :
 
 struct Scene
 {
-    Scene(const char * argv[], const Engine * aEngine);
+    Scene(const char * argv[], const AppInterface * aAppInterface);
     void blur();
     void step(const Timer & aTimer);
 
-    const Engine * mEngine;
+    const AppInterface * mAppInterface;
     FirstRender mInitial;
     Size2<int> mRenderTargetsSize;
     ScreenQuad mScreenQuad;
@@ -86,12 +87,12 @@ struct Scene
     Program mScreenProgram;
 };
 
-Scene::Scene(const char * argv[], const Engine * aEngine) :
-    mEngine(aEngine),
+Scene::Scene(const char * argv[], const AppInterface * aAppInterface) :
+    mAppInterface(aAppInterface),
     mInitial(),
     // Note: Renders target are of fixed size, not changing with window's frambuffer size
-    mRenderTargetsSize(aEngine->getFramebufferSize().width(),
-                       aEngine->getFramebufferSize().height()),
+    mRenderTargetsSize(aAppInterface->getFramebufferSize().width(),
+                       aAppInterface->getFramebufferSize().height()),
     mBuffers(initFrameBuffers<2>(mRenderTargetsSize)),
     mSceneFB(),
     mNeonTexture(GL_TEXTURE_2D),
@@ -219,12 +220,13 @@ inline void Scene::step(const Timer & aTimer)
     bind(mBuffers.at(0).colorTexture);
 
     // Viewport is global state, needs to be restored to the windows's framebuffer size
-    const int width{mEngine->getFramebufferSize().width()};
-    const int height{mEngine->getFramebufferSize().height()};
+    const int width{mAppInterface->getFramebufferSize().width()};
+    const int height{mAppInterface->getFramebufferSize().height()};
     glViewport(0, 0, width, height);
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
 
 
+} // namespace graphics
 } // namespace ad

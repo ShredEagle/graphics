@@ -10,8 +10,8 @@
 #include <cassert>
 #include <string>
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 {
@@ -150,4 +150,5 @@ inline void loadSpriteSheet(const Texture & aTexture,
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
+} // namespace graphics
 } // namespace ad

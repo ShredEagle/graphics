@@ -5,6 +5,7 @@
 #include "GL_Loader.h"
 
 namespace ad {
+namespace graphics {
 
     // Sadly, the glGen* symbols imported by the GL loader
     // are not compile time constants
@@ -37,4 +38,5 @@ private:
     Guard mGuard;
 };
 
+} // namespace graphics
 } // namespace ad

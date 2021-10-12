@@ -1,10 +1,10 @@
 #pragma once
 
 
-#include <engine/Curving.h>
-#include <engine/Timer.h>
+#include <graphics/Curving.h>
+#include <graphics/Timer.h>
 
-#include <engine/Engine.h>
+#include <graphics/AppInterface.h>
 
 #include <math/Transformations.h>
 #include <math/VectorUtilities.h>
@@ -13,8 +13,8 @@
 #include <GLFW/glfw3.h>
 
 
-namespace ad
-{
+namespace ad {
+namespace graphics {
 
 
 constexpr GLfloat gInitialHalfWidth = 0.05f;
@@ -42,7 +42,7 @@ math::Box<GLfloat> getViewVolume(Size2<int> aRenderResolution,
 class Scene
 {
 public:
-    Scene(Size2<int> aRenderResolution, std::shared_ptr<Engine> aEngine) :
+    Scene(Size2<int> aRenderResolution, std::shared_ptr<AppInterface> aAppInterface) :
         mViewVolume{ getViewVolume(aRenderResolution) },
         mWindowToView{
             math::trans2d::window(
@@ -77,9 +77,9 @@ public:
         }
     {
         using namespace std::placeholders;
-        aEngine->registerMouseButtonCallback(std::bind(&Scene::callbackMouseButton, this, _1, _2, _3, _4, _5));
-        aEngine->registerCursorPositionCallback(std::bind(&Scene::callbackCursorPosition, this, _1, _2));
-        aEngine->registerKeyCallback(std::bind(&Scene::callbackKey, this, _1, _2, _3, _4));
+        aAppInterface->registerMouseButtonCallback(std::bind(&Scene::callbackMouseButton, this, _1, _2, _3, _4, _5));
+        aAppInterface->registerCursorPositionCallback(std::bind(&Scene::callbackCursorPosition, this, _1, _2));
+        aAppInterface->registerKeyCallback(std::bind(&Scene::callbackKey, this, _1, _2, _3, _4));
     }
 
     void step(const Timer & aTimer)
@@ -187,4 +187,5 @@ private:
 };
 
 
+} // namespace graphics
 } // namespace ad

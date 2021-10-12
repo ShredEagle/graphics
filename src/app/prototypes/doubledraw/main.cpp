@@ -73,15 +73,15 @@ int main(void)
     }
     else
     {
-        ad::enableDebugOutput();
+        ad::graphics::enableDebugOutput();
     }
 
-    ad::Scene scene = ad::setupScene();
+    ad::graphics::Scene scene = ad::graphics::setupScene();
 
     while(!glfwWindowShouldClose(window))
     {
-        ad::updateScene(scene, glfwGetTime());
-        ad::renderScene(scene);
+        ad::graphics::updateScene(scene, glfwGetTime());
+        ad::graphics::renderScene(scene);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

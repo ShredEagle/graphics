@@ -1,25 +1,25 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/ApplicationGlfw.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 
 int main(int argc, const char * argv[])
 {
     try
     {
-        ad::Application application("Curve", 800, 600);
+        ad::graphics::ApplicationGlfw application("Curve", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        ad::graphics::Timer timer{glfwGetTime(), 0.};
 
         ad::curve::Scene scene;
 
         while(application.nextFrame())
         {
-            application.getEngine()->clear();
+            application.getAppInterface()->clear();
             scene.step(timer);
-            scene.render(application.getEngine()->getWindowSize());
+            scene.render(application.getAppInterface()->getWindowSize());
             timer.mark(glfwGetTime());
         }
     }

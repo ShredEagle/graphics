@@ -7,6 +7,7 @@
 #include <cassert>
 
 namespace ad {
+namespace graphics {
 
 struct GenericDrawer
 {
@@ -30,11 +31,11 @@ struct GenericDrawer
             mVertexCount = aVertices.size();
         }
 
-        glBindVertexArray(mVertexArray);
-        return makeLoadedVertexBuffer(aAttributes,
-                                      sizeof(T_vertex),
-                                      sizeof(T_vertex)*aVertices.size(),
-                                      aVertices.data());
+        return loadVertexBuffer(mVertexArray,
+                                aAttributes,
+                                sizeof(T_vertex),
+                                sizeof(T_vertex)*aVertices.size(),
+                                aVertices.data());
     }
 
     void render() const
@@ -49,4 +50,5 @@ struct GenericDrawer
     }
 };
 
+} // namespace graphics
 } // namespace ad

@@ -7,6 +7,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 // An Q&D implementation of contiguous iterator test,
@@ -186,4 +187,5 @@ constexpr std::size_t size(const Range<T_iterator, SingleSentinel> &)
     return 1;
 }
 
+} // namespace graphics
 } // namespace ad

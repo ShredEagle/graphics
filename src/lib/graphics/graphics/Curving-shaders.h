@@ -5,6 +5,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 inline const GLchar* gVertexShader = R"#(
@@ -87,4 +88,5 @@ const GLchar* gFragmentShader = R"#(
 )#";
 
 
+} // namespace graphics
 } // namespace ad

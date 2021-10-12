@@ -3,7 +3,7 @@
 
 #include "shaders.h"
 
-#include <engine/Timer.h>
+#include <graphics/Timer.h>
 
 #include <renderer/Drawing.h>
 #include <renderer/Uniforms.h>
@@ -21,6 +21,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 struct Vertex
@@ -136,4 +137,5 @@ inline void Scene::render(const Size2<int> aRenderSize)
 }
 
 
+} // namespace graphics
 } // namespace ad

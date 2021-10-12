@@ -10,6 +10,7 @@
 #include <vector>
 
 namespace ad {
+namespace graphics {
 
 struct Image : public ResourceGuard<unsigned char *>
 {
@@ -109,4 +110,5 @@ protected:
     {}
 };
 
+} // namespace graphics
 } // namespace ad

@@ -1,21 +1,22 @@
 #include "Scene.h"
 
-#include <engine/Application.h>
-#include <engine/Engine.h>
-#include <engine/Timer.h>
+#include <graphics/ApplicationGlfw.h>
+#include <graphics/AppInterface.h>
+#include <graphics/Timer.h>
 
 
 using namespace ad;
+using namespace ad::graphics;
 
 int main(int argc, const char * argv[])
 {
     try
     {
-        Application application("Bloom", 800, 600);
+        ApplicationGlfw application("Bloom", 800, 600);
 
-        ad::Timer timer{glfwGetTime(), 0.};
+        Timer timer{glfwGetTime(), 0.};
 
-        Scene scene(argv, application.getEngine().get());
+        Scene scene(argv, application.getAppInterface().get());
 
         while(application.nextFrame())
         {

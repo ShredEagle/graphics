@@ -9,6 +9,7 @@
 
 
 namespace ad {
+namespace graphics {
 
 
 class Curving
@@ -43,4 +44,5 @@ private:
 };
 
 
+} // namespace graphics
 } // namespace ad

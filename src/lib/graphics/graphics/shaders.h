@@ -1,6 +1,7 @@
 #pragma once
 
 namespace ad {
+namespace graphics {
 
 inline const GLchar* gVertexShader = R"#(
     #version 400
@@ -142,4 +143,5 @@ inline const GLchar* gSolidColorLineVertexShader = R"#(
     }
 )#";
 
+} // namespace graphics
 } // namespace ad

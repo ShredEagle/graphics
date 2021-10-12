@@ -5,6 +5,7 @@
 #include "VertexSpecification.h"
 
 namespace ad {
+namespace graphics {
 
 struct [[nodiscard]] DrawContext
 {
@@ -63,4 +64,5 @@ inline Guard scopePrimitiveRestartIndex(T_index aIndex)
 }
 
 
+} // namespace graphics
 } // namespace ad

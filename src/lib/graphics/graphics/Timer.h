@@ -1,6 +1,7 @@
 #pragma once
 
 namespace ad {
+namespace graphics {
 
 struct Timer
 {
@@ -24,4 +25,5 @@ struct Timer
     double mDelta;
 };
 
+} // namespace graphics
 } // namespace ad
