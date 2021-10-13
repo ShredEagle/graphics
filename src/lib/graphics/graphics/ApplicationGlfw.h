@@ -82,7 +82,7 @@ public:
         }
         else
         {
-            enableDebugOutput();
+            enableDebugOutput(&AppInterface::OpenGLMessageLogging);
         }
     }
 

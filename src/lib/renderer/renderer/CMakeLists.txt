@@ -26,6 +26,10 @@ set(${TARGET_NAME}_SOURCES
     stb_image.c
 )
 
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
+             FILES ${${TARGET_NAME}_HEADERS} ${${TARGET_NAME}_SOURCES}
+)
+
 add_library(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
     ${${TARGET_NAME}_HEADERS}

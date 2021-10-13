@@ -50,6 +50,14 @@ public:
     /// \brief To be called by the application when it has cursor position events to provide
     void callbackCursorPosition(double xpos, double ypos);
 
+    static void GLAPIENTRY OpenGLMessageLogging(GLenum source,
+                                                GLenum type,
+                                                GLuint id,
+                                                GLenum severity,
+                                                GLsizei length,
+                                                const GLchar* message,
+                                                const void* userParam);
+
 private:
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
