@@ -18,6 +18,8 @@ set(${TARGET_NAME}_HEADERS
     Vertex.h
 
     dataformat/tiles.h
+
+    detail/Logging.h
 )
 
 set(${TARGET_NAME}_SOURCES
@@ -30,6 +32,12 @@ set(${TARGET_NAME}_SOURCES
     DrawLine.cpp
 
     dataformat/tiles.cpp
+
+    detail/Logging.cpp
+)
+
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
+             FILES ${${TARGET_NAME}_HEADERS} ${${TARGET_NAME}_SOURCES}
 )
 
 add_library(${TARGET_NAME}
@@ -60,7 +68,9 @@ target_link_libraries(${TARGET_NAME}
         ad::handy
         ad::resource
 
-        nlohmann_json::nlohmann_json)
+        nlohmann_json::nlohmann_json
+        spdlog::libspdlog
+)
 
 
 ##

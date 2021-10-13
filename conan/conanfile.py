@@ -28,6 +28,7 @@ class GraphicsConan(ConanFile):
         ("glad/0.1.34"),
         ("glfw/3.3.4"),
         ("nlohmann_json/3.9.1"),
+        ("spdlog/1.9.2"),
 
         ("math/64e6aa9451@adnn/develop"),
     )

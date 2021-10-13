@@ -9,6 +9,10 @@ set(${TARGET_NAME}_HEADERS
     #${CMAKE_CURRENT_BINARY_DIR}/build_config.h
 )
 
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
+             FILES ${${TARGET_NAME}_HEADERS} ${${TARGET_NAME}_SOURCES}
+)
+
 add_library(${TARGET_NAME} INTERFACE)
 
 add_library(ad::${TARGET_NAME} ALIAS ${TARGET_NAME})

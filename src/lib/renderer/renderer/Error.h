@@ -27,10 +27,10 @@ MessageCallback( GLenum source,
 }
 
 // During init, can be used to enable debug output
-inline void enableDebugOutput()
+inline void enableDebugOutput(decltype(MessageCallback) aOutputCallback = &MessageCallback)
 {
     glEnable              ( GL_DEBUG_OUTPUT );
-    glDebugMessageCallback( &MessageCallback, 0 );
+    glDebugMessageCallback( aOutputCallback, 0 );
 }
 
 struct [[nodiscard]] ErrorCheck

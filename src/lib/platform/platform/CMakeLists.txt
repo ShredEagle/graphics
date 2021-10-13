@@ -4,6 +4,10 @@ set(${TARGET_NAME}_HEADERS
     Filesystem.h
 )
 
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
+             FILES ${${TARGET_NAME}_HEADERS} ${${TARGET_NAME}_SOURCES}
+)
+
 # NOTE should evolve into a compiled module
 add_library(${TARGET_NAME} INTERFACE)
 

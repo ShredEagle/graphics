@@ -1,5 +1,9 @@
 #include "AppInterface.h"
 
+#include "detail/Logging.h"
+
+#include <sstream>
+
 
 namespace ad {
 namespace graphics {
@@ -19,6 +23,9 @@ AppInterface::AppInterface() :
 
     // Frame buffer clear color
     glClearColor(0.1f, 0.2f, 0.3f, 1.f);
+
+    // Initialize logging (as this class should be instantiated in any case)
+    detail::initializeLogging();
 }
 
 
@@ -45,6 +52,30 @@ void AppInterface::callbackFramebufferSize(int width, int height)
 void AppInterface::clear()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+}
+
+
+void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
+                                                   GLenum type,
+                                                   GLuint id,
+                                                   GLenum severity,
+                                                   GLsizei length,
+                                                   const GLchar* message,
+                                                   const void* userParam)
+{
+    std::ostringstream oss;
+    oss << "(type = 0x" << type
+        << ", severity = 0x" << severity
+        << ")\n" << message
+    ;
+    if (type == GL_DEBUG_TYPE_ERROR)
+    {
+        LOG(opengl, error)(oss.str());
+    }
+    else
+    {
+        LOG(opengl, info)(oss.str());
+    }
 }
 
 } // namespace graphics
