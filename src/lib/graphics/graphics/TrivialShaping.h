@@ -49,15 +49,15 @@ private:
 struct TrivialShaping::Rectangle
 {
     math::Rectangle<GLfloat> mGeometry;
-    math::Matrix<3, 3, GLfloat> mMatrixTransform;
     Color mColor;
+    math::Matrix<3, 3, GLfloat> mMatrixTransform = math::Matrix<3, 3, GLfloat>::Identity();
 };
 
 struct TrivialShaping::RectangleAngle
 {
     math::Rectangle<GLfloat> mGeometry;
+    math::Radian<GLfloat> angle;
     Color mColor;
-    math::Radian<GLfloat> angle{0.};
     math::Position<2, GLfloat> center = mGeometry.origin();
 };
 

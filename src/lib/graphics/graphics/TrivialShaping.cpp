@@ -97,8 +97,8 @@ void TrivialShaping::addRectangle(RectangleAngle aRectangleData)
 {
     mInstances.push_back({
         aRectangleData.mGeometry,
-        math::trans2d::rotateAbout(aRectangleData.angle, aRectangleData.center),
         aRectangleData.mColor,
+        math::trans2d::rotateAbout(aRectangleData.angle, aRectangleData.center),
     });
 }
 

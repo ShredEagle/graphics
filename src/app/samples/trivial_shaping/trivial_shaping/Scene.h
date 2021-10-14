@@ -27,9 +27,10 @@ public:
 
         if (static_cast<int>(aTimer.time()) % 2 == 0)
         {
-            mTrivialShaping.addRectangle({{{200.f, 50.f}, {150.f, 120.f}}, 
-                                         Color{255, 0, 255},
-                                         math::Degree<GLfloat>{15.}});
+            mTrivialShaping.addRectangle({ 
+                {{200.f, 50.f}, {150.f, 120.f}}, 
+                math::Degree<GLfloat>{15.},
+                Color{255, 0, 255} });
         }
     }
 
