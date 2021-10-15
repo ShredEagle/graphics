@@ -8,6 +8,7 @@
 #include <sstream>
 
 namespace ad {
+namespace arte {
 
 
 template <class T_pixelFormat>
@@ -141,4 +142,5 @@ template class Image<>;
 template class Image<math::sdr::Grayscale>;
 
 
+} // namespace arte
 } // namespace ad

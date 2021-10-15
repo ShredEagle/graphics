@@ -11,6 +11,7 @@
 
 
 using namespace ad;
+using namespace ad::arte;
 
 
 const auto & Red   = math::sdr::gRed;

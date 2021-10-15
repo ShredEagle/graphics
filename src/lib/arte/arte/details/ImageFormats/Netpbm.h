@@ -9,6 +9,7 @@ static constexpr std::size_t gChunkSize = 256/*kB*/ * 1024/*B*/;
 
 
 namespace ad {
+namespace arte {
 namespace detail {
 
 
@@ -195,4 +196,5 @@ namespace detail {
     };
 
 } // namespace detail
+} // namespace arte
 } // namespace ad

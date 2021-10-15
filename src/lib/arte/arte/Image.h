@@ -12,6 +12,7 @@
 
 
 namespace ad {
+namespace arte {
 
 
 enum class ImageFormat
@@ -230,4 +231,5 @@ auto Image<T_pixelFormat>::operator[](std::size_t aColumnId) const -> Image::con
 }
 
 
+} // namespace arte
 } // namespace ad
