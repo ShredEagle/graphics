@@ -17,7 +17,7 @@ public:
 
     AppInterface();
 
-    void clear();
+    static void clear();
 
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;

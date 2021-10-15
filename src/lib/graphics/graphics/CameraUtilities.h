@@ -37,7 +37,7 @@ void setOrthographicView(T_engine3D & aEngine,
 }
 
 
-math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResolution,
+inline math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResolution,
                                           GLfloat aBufferHeight)
 {
     math::Size<2, GLfloat> size{
@@ -53,7 +53,7 @@ math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResolution,
 }
 
 
-math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
+inline math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
                                  GLfloat aBufferHeight,   
                                  GLfloat aNearPlaneZ,
                                  GLfloat aDepth)
