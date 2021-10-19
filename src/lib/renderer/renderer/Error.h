@@ -10,13 +10,13 @@ namespace graphics {
 
 // Only starting in 4.3 apparently
 inline void GLAPIENTRY
-MessageCallback( GLenum source,
+MessageCallback( GLenum /*source*/,
                  GLenum type,
-                 GLuint id,
+                 GLuint /*id*/,
                  GLenum severity,
-                 GLsizei length,
+                 GLsizei /*length*/,
                  const GLchar* message,
-                 const void* userParam )
+                 const void* /*userParam*/ )
 {
     std::cerr << "GL CALLBACK: " << ((type == GL_DEBUG_TYPE_ERROR) ? "** GL ERROR **"
                                                                    : "")

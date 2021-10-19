@@ -15,7 +15,7 @@ for_each(std::tuple<VT_args...>& aTuple, T_func operation)
 
 template <size_t I=0, class T_func, class ...VT_args>
 typename std::enable_if<I == sizeof...(VT_args)>::type
-for_each(std::tuple<VT_args...>& aTuple, T_func operation)
+for_each(std::tuple<VT_args...>&, T_func)
 {}
 
 } // namespace ad
