@@ -65,9 +65,9 @@ VertexSpecification makeQuad()
             specification.mVertexArray,
             {
                 // Sprite position
-                { 2,                               2, offsetof(Instance, mPosition),    MappedGL<GLint>::enumerator},
+                { 2,                               2, offsetof(Spriting::Instance, mPosition),    MappedGL<GLint>::enumerator},
                 // LoadedSprite (i.e. sprite rectangle cutout in the texture)
-                { {3, Attribute::Access::Integer}, 4, offsetof(Instance, mTextureArea), MappedGL<GLint>::enumerator},
+                { {3, Attribute::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite), MappedGL<GLint>::enumerator},
             },
             0,
             0,
@@ -96,14 +96,13 @@ Program makeProgram()
 } // anonymous namespace
 
 Spriting::Spriting(Size2<int> aRenderResolution) :
-        mDrawContext(makeQuad(), makeProgram()),
-        mSprites()
+        mDrawContext{makeQuad(), makeProgram()}
 {
     setBufferResolution(aRenderResolution);
 }
 
 
-void Spriting::render() const
+void Spriting::render(gsl::span<const Instance> aInstances) const
 {
     activate(mDrawContext);
 
@@ -111,8 +110,7 @@ void Spriting::render() const
     // Stream vertex attributes
     //
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    mSprites.data(),
-                    static_cast<GLsizei>(getStoredSize(mSprites)));
+                    aInstances);
 
     //
     // Draw
@@ -120,7 +118,7 @@ void Spriting::render() const
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,
-                          static_cast<GLsizei>(mSprites.size()));
+                          static_cast<GLsizei>(aInstances.size()));
 }
 
 

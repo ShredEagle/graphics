@@ -39,8 +39,8 @@ public:
         constexpr double rotationsPerSec = 1.5;
         const std::size_t frameCount = mSprites.size();
 
-        mSpriting.instanceData().clear();
-        mSpriting.instanceData().emplace_back(
+        mSpriteInstances.clear();
+        mSpriteInstances.emplace_back(
             mPosition, 
             mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount)
         );
@@ -48,13 +48,14 @@ public:
 
     void render()
     {
-        mSpriting.render();
+        mSpriting.render(mSpriteInstances);
     }
 
 private:
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
     Position2<GLint> mPosition{0, 0};
+    std::vector<Spriting::Instance> mSpriteInstances;
 };
 
 
