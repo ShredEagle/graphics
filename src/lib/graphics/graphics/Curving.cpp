@@ -71,8 +71,8 @@ Curving::Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aPro
         gBezierInstanceDescription, 
         1)},
     mGpuProgram{makeLinkedProgram({
-        {GL_VERTEX_SHADER,   gVertexShader},
-        {GL_FRAGMENT_SHADER, gFragmentShader},
+        {GL_VERTEX_SHADER,   curving::gVertexShader},
+        {GL_FRAGMENT_SHADER, curving::gFragmentShader},
     })}
 {
     setCameraTransformation(math::AffineMatrix<4, GLfloat>::Identity());
