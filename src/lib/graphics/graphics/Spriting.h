@@ -20,13 +20,15 @@ class Spriting
 public:
     struct Instance
     {
-        Instance(Position2<GLint> aRenderingPosition, LoadedSprite aSprite):
+        Instance(Position2<GLint> aRenderingPosition, LoadedSprite aSprite, GLfloat aOpacity = 1.f):
             mPosition{std::move(aRenderingPosition)},
-            mLoadedSprite{std::move(aSprite)}
+            mLoadedSprite{std::move(aSprite)},
+            mOpacity{aOpacity}
         {}
 
         Position2<GLint> mPosition;
         LoadedSprite mLoadedSprite;
+        GLfloat mOpacity;
     };
 
     Spriting(Size2<int> aRenderResolution);

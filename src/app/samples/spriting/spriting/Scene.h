@@ -37,12 +37,15 @@ public:
     void update(double aTimeSeconds)
     {
         constexpr double rotationsPerSec = 1.5;
+        constexpr double opacityCyclesPerSec = 0.5;
+        constexpr double twoPi = 3.14159265359;
         const std::size_t frameCount = mSprites.size();
 
         mSpriteInstances.clear();
         mSpriteInstances.emplace_back(
             mPosition, 
-            mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount)
+            mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount),
+            std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
         );
     }
 

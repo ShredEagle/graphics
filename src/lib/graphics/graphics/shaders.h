@@ -10,10 +10,12 @@ inline const GLchar* gVertexShader = R"#(
     layout(location=1) in ivec2 in_UV;
     layout(location=2) in vec2 in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
+    layout(location=4) in float in_Opacity;
 
     uniform ivec2 in_BufferResolution;
     
-    out vec2 ex_UV;
+    out vec2  ex_UV;
+    out float ex_Opacity;
 
     void main(void)
     {
@@ -31,6 +33,7 @@ inline const GLchar* gVertexShader = R"#(
                            0.0, 1.0);
 
         ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
+        ex_Opacity = in_Opacity;
     }
 )#";
 
@@ -38,13 +41,14 @@ inline const GLchar* gVertexShader = R"#(
 inline const GLchar* gAnimationFragmentShader = R"#(
     #version 400
 
-    in vec2 ex_UV;
+    in vec2  ex_UV;
+    in float ex_Opacity;
     out vec4 out_Color;
     uniform sampler2DRect spriteSampler;
 
     void main(void)
     {
-        out_Color = texture(spriteSampler, ex_UV);
+        out_Color = texture(spriteSampler, ex_UV) * ex_Opacity;
     }
 )#";
 

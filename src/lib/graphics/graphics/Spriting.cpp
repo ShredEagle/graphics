@@ -68,13 +68,13 @@ VertexSpecification makeQuad()
                 { 2,                               2, offsetof(Spriting::Instance, mPosition),    MappedGL<GLint>::enumerator},
                 // LoadedSprite (i.e. sprite rectangle cutout in the texture)
                 { {3, Attribute::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite), MappedGL<GLint>::enumerator},
+                { 4,                               1, offsetof(Spriting::Instance, mOpacity),      MappedGL<GLfloat>::enumerator},
             },
             0,
             0,
-            nullptr
+            nullptr,
+            1
         ));
-    glVertexAttribDivisor(2, 1);
-    glVertexAttribDivisor(3, 1);
 
     return specification;
 }
