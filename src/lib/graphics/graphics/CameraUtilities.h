@@ -37,6 +37,19 @@ void setOrthographicView(T_engine3D & aEngine,
 }
 
 
+inline math::AffineMatrix<4> getCameraTransform(math::Position<3> aCameraPosition,
+                                                math::Vec<3> aGazeDirection,
+                                                math::Vec<3> aUpDirection = {0., 1., 0.})
+{
+    math::Frame<3> cameraFrame{
+        aCameraPosition,
+        math::OrthonormalBase<3>::MakeFromTwoVectors(-aGazeDirection, aUpDirection)
+    };
+
+    return math::trans3d::canonicalToFrame(cameraFrame);
+}
+
+
 inline math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResolution,
                                           GLfloat aBufferHeight)
 {
