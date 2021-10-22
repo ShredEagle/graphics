@@ -42,7 +42,9 @@ public:
         glfwMakeContextCurrent(mWindow);
         gladLoadGL();
 
-        mAppInterface = std::make_shared<AppInterface>();
+        mAppInterface = std::make_shared<AppInterface>(
+            [this](){glfwSetWindowShouldClose(mWindow, GLFW_TRUE);});
+            
         glfwSetWindowUserPointer(mWindow, mAppInterface.get());
         // Explicitly call size callbacks, they are used to complete the appInterface setup
         {

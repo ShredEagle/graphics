@@ -9,9 +9,10 @@ namespace ad {
 namespace graphics {
 
 
-AppInterface::AppInterface() :
-    mWindowSize(0, 0),
-    mFramebufferSize(0, 0)
+AppInterface::AppInterface(std::function<void()> aCloseAppCallback) :
+    mWindowSize{0, 0},
+    mFramebufferSize{0, 0},
+    mCloseAppCallback{std::move(aCloseAppCallback)}
 {
     //
     // General OpenGL setups
@@ -26,6 +27,12 @@ AppInterface::AppInterface() :
 
     // Initialize logging (as this class should be instantiated in any case)
     detail::initializeLogging();
+}
+
+
+void AppInterface::requestCloseApplication()
+{
+    mCloseAppCallback();
 }
 
 
