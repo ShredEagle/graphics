@@ -54,6 +54,13 @@ void AppInterface::clear()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
+void AppInterface::setClearColor(math::hdr::Rgb aClearColor)
+{
+    glClearColor((GLfloat)aClearColor.r(),
+                 (GLfloat)aClearColor.g(),
+                 (GLfloat)aClearColor.b(),
+                 1.f);
+}
 
 void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
                                                    GLenum type,

@@ -18,6 +18,7 @@ public:
     AppInterface();
 
     static void clear();
+    static void setClearColor(math::hdr::Rgb aClearColor);
 
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;
