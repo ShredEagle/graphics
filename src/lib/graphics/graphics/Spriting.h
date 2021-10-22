@@ -36,6 +36,9 @@ public:
     std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
                                    const Image & aRasterData);
 
+    /// \brief Load the entire image as a single sprite.
+    LoadedSprite load(const Image & aRasterData);
+
     void render(gsl::span<const Instance> aInstances) const;
 
     void setBufferResolution(Size2<int> aNewResolution);
@@ -66,6 +69,14 @@ std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
     std::copy(aFirst, aLast, std::back_inserter(loadedSprites));
     return loadedSprites;
 }
+
+
+inline LoadedSprite Spriting::load(const Image & aRasterData)
+{
+    std::initializer_list<SpriteArea> fullSize{ {{0, 0}, aRasterData.dimension()} };
+    return load(fullSize.begin(), fullSize.end(), aRasterData).at(0);
+}
+
 
 } // namespace graphics
 } // namespace ad

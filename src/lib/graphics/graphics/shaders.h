@@ -6,7 +6,7 @@ namespace graphics {
 inline const GLchar* gVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec4 in_VertexPosition;
+    layout(location=0) in vec2 in_VertexPosition;
     layout(location=1) in ivec2 in_UV;
     layout(location=2) in vec2 in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
@@ -26,7 +26,7 @@ inline const GLchar* gVertexShader = R"#(
         //);
         //gl_Position = clipTransform * (transform * in_VertexPosition);
 
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy * in_TextureArea.zw;
+        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition * in_TextureArea.zw;
         gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
                            0.0, 1.0);
 
