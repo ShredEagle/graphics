@@ -50,8 +50,10 @@ inline math::AffineMatrix<4> getCameraTransform(math::Position<3> aCameraPositio
 }
 
 
+/// \brief Return the view rectangle centered on zero with height aBufferHeight, and
+/// a proportionnal width based on the render resolution ratio.
 inline math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResolution,
-                                          GLfloat aBufferHeight)
+                                                 GLfloat aBufferHeight)
 {
     math::Size<2, GLfloat> size{
         math::makeSizeFromHeight(aBufferHeight, math::getRatio<GLfloat>(aRenderResolution))
