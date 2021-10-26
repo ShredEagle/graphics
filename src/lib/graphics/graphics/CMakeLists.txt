@@ -20,6 +20,10 @@ set(${TARGET_NAME}_HEADERS
     dataformat/tiles.h
 
     detail/Logging.h
+    detail/ScreenQuad.h
+
+    effects/GaussianBlur.h
+    effects/GaussianBlur-shaders.h
 )
 
 set(${TARGET_NAME}_SOURCES
@@ -34,6 +38,9 @@ set(${TARGET_NAME}_SOURCES
     dataformat/tiles.cpp
 
     detail/Logging.cpp
+    detail/ScreenQuad.cpp
+
+    effects/GaussianBlur.cpp
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
