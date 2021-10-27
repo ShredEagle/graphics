@@ -31,7 +31,14 @@ enum class Role
 // TODO Handle window (default framebuffer) resizing, possibly by listening.
 struct PingPongFrameBuffers
 {
-    PingPongFrameBuffers(Size2<GLsizei> aResolution, GLenum aFiltering = GL_NEAREST);
+    explicit PingPongFrameBuffers(Size2<GLsizei> aResolution, GLenum aFiltering = GL_NEAREST);
+
+
+    /// \brief High level function, to prepare everything for client rendering to current target,
+    /// and then appropriate clean-up and buffer swapping on guard destruction.
+    // Note: hard to implement, because it is not possible to just capture the move-only guards in the returned
+    // Guard lambda (the lambda would be move only, so it could not be used to construct the std::function in Guard)
+    //Guard scopeForClientDrawing();
 
     /// \brief Bind the current target framebuffer, so draw operations will affect it.
     /// \return A guard to unbind (i.e. to restore default framebuffer).
@@ -39,7 +46,7 @@ struct PingPongFrameBuffers
 
     /// \brief Set the viewport to match the frame buffers resolution, and return a Guard
     /// to restore previous viewport.
-    Guard setupViewport();
+    Guard scopeViewport();
 
     void setFiltering(GLenum aFiltering);
     GLenum getFiltering()

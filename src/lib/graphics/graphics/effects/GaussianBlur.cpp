@@ -134,7 +134,7 @@ Guard PingPongFrameBuffers::scopeFiltering(GLenum aFiltering)
 }
 
 
-Guard PingPongFrameBuffers::setupViewport()
+Guard PingPongFrameBuffers::scopeViewport()
 {
     // save viewport parameters, to restore it with the guard.
     GLint backup[4];
@@ -187,6 +187,9 @@ void GaussianBlur::apply(int aPassCount,
     // there is a potential optimization allowing to avoid binding the source texture at each frame.
     // Both texture can be mapped to a different texture unit, and each program sampler in the sequence
     // uses one or the other.
+    
+    // If there are no pass, nothing will be copied to last target, which might indicate a logic error.
+    assert(aPassCount > 0 || !aLastTarget);
 
     glBindVertexArray(mScreenQuad.mVertexArray); 
 
@@ -209,18 +212,19 @@ void GaussianBlur::apply(int aPassCount,
         // When using linear filtered kernels, the linear filtering of textures must be enabled.
         auto filteringGuard = aFrameBuffers.scopeFiltering(GL_LINEAR);
         // Ensure the viewport matches the dimension of the textures for the duration of this function.
-        auto viewportGuard = aFrameBuffers.setupViewport();
+        auto viewportGuard = aFrameBuffers.scopeViewport();
 
         // The total number of steps is the number of passes multiplied by the number of programs to apply at each pass.
         // It will be 1 less if there is an explicit last render target.
-        for (; step != aPassCount * mProgramSequence.size() - (aLastTarget ? 1 : 0); ++step)
+        for (; step < aPassCount * mProgramSequence.size() - (aLastTarget ? 1 : 0); ++step)
         {
             bind_guard boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             executeStep(step);
         }
     }
-    if (aLastTarget)
+    // In case pass count is zero (or negative), we shoud not execute the program even once
+    if (aLastTarget && aPassCount > 0)
     {
         bind_guard boundFrameBuffer{**aLastTarget};
         // No glClear on a client provided last buffer.

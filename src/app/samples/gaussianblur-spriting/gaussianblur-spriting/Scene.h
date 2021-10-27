@@ -55,7 +55,7 @@ public:
         {
             // Render the scene to a texture
             auto renderTexture = mFrameBuffers.bindTargetFrameBuffer();
-            auto viewport = mFrameBuffers.setupViewport();
+            auto viewport = mFrameBuffers.scopeViewport();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             mSpriting.render(mSpriteInstances);
             mFrameBuffers.swap();
