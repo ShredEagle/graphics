@@ -15,6 +15,7 @@
 #include <renderer/Texture.h>
 
 #include <array>
+#include <optional>
 
 
 namespace ad {
@@ -69,11 +70,19 @@ class GaussianBlur
 public:
     GaussianBlur();
 
-    // TODO accept a final destination FB to optimize copy to screen
-    const Texture & apply(int aPassCount, PingPongFrameBuffers & aFrameBuffers);
+    /// \param aLastTarget A framebuffer that can be explicilty provided in order to become
+    /// the render target for the last drawing step.
+    /// This can notably spare a copy from the PingPongFrameBuffer to the default framebuffer.
+    ///
+    /// \important When an explicit last target framebuffer is provided, it will be drawn to
+    /// with the viewport and filtering parameters that are active when invoking the function.
+    /// It will not be cleared either.
+    void apply(int aPassCount, 
+               PingPongFrameBuffers & aFrameBuffers,
+               std::optional<FrameBuffer *> aLastTarget = std::nullopt);
 
     // TODO relocate somewhere general
-    /// \brief Notably usefull if the default framebuffer is currently active;
+    /// \brief Notably usefull if the default framebuffer is currently active.
     void drawToBoundFrameBuffer(PingPongFrameBuffers & aFrameBuffers);
 
 private:

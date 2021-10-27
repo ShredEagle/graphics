@@ -173,13 +173,15 @@ GaussianBlur::GaussianBlur()
         setUniformFloatArray(program, "weights", linear.weights);
     }
 
-    // Setup the filter directions(based on the knowledge of the two program in the Gaussian implementation)
+    // Setup the filter directions.
     setUniform(mProgramSequence[0], "filterDirection", Vec2<GLfloat>{1.f, 0.f}); 
     setUniform(mProgramSequence[1], "filterDirection", Vec2<GLfloat>{0.f, 1.f}); 
 }
 
 
-const Texture & GaussianBlur::apply(int aPassCount, PingPongFrameBuffers & aFrameBuffers)
+void GaussianBlur::apply(int aPassCount,
+                         PingPongFrameBuffers & aFrameBuffers,
+                         std::optional<FrameBuffer *> aLastTarget)
 {
     // Note: for the special case of a pair number of programs in the sequence,
     // there is a potential optimization allowing to avoid binding the source texture at each frame.
@@ -191,25 +193,39 @@ const Texture & GaussianBlur::apply(int aPassCount, PingPongFrameBuffers & aFram
     // Active the texture unit that is mapped to the programs sampler.
     glActiveTexture(GL_TEXTURE0 + gTextureUnit);
 
-    // When using linear filtered kernels, the linear filtering of textures must be enabled.
-    auto filteringGuard = aFrameBuffers.scopeFiltering(GL_LINEAR);
-
-    // Ensure the viewport matches the dimension of the textures for the duration of this function.
-    auto viewportGuard = aFrameBuffers.setupViewport();
-
-    // The total number of steps is the number of passes multiplied by the number of programs to apply at each pass.
-    for (int step = 0; step != aPassCount * mProgramSequence.size(); ++step)
+    // Since the same code might be called from two different places, factorize it in a lambda
+    auto executeStep = [&](int step)
     {
         glUseProgram(mProgramSequence[step % mProgramSequence.size()]);
         // binds the source texture to the texture unit (which is the texture unit for all programs).
         bind(aFrameBuffers.getTexture(Role::Source));
-        bind_guard boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         aFrameBuffers.swap();
-    }
+    };
 
-    return aFrameBuffers.getTexture(Role::Source);
+    int step = 0;
+
+    { // Scope the filtering and viewport not to affect the last target framebuffer if provided
+        // When using linear filtered kernels, the linear filtering of textures must be enabled.
+        auto filteringGuard = aFrameBuffers.scopeFiltering(GL_LINEAR);
+        // Ensure the viewport matches the dimension of the textures for the duration of this function.
+        auto viewportGuard = aFrameBuffers.setupViewport();
+
+        // The total number of steps is the number of passes multiplied by the number of programs to apply at each pass.
+        // It will be 1 less if there is an explicit last render target.
+        for (; step != aPassCount * mProgramSequence.size() - (aLastTarget ? 1 : 0); ++step)
+        {
+            bind_guard boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            executeStep(step);
+        }
+    }
+    if (aLastTarget)
+    {
+        bind_guard boundFrameBuffer{**aLastTarget};
+        // No glClear on a client provided last buffer.
+        executeStep(step+1);
+    }
 }
 
 
@@ -217,7 +233,7 @@ void GaussianBlur::drawToBoundFrameBuffer(PingPongFrameBuffers & aFrameBuffers)
 {
     bind(mScreenQuad); 
 
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0); // Unit 0 is assigned to the passthrough program sampler.
     bind(aFrameBuffers.getTexture(Role::Source));
 
     glUseProgram(mPassthrough);

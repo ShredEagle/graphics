@@ -62,9 +62,13 @@ public:
         }
         if (mBlurring)
         {
-            mBlur.apply(gBlurringPasses, mFrameBuffers);
+            mBlur.apply(gBlurringPasses, mFrameBuffers, &FrameBuffer::Default());
         }
-        mBlur.drawToBoundFrameBuffer(mFrameBuffers);
+        else
+        {
+            // When blurring is not applied, we still have to draw to the default framebuffer.
+            mBlur.drawToBoundFrameBuffer(mFrameBuffers);
+        }
     }
 
 private:

@@ -17,6 +17,18 @@ struct [[nodiscard]] FrameBuffer : public ResourceGuard<GLuint>
         ResourceGuard<GLuint>(reserve(glGenFramebuffers),
                               [](GLuint fbId){glDeleteFramebuffers(1, &fbId);})
     {}
+
+    static FrameBuffer & Default()
+    {
+        static FrameBuffer default{DefaultTag{}};
+        return default;
+    }
+
+private:
+    struct DefaultTag {};
+    FrameBuffer(DefaultTag) :
+        ResourceGuard<GLuint>{0, [](GLuint){}}
+    {}
 };
 
 inline void bind(const FrameBuffer & aFrameBuffer)
