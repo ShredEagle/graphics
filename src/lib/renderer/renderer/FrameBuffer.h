@@ -20,8 +20,8 @@ struct [[nodiscard]] FrameBuffer : public ResourceGuard<GLuint>
 
     static FrameBuffer & Default()
     {
-        static FrameBuffer default{DefaultTag{}};
-        return default;
+        static FrameBuffer instance{DefaultTag{}};
+        return instance;
     }
 
 private:
