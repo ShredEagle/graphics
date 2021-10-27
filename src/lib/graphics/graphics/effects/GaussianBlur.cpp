@@ -39,8 +39,8 @@ constexpr Coefficients computeDiscreteWeights(Coefficients aUnnormalized)
 template <std::size_t N_size>
 struct LinearFilteredKernel
 {
-    std::array<GLfloat, N_size> offsets;
-    std::array<GLfloat, N_size> weights;
+    std::array<GLfloat, N_size> offsets{};
+    std::array<GLfloat, N_size> weights{};
 };
 
 
