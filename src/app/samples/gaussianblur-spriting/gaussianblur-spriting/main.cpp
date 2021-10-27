@@ -8,6 +8,10 @@
 using namespace ad;
 using namespace ad::graphics;
 
+// Press enter to toggle rotation.
+// Press backspace to reset rotation to zero.
+// Press space to toggle blurring.
+
 int main(int argc, const char * argv[])
 {
     try
@@ -16,13 +20,13 @@ int main(int argc, const char * argv[])
 
         Timer timer{glfwGetTime(), 0.};
 
-        Scene scene{ {400, 300} };
+        Scene scene{ {400, 300}, application.getAppInterface() };
 
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
             timer.mark(glfwGetTime());
-            scene.update(timer.time());
+            scene.update(timer.delta());
             scene.render();
         }
     }

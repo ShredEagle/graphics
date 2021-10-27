@@ -55,6 +55,8 @@ struct PingPongFrameBuffers
 class GaussianBlur
 {
 public:
+    GaussianBlur();
+
     const Texture & apply(int aPassCount, PingPongFrameBuffers & aFrameBuffers);
 
     // TODO relocate somewhere general
@@ -63,15 +65,20 @@ public:
 
 private:
     // TODO use a global screen quad instead
-    VertexSpecification mScreenQuad{detail::make_ScreenQuad()};
+    const VertexSpecification mScreenQuad{detail::make_ScreenQuad()};
 
-    std::array<Program, 1> mProgramSequence{
+    std::array<Program, 2> mProgramSequence{
         makeLinkedProgram({
             {GL_VERTEX_SHADER, gPassthroughVertexShader},
             {GL_FRAGMENT_SHADER, gaussianblur::gHorizontalBlurFragmentShader}
+        }),
+        makeLinkedProgram({
+            {GL_VERTEX_SHADER, gPassthroughVertexShader},
+            {GL_FRAGMENT_SHADER, gaussianblur::gVerticalBlurFragmentShader}
         })
     };
 
+    static constexpr GLsizei gTextureUnit = 1;
     Program mPassthrough{detail::make_PassthroughProgram()};
 };
 

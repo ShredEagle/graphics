@@ -1,5 +1,8 @@
 #include "GaussianBlur.h"
 
+#include <renderer/Uniforms.h>
+
+
 namespace ad {
 namespace graphics {
 
@@ -16,8 +19,9 @@ PingPongFrameBuffers::PingPongFrameBuffers(Size2<GLsizei> aResolution) :
         bind(mTextures[id]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        // Note: Clamp to border would use a separately specified border color
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
 }
 
@@ -56,18 +60,36 @@ const Texture & PingPongFrameBuffers::getTexture(Role aRole)
 }
 
 
+GaussianBlur::GaussianBlur()
+{
+    for (auto & program : mProgramSequence)
+    {
+        setUniformInt(program, "image", gTextureUnit); 
+    }
+}
+
+
 const Texture & GaussianBlur::apply(int aPassCount, PingPongFrameBuffers & aFrameBuffers)
 {
+    // Note: for the special case of a pair number of programs in the sequence,
+    // there is a potential optimization allowing to avoid binding the source texture at each frame.
+    // Both texture can be mapped to a different texture unit, and each program sampler in the sequence
+    // uses one or the other.
+
     glBindVertexArray(mScreenQuad.mVertexArray); 
 
-    glActiveTexture(GL_TEXTURE0);
-    bind(aFrameBuffers.getTexture(Role::Source));
-    glActiveTexture(GL_TEXTURE1);
-    bind(aFrameBuffers.getTexture(Role::Target));
+    // Active the texture unit that is mapped to the programs sampler.
+    glActiveTexture(GL_TEXTURE0 + gTextureUnit);
 
+    // Ensure the viewport matches the dimension of the textures for the duration of this function.
+    auto viewportGuard = aFrameBuffers.setupViewport();
+
+    // The total number of steps is the number of passes multiplied by the number of programs to apply at each pass.
     for (int step = 0; step != aPassCount * mProgramSequence.size(); ++step)
     {
         glUseProgram(mProgramSequence[step % mProgramSequence.size()]);
+        // binds the source texture to the texture unit (which is the texture unit for all programs).
+        bind(aFrameBuffers.getTexture(Role::Source));
         bind_guard boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);

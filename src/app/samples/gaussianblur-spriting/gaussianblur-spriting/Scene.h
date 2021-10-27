@@ -1,37 +1,52 @@
 #pragma once
 
+
+#include <graphics/AppInterface.h>
 #include <graphics/Spriting.h>
 #include <graphics/effects/GaussianBlur.h>
 
 #include <resource/PathProvider.h>
+
+// Dirty include, to get the GLFW input definitions
+#include <GLFW/glfw3.h>
+
+#include <functional>
 
 
 namespace ad {
 namespace graphics {
 
 
+constexpr int gBlurringPasses = 5;
+
+
 class Scene
 {
 public:
-    Scene(Size2<int> aRenderResolution) :
+    Scene(Size2<int> aRenderResolution, std::shared_ptr<AppInterface> aAppInterface) :
         mFrameBuffers{aRenderResolution},
         mSpriting{aRenderResolution}
     {
+        using namespace std::placeholders;
+
         initializeSprite(aRenderResolution);
+        aAppInterface->registerKeyCallback(std::bind(&Scene::onKey, this, _1, _2, _3, _4));
     }
 
-    void update(double aTimeSeconds)
+    void update(double aDeltaSeconds)
     {
-        constexpr double rotationsPerSec = 1.5;
-        constexpr double opacityCyclesPerSec = 0.5;
-        constexpr double twoPi = 3.14159265359;
+        constexpr double rotationsPerSec = 1.;
         const std::size_t frameCount = mSprites.size();
+
+        if (mRotate)
+        {
+            mRotationFraction += aDeltaSeconds* rotationsPerSec;
+        }
 
         mSpriteInstances.clear();
         mSpriteInstances.emplace_back(
             mPosition, 
-            mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount),
-            std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
+            mSprites.at(static_cast<std::size_t>(mRotationFraction * frameCount) % frameCount)
         );
     }
 
@@ -44,6 +59,10 @@ public:
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             mSpriting.render(mSpriteInstances);
             mFrameBuffers.swap();
+        }
+        if (mBlurring)
+        {
+            mBlur.apply(gBlurringPasses, mFrameBuffers);
         }
         mBlur.drawToBoundFrameBuffer(mFrameBuffers);
     }
@@ -70,12 +89,33 @@ private:
         mPosition = Position2<GLint>{(aRenderResolution - frameDimensions) / 2}; // centered
     }
 
+    void onKey(int key, int scancode, int action, int mods)
+    {
+        if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+        {
+            mRotate = !mRotate;
+        }
+        else if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+        {
+            mRotationFraction = 0.;
+        }
+        else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+        {
+            mBlurring = !mBlurring;
+        }
+    }
+
     PingPongFrameBuffers mFrameBuffers;
     GaussianBlur mBlur;
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
     Position2<GLint> mPosition{0, 0};
     std::vector<Spriting::Instance> mSpriteInstances;
+
+    // Controls
+    bool mBlurring{true};
+    bool mRotate{true};
+    double mRotationFraction{0.};
 };
 
 
