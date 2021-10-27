@@ -7,7 +7,87 @@ namespace ad {
 namespace graphics {
 
 
-PingPongFrameBuffers::PingPongFrameBuffers(Size2<GLsizei> aResolution) :
+// The math an logic behind the weights and linear filetering optimization are explained in:
+// https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+
+using Coefficients = std::array<GLfloat, 5>;
+// The 12th row of the pascal triangle (minus the two smallest weights)
+// (0 indexed)
+static constexpr Coefficients gPascal12{924, 792, 495, 220, 66};
+
+
+constexpr Coefficients computeDiscreteWeights(Coefficients aUnnormalized)
+{
+    GLfloat sum = aUnnormalized[0];
+    for (std::size_t i = 1; i != aUnnormalized.size(); ++i)
+    {
+        sum += 2 * aUnnormalized[i];
+    }
+
+    for (auto & value : aUnnormalized)
+    {
+        value /= sum;
+    }
+    return aUnnormalized;
+}
+
+
+/// \brief Allows to group discrete weights "2-by-2", by sampling at an intermediary position
+/// which is linearly filtered according to the relative weights.
+///
+/// It allows to leverage the linear filtering hardware of the GPU.
+template <std::size_t N_size>
+struct LinearFilteredKernel
+{
+    std::array<GLfloat, N_size> offsets;
+    std::array<GLfloat, N_size> weights;
+};
+
+
+template <std::size_t N_size>
+std::ostream & operator<<(std::ostream & aOut, const LinearFilteredKernel<N_size> & aKernel)
+{
+    for (std::size_t i = 0; i != N_size; ++i)
+    {
+        std::cout << "(o: " << aKernel.offsets[i] 
+                  << ", w: " << aKernel.weights[i] << "), "
+                  ;
+    }
+    return std::cout << "\n";
+}
+
+
+template <std::size_t N_initialWeights>
+constexpr LinearFilteredKernel<(N_initialWeights + 2) / 2>
+computeLinearFilteredWeights(const std::array<GLfloat, N_initialWeights> & aNormalized)
+{
+    LinearFilteredKernel<(N_initialWeights + 2) / 2> result;
+
+    // Note: it would be possible to not make a special case of the first weight
+    // by starting the loop at i = 1.
+    // This would require to use half the weight though 
+    // (currently, the weight[0] is not divided by 2, since it is intended to be sampled only once).
+    result.offsets[0] = 0.;
+    result.weights[0] = aNormalized[0];
+
+    for (std::size_t i = 2; i < aNormalized.size(); i += 2)
+    {
+        result.weights[i / 2] = aNormalized[i - 1] + aNormalized[i];
+        result.offsets[i / 2] = ((i - 1) * aNormalized[i - 1] + i * aNormalized[i])
+                                / result.weights[i / 2];
+    }
+
+    if (aNormalized.size() % 2 == 0) // is even
+    {
+        result.weights.back() = aNormalized.back();
+        result.offsets.back() = aNormalized.size() - 1;
+    }
+
+    return result;
+}
+
+
+PingPongFrameBuffers::PingPongFrameBuffers(Size2<GLsizei> aResolution, GLenum aFiltering) :
     mResolution{aResolution}
 {
     for (std::size_t id = 0; id < 2; ++id)
@@ -17,18 +97,40 @@ PingPongFrameBuffers::PingPongFrameBuffers(Size2<GLsizei> aResolution) :
         attachImage(mFrameBuffers[id], mTextures[id], GL_COLOR_ATTACHMENT0, 0);
 
         bind(mTextures[id]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         // Note: Clamp to border would use a separately specified border color
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     }
+    setFiltering(aFiltering);
 }
 
 
 [[nodiscard]] bind_guard PingPongFrameBuffers::bindTargetFrameBuffer()
 {
     return bind_guard{mFrameBuffers[mTarget]};
+}
+
+
+void PingPongFrameBuffers::setFiltering(GLenum aFiltering)
+{
+    for (std::size_t id = 0; id < 2; ++id)
+    {
+        bind(mTextures[id]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, aFiltering);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, aFiltering);
+    }
+    mFiltering = aFiltering;
+}
+
+
+Guard PingPongFrameBuffers::scopeFiltering(GLenum aFiltering)
+{
+    GLenum filtering = getFiltering();
+    setFiltering(aFiltering);
+    return Guard{[filtering, this]()
+        {
+            this->setFiltering(filtering);
+        }};
 }
 
 
@@ -62,10 +164,18 @@ const Texture & PingPongFrameBuffers::getTexture(Role aRole)
 
 GaussianBlur::GaussianBlur()
 {
+    constexpr Coefficients discreteWeights = computeDiscreteWeights(gPascal12);
+    LinearFilteredKernel<3> linear = computeLinearFilteredWeights(discreteWeights);
     for (auto & program : mProgramSequence)
     {
         setUniformInt(program, "image", gTextureUnit); 
+        setUniformFloatArray(program, "offsets", linear.offsets);
+        setUniformFloatArray(program, "weights", linear.weights);
     }
+
+    // Setup the filter directions(based on the knowledge of the two program in the Gaussian implementation)
+    setUniform(mProgramSequence[0], "filterDirection", Vec2<GLfloat>{1.f, 0.f}); 
+    setUniform(mProgramSequence[1], "filterDirection", Vec2<GLfloat>{0.f, 1.f}); 
 }
 
 
@@ -80,6 +190,9 @@ const Texture & GaussianBlur::apply(int aPassCount, PingPongFrameBuffers & aFram
 
     // Active the texture unit that is mapped to the programs sampler.
     glActiveTexture(GL_TEXTURE0 + gTextureUnit);
+
+    // When using linear filtered kernels, the linear filtering of textures must be enabled.
+    auto filteringGuard = aFrameBuffers.scopeFiltering(GL_LINEAR);
 
     // Ensure the viewport matches the dimension of the textures for the duration of this function.
     auto viewportGuard = aFrameBuffers.setupViewport();

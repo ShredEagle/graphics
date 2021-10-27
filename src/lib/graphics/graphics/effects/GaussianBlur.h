@@ -30,7 +30,7 @@ enum class Role
 // TODO Handle window (default framebuffer) resizing, possibly by listening.
 struct PingPongFrameBuffers
 {
-    PingPongFrameBuffers(Size2<GLsizei> aResolution);
+    PingPongFrameBuffers(Size2<GLsizei> aResolution, GLenum aFiltering = GL_NEAREST);
 
     /// \brief Bind the current target framebuffer, so draw operations will affect it.
     /// \return A guard to unbind (i.e. to restore default framebuffer).
@@ -40,11 +40,19 @@ struct PingPongFrameBuffers
     /// to restore previous viewport.
     Guard setupViewport();
 
+    void setFiltering(GLenum aFiltering);
+    GLenum getFiltering()
+    { return mFiltering; }
+
+    /// \attention This instance must outlive the returned guard.
+    Guard scopeFiltering(GLenum aFiltering);
+
     /// \brief Swap "Target" and "Source" Framebuffers and Textures.
     void swap();
 
     const Texture & getTexture(Role aRole);
 
+    GLenum mFiltering;
     Size2<GLsizei> mResolution;
     std::array<FrameBuffer, 2> mFrameBuffers;
     std::array<Texture, 2> mTextures{GL_TEXTURE_2D, GL_TEXTURE_2D};
@@ -52,11 +60,16 @@ struct PingPongFrameBuffers
 };
 
 
+// Anecdote: I compared on 2021/10/27 the result of discrete 5 weights filtering,
+// and the mathematically equivalent linear filtered 3 weights + offsets filtering.
+// The result were visually indistinguishable.
+// (Which was not the case when using the 3 weight with nearest filtering.)
 class GaussianBlur
 {
 public:
     GaussianBlur();
 
+    // TODO accept a final destination FB to optimize copy to screen
     const Texture & apply(int aPassCount, PingPongFrameBuffers & aFrameBuffers);
 
     // TODO relocate somewhere general
@@ -67,14 +80,15 @@ private:
     // TODO use a global screen quad instead
     const VertexSpecification mScreenQuad{detail::make_ScreenQuad()};
 
+    // Note: Same program sources, but the uniform values will differ.
     std::array<Program, 2> mProgramSequence{
         makeLinkedProgram({
             {GL_VERTEX_SHADER, gPassthroughVertexShader},
-            {GL_FRAGMENT_SHADER, gaussianblur::gHorizontalBlurFragmentShader}
+            {GL_FRAGMENT_SHADER, gaussianblur::g1DLinearFilterFragmentShader}
         }),
         makeLinkedProgram({
             {GL_VERTEX_SHADER, gPassthroughVertexShader},
-            {GL_FRAGMENT_SHADER, gaussianblur::gVerticalBlurFragmentShader}
+            {GL_FRAGMENT_SHADER, gaussianblur::g1DLinearFilterFragmentShader}
         })
     };
 
