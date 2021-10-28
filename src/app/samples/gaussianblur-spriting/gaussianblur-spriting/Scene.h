@@ -88,7 +88,7 @@ private:
             {{2453, 3}, frameDimensions},
         };
 
-        const Image ring(pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+        const Image ring(resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
         mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
         mPosition = Position2<GLint>{(aRenderResolution - frameDimensions) / 2}; // centered
     }

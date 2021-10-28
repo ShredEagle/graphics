@@ -216,7 +216,7 @@ SCENARIO("Image files creation, read, write")
 
     GIVEN("A stream containing a PPM formatted image")
     {
-        std::ifstream ppmInput{pathFor("tests/Images/PPM/Yacht.512.ppm").string(),
+        std::ifstream ppmInput{resource::pathFor("tests/Images/PPM/Yacht.512.ppm").string(),
                                std::ios_base::in | std::ios_base::binary};
 
         THEN("It can be read to an Image")

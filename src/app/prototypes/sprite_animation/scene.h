@@ -128,7 +128,7 @@ Scene setupScene()
     // From file image texture
     //
     static const Image ring(
-        pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
 
     ////
     //// Whole image

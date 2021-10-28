@@ -114,7 +114,7 @@ typedef std::vector<Entity> Scene;
 
 DrawContext staticEggman()
 {
-    static const Image eggman(pathFor("ec1ccd86c2ddb52.png").string());
+    static const Image eggman(resource::pathFor("ec1ccd86c2ddb52.png").string());
     DrawContext drawing = [&](){
         VertexSpecification specification;
 
@@ -285,7 +285,7 @@ Scene setupScene()
 {
 
     static const Image ring(
-        pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
 
     //
     // Sub-parts
