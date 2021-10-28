@@ -34,7 +34,7 @@ public:
     void addRectangle(RectangleAngle aRectangleData);
 
     /// \brief Render all shapes that were added since the last call to `clearShapes()`.
-    void render();
+    void render() const;
 
     /// see: FoCG chapter 7 for this separation between several transformations.
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);

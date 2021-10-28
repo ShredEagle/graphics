@@ -103,7 +103,7 @@ void TrivialShaping::addRectangle(RectangleAngle aRectangleData)
 }
 
 
-void TrivialShaping::render()
+void TrivialShaping::render() const
 {
     activate(mDrawContext);
 
@@ -113,7 +113,7 @@ void TrivialShaping::render()
 
     // The last vertex buffer added to the specification is the per instance data.
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    gsl::span<Rectangle>{mInstances});
+                    gsl::span<const Rectangle>{mInstances});
 
     //
     // Draw

@@ -83,20 +83,20 @@ void TrivialLineStrip::outlineRectangle(const Rectangle<GLfloat> & aRectangle, c
     });
 }
 
-void TrivialLineStrip::render()
+void TrivialLineStrip::render() const
 {
     activate(mDrawContext);
 
     //
     // Stream vertex attributes
     //
-    respecifyBuffer<LinePoint>(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
-                               mVertexAttributes);
+    respecifyBuffer<const LinePoint>(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
+                                     mVertexAttributes);
 
     //
     // Stream index buffer
     //
-    respecifyBuffer<Index>(mIbo, mIndices);
+    respecifyBuffer<const Index>(mIbo, mIndices);
 
     //
     // Draw

@@ -82,7 +82,7 @@ Curving::Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aPro
 }
 
 
-void Curving::render(gsl::span<const Instance> aInstances)
+void Curving::render(gsl::span<const Instance> aInstances) const
 {
     activate(mVertexArray, mGpuProgram);
 
