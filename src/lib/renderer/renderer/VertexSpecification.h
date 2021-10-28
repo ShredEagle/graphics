@@ -63,6 +63,12 @@ struct [[nodiscard]] VertexSpecification
 };
 
 
+inline void bind(const VertexSpecification & aVertexSpecification)
+{
+    glBindVertexArray(aVertexSpecification.mVertexArray);
+}
+
+
 /// \brief Describes the attribute access from the shader (layout id, value type, normalization)
 struct Attribute
 {

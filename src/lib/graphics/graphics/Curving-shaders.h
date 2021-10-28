@@ -8,6 +8,14 @@ namespace ad {
 namespace graphics {
 
 
+// IMPORTANT:
+// > If an inline function or variable (since C++17) with external linkage is defined differently 
+// > in different translation units, the behavior is undefined.
+// This made for a very efficient way to lose ton of time chasing down an Heisenbug.
+// Add a scoping namespace
+
+namespace curving {
+
 inline const GLchar* gVertexShader = R"#(
     #version 400
 
@@ -88,5 +96,6 @@ const GLchar* gFragmentShader = R"#(
 )#";
 
 
+} // namespace curving
 } // namespace graphics
 } // namespace ad

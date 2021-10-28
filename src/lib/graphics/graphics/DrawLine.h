@@ -28,7 +28,7 @@ public:
     void addLine(Line aLine);
 
     /// \brief Render all shapes that were added since the last call to `clearShapes()`.
-    void render();
+    void render() const;
 
 private:
     void setBufferResolution(Size2<int> aNewResolution);

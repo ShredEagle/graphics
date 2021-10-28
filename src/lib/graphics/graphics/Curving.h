@@ -30,7 +30,7 @@ public:
     explicit Curving(GLsizei aCurveSubdivisions,
                      math::AffineMatrix<4, GLfloat> aProjectionTransformation = math::AffineMatrix<4, GLfloat>::Identity());
 
-    void render(gsl::span<const Instance> aInstances);
+    void render(gsl::span<const Instance> aInstances) const;
 
     void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);

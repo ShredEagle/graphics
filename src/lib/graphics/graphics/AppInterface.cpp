@@ -9,9 +9,10 @@ namespace ad {
 namespace graphics {
 
 
-AppInterface::AppInterface() :
-    mWindowSize(0, 0),
-    mFramebufferSize(0, 0)
+AppInterface::AppInterface(std::function<void()> aCloseAppCallback) :
+    mWindowSize{0, 0},
+    mFramebufferSize{0, 0},
+    mCloseAppCallback{std::move(aCloseAppCallback)}
 {
     //
     // General OpenGL setups
@@ -26,6 +27,12 @@ AppInterface::AppInterface() :
 
     // Initialize logging (as this class should be instantiated in any case)
     detail::initializeLogging();
+}
+
+
+void AppInterface::requestCloseApplication()
+{
+    mCloseAppCallback();
 }
 
 
@@ -54,6 +61,13 @@ void AppInterface::clear()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
+void AppInterface::setClearColor(math::hdr::Rgb aClearColor)
+{
+    glClearColor((GLfloat)aClearColor.r(),
+                 (GLfloat)aClearColor.g(),
+                 (GLfloat)aClearColor.b(),
+                 1.f);
+}
 
 void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
                                                    GLenum type,

@@ -29,7 +29,7 @@ public:
             {{2453, 3}, frameDimensions},
         };
 
-        const Image ring(pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+        const Image ring(resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
         mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
         mPosition = Position2<GLint>{(aRenderResolution - frameDimensions) / 2}; // centered
     }
@@ -37,12 +37,15 @@ public:
     void update(double aTimeSeconds)
     {
         constexpr double rotationsPerSec = 1.5;
+        constexpr double opacityCyclesPerSec = 0.5;
+        constexpr double twoPi = 3.14159265359;
         const std::size_t frameCount = mSprites.size();
 
         mSpriteInstances.clear();
         mSpriteInstances.emplace_back(
             mPosition, 
-            mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount)
+            mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount),
+            std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
         );
     }
 

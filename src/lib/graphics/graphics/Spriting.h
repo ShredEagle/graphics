@@ -20,13 +20,15 @@ class Spriting
 public:
     struct Instance
     {
-        Instance(Position2<GLint> aRenderingPosition, LoadedSprite aSprite):
+        Instance(Position2<GLint> aRenderingPosition, LoadedSprite aSprite, GLfloat aOpacity = 1.f):
             mPosition{std::move(aRenderingPosition)},
-            mLoadedSprite{std::move(aSprite)}
+            mLoadedSprite{std::move(aSprite)},
+            mOpacity{aOpacity}
         {}
 
         Position2<GLint> mPosition;
         LoadedSprite mLoadedSprite;
+        GLfloat mOpacity;
     };
 
     Spriting(Size2<int> aRenderResolution);
@@ -35,6 +37,9 @@ public:
     template <class T_iterator>
     std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
                                    const Image & aRasterData);
+
+    /// \brief Load the entire image as a single sprite.
+    LoadedSprite load(const Image & aRasterData);
 
     void render(gsl::span<const Instance> aInstances) const;
 
@@ -66,6 +71,14 @@ std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
     std::copy(aFirst, aLast, std::back_inserter(loadedSprites));
     return loadedSprites;
 }
+
+
+inline LoadedSprite Spriting::load(const Image & aRasterData)
+{
+    std::initializer_list<SpriteArea> fullSize{ {{0, 0}, aRasterData.dimension()} };
+    return load(fullSize.begin(), fullSize.end(), aRasterData).at(0);
+}
+
 
 } // namespace graphics
 } // namespace ad

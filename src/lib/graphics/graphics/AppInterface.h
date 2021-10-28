@@ -15,14 +15,17 @@ class AppInterface
 public:
     using SizeListener = std::function<void(Size2<int>)>;
 
-    AppInterface();
+    AppInterface(std::function<void()> aCloseAppCallback);
 
     static void clear();
+    static void setClearColor(math::hdr::Rgb aClearColor);
 
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;
 
     [[nodiscard]] std::shared_ptr<SizeListener> listenFramebufferResize(SizeListener aListener);
+
+    void requestCloseApplication(); 
 
     /// \note Takes a callback by value, keep it until replaced or AppInterface instance is destructed
     template <class T_keyCallback>
@@ -62,6 +65,7 @@ private:
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
     Subject<SizeListener> mFramebufferSizeSubject;
+    std::function<void()> mCloseAppCallback;
     std::function<void(int, int, int, int)> mKeyboardCallback;
     std::function<void(int, int, int, double, double)> mMouseButtonCallback = [](int, int, int, double, double){};
     std::function<void(double, double)> mCursorPositionCallback = [](double, double){};

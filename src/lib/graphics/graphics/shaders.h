@@ -6,14 +6,16 @@ namespace graphics {
 inline const GLchar* gVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec4 in_VertexPosition;
+    layout(location=0) in vec2 in_VertexPosition;
     layout(location=1) in ivec2 in_UV;
     layout(location=2) in vec2 in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
+    layout(location=4) in float in_Opacity;
 
     uniform ivec2 in_BufferResolution;
     
-    out vec2 ex_UV;
+    out vec2  ex_UV;
+    out float ex_Opacity;
 
     void main(void)
     {
@@ -26,11 +28,12 @@ inline const GLchar* gVertexShader = R"#(
         //);
         //gl_Position = clipTransform * (transform * in_VertexPosition);
 
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy * in_TextureArea.zw;
+        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition * in_TextureArea.zw;
         gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
                            0.0, 1.0);
 
         ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
+        ex_Opacity = in_Opacity;
     }
 )#";
 
@@ -38,13 +41,14 @@ inline const GLchar* gVertexShader = R"#(
 inline const GLchar* gAnimationFragmentShader = R"#(
     #version 400
 
-    in vec2 ex_UV;
+    in vec2  ex_UV;
+    in float ex_Opacity;
     out vec4 out_Color;
     uniform sampler2DRect spriteSampler;
 
     void main(void)
     {
-        out_Color = texture(spriteSampler, ex_UV);
+        out_Color = texture(spriteSampler, ex_UV) * ex_Opacity;
     }
 )#";
 
@@ -142,6 +146,38 @@ inline const GLchar* gSolidColorLineVertexShader = R"#(
         ex_Color = in_InstanceColor;
     }
 )#";
+
+
+inline const GLchar* gPassthroughVertexShader = R"#(
+#version 400
+
+layout (location=0) in vec4 ve_Position;
+layout (location=1) in vec2 ve_TextureUV;
+
+out vec2 ex_TextureUV;
+
+void main(void)
+{
+    gl_Position = ve_Position;
+    ex_TextureUV = ve_TextureUV;
+}
+)#";
+
+
+inline const GLchar* gTexturingFragmentShader = R"#(
+#version 400
+
+in vec2 ex_TextureUV;
+out vec4 out_Color;
+
+uniform sampler2D inputTexture;
+
+void main(void)
+{
+    out_Color = texture(inputTexture, ex_TextureUV);
+}
+)#";
+
 
 } // namespace graphics
 } // namespace ad

@@ -84,7 +84,7 @@ void DrawLine::addLine(Line aLineData)
 }
 
 
-void DrawLine::render()
+void DrawLine::render() const
 {
     activate(mDrawContext);
 
@@ -94,7 +94,7 @@ void DrawLine::render()
 
     // The last vertex buffer added to the specification is the per instance data.
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    gsl::span<Line>{mInstances});
+                    gsl::span<const Line>{mInstances});
 
     //
     // Draw

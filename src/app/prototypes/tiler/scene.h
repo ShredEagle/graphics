@@ -166,8 +166,8 @@ inline std::unique_ptr<Scene> setupScene(AppInterface & aAppInterface)
 {
     const Size2<int> tileSize{32, 32};
     std::unique_ptr<Scene> result(new Scene{
-        Tiles{pathFor("tiles.bmp.meta").string(), aAppInterface},
-        Scroller{tileSize, pathFor("tiles.bmp.meta").string(), aAppInterface}
+        Tiles{resource::pathFor("tiles.bmp.meta").string(), aAppInterface},
+        Scroller{tileSize, resource::pathFor("tiles.bmp.meta").string(), aAppInterface}
     });
 
     /*

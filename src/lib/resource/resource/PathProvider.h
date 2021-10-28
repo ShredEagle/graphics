@@ -4,10 +4,12 @@
 
 #include <platform/Filesystem.h>
 
+#include <stdexcept>
 #include <string>
 
 
 namespace ad {
+namespace resource {
 
 
 inline filesystem::path pathFor(const filesystem::path &aAsset)
@@ -21,6 +23,7 @@ inline filesystem::path pathFor(const filesystem::path &aAsset)
 }
 
 
+} // namespace resource
 } // namespace ad
 
 
