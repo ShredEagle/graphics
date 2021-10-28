@@ -147,5 +147,37 @@ inline const GLchar* gSolidColorLineVertexShader = R"#(
     }
 )#";
 
+
+inline const GLchar* gPassthroughVertexShader = R"#(
+#version 400
+
+layout (location=0) in vec4 ve_Position;
+layout (location=1) in vec2 ve_TextureUV;
+
+out vec2 ex_TextureUV;
+
+void main(void)
+{
+    gl_Position = ve_Position;
+    ex_TextureUV = ve_TextureUV;
+}
+)#";
+
+
+inline const GLchar* gTexturingFragmentShader = R"#(
+#version 400
+
+in vec2 ex_TextureUV;
+out vec4 out_Color;
+
+uniform sampler2D inputTexture;
+
+void main(void)
+{
+    out_Color = texture(inputTexture, ex_TextureUV);
+}
+)#";
+
+
 } // namespace graphics
 } // namespace ad
