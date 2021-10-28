@@ -30,7 +30,7 @@ class GraphicsConan(ConanFile):
         ("nlohmann_json/3.9.1"),
         ("spdlog/1.9.2"),
 
-        ("math/64e6aa9451@adnn/develop"),
+        ("math/8294e87cda@adnn/develop"),
     )
 
     build_requires = ("cmake/3.20.4",)
