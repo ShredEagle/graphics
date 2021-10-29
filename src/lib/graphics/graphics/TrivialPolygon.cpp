@@ -80,20 +80,20 @@ void TrivialPolygon::addVertices(std::vector<PolygonPoint> aPoints)
 }
 
 
-void TrivialPolygon::render()
+void TrivialPolygon::render() const
 {
     activate(mDrawContext);
 
     //
     // Stream vertex attributes
     //
-    respecifyBuffer<PolygonPoint>(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
+    respecifyBuffer<const PolygonPoint>(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
                                mVertexAttributes);
 
     //
     // Stream index buffer
     //
-    respecifyBuffer<Index>(mIbo, mIndices);
+    respecifyBuffer<const Index>(mIbo, mIndices);
 
     //
     // Draw
