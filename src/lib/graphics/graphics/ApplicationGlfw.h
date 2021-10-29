@@ -131,6 +131,14 @@ public:
         return glfwGetKey(mWindow, keyCode);
     }
 
+    void getMousePos(float & aXpos, float & aYpos) const
+    {
+        double xpos, ypos;
+        glfwGetCursorPos(mWindow, &xpos, &ypos);
+        aXpos = xpos;
+        aYpos = ypos;
+    }
+
     bool loadWindowIntoImGui(std::function<bool(GLFWwindow * window, bool install_callbacks)> ImGui_install)
     {
         return ImGui_install(mWindow, true);
