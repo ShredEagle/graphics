@@ -38,7 +38,7 @@ namespace
     Program make_Program()
     {
         return makeLinkedProgram({
-                  {GL_VERTEX_SHADER, gTrivialColorVertexShader},
+                  {GL_VERTEX_SHADER, gTrivialColorTransformVertexShader},
                   {GL_FRAGMENT_SHADER, gTrivialFragmentShader},
                });
     }
