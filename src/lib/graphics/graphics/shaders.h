@@ -116,6 +116,28 @@ inline const GLchar* gTrivialFragmentShader = R"#(
     }
 )#";
 
+//
+// TrivialPolygon
+// 
+inline const GLchar* gTrivialColorTransformVertexShader = R"#(
+    #version 400
+
+    layout(location=0) in vec2  in_VertexPosition;
+    layout(location=1) in vec3  in_VertexColor;
+    layout(location=3) in mat3  in_ModelTransform;
+
+    out vec3 ex_Color;
+
+    uniform mat3 camera;
+    uniform mat3 projection;
+    
+    void main(void)
+    {
+        gl_Position = vec4(projection * camera * in_ModelTransform * vec3(in_VertexPosition, 1.), 1.);
+        ex_Color = in_VertexColor;
+    }
+)#";
+
 
 //
 // Draw Line
