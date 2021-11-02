@@ -6,7 +6,7 @@
 #include "../commons.h"
 #include "../shaders.h"
 
-#include "../detail/ScreenQuad.h"
+#include "../detail/UnitQuad.h"
 
 #include <renderer/commons.h>
 #include <renderer/FrameBuffer.h>
@@ -94,7 +94,7 @@ public:
 
 private:
     // TODO use a global screen quad instead
-    const VertexSpecification mScreenQuad{detail::make_ScreenQuad()};
+    const VertexSpecification mScreenQuad{detail::make_UnitQuad()};
 
     // Note: Same program sources, but the uniform values will differ.
     std::array<Program, 2> mProgramSequence{

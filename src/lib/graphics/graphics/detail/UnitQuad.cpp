@@ -1,4 +1,4 @@
-#include "ScreenQuad.h"
+#include "UnitQuad.h"
 
 #include "../shaders.h"
 
@@ -8,22 +8,22 @@ namespace graphics {
 namespace detail {
 
 
-VertexSpecification make_ScreenQuad()
+VertexSpecification make_UnitQuad()
 {
-    std::array<VertexScreenQuad, 4> gVerticesScreen = {
-        VertexScreenQuad{
+    std::array<VertexUnitQuad, 4> gVerticesScreen = {
+        VertexUnitQuad{
             {-1.0f, -1.0f},
             {0.0f, 0.0f},
         },
-        VertexScreenQuad{
+        VertexUnitQuad{
             {-1.0f,  1.0f},
             {0.0f,  1.0f},
         },
-        VertexScreenQuad{
+        VertexUnitQuad{
             { 1.0f, -1.0f},
             { 1.0f, 0.0f},
         },
-        VertexScreenQuad{
+        VertexUnitQuad{
             { 1.0f,  1.0f},
             { 1.0f,  1.0f},
         },

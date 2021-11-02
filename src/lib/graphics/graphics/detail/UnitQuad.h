@@ -13,7 +13,7 @@ namespace graphics {
 namespace detail {
 
 
-struct VertexScreenQuad
+struct VertexUnitQuad
 {
     Vec2<GLfloat> mPosition;
     Vec2<GLfloat> mUV;
@@ -21,14 +21,16 @@ struct VertexScreenQuad
 
 
 constexpr std::initializer_list<AttributeDescription> gVertexScreenDescription = {
-    { 0, 2, offsetof(VertexScreenQuad, mPosition), MappedGL<GLfloat>::enumerator},
-    { 1, 2, offsetof(VertexScreenQuad, mUV),       MappedGL<GLfloat>::enumerator},
+    { 0, 2, offsetof(VertexUnitQuad, mPosition), MappedGL<GLfloat>::enumerator},
+    { 1, 2, offsetof(VertexUnitQuad, mUV),       MappedGL<GLfloat>::enumerator},
 };
 
 
 // TODO make a global VertexSpecification instance instead
-VertexSpecification make_ScreenQuad();
+VertexSpecification make_UnitQuad();
 
+/// \brief Notably usefull to copy from one framebuffer to another framebuffer
+/// using a quad covering the whole buffer.
 Program make_PassthroughProgram();
 
 

@@ -20,7 +20,7 @@ set(${TARGET_NAME}_HEADERS
     dataformat/tiles.h
 
     detail/Logging.h
-    detail/ScreenQuad.h
+    detail/UnitQuad.h
 
     effects/GaussianBlur.h
     effects/GaussianBlur-shaders.h
@@ -38,7 +38,7 @@ set(${TARGET_NAME}_SOURCES
     dataformat/tiles.cpp
 
     detail/Logging.cpp
-    detail/ScreenQuad.cpp
+    detail/UnitQuad.cpp
 
     effects/GaussianBlur.cpp
 )
