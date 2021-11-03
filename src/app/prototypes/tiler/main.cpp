@@ -45,7 +45,7 @@ int main(void)
     {
         throw std::runtime_error("Unable to initialize glfw");
     }
-    Guard glfwInitGuard{glfwTerminate};
+    ad::Guard glfwInitGuard{glfwTerminate};
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, gGLVersionMajor);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, gGLVersionMinor);
@@ -58,12 +58,12 @@ int main(void)
     // so we cannot miss notifications
     glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-    auto window = guard(glfwCreateWindow(gWindowWidth,
-                                         gWindowHeight,
-                                         "2D Demo",
-                                         NULL,
-                                         NULL),
-                        glfwDestroyWindow);
+    auto window = ad::guard(glfwCreateWindow(gWindowWidth,
+                                             gWindowHeight,
+                                             "2D Demo",
+                                             NULL,
+                                             NULL),
+                                             glfwDestroyWindow);
     if (!window)
     {
         throw std::runtime_error("Unable to initialize window or context");
