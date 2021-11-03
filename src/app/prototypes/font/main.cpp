@@ -41,13 +41,15 @@ int main(int argc, const char * argv[])
 
         ad::graphics::Timer timer{glfwGetTime(), 0.};
 
-        ad::font::Scene scene;
+        constexpr int glyphPixelHeight = 256;
+        ad::font::Scene scene{ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"), 
+                              glyphPixelHeight};
 
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
             scene.step(timer);
-            scene.render(application.getAppInterface()->getWindowSize());
+            scene.render();
             timer.mark(glfwGetTime());
         }
     }

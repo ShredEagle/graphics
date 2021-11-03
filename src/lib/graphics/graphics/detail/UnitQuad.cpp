@@ -2,6 +2,8 @@
 
 #include "../shaders.h"
 
+#include <renderer/Uniforms.h>
+
 
 namespace ad {
 namespace graphics {
@@ -35,16 +37,14 @@ VertexSpecification make_UnitQuad()
 }
 
 
-Program make_PassthroughProgram()
+Program make_PassthroughProgram(GLint aTextureUnit)
 {
     Program passthrough = makeLinkedProgram({
         {GL_VERTEX_SHADER, gPassthroughVertexShader},
         {GL_FRAGMENT_SHADER, gTexturingFragmentShader}
     });
 
-    glProgramUniform1i(passthrough,
-                       glGetUniformLocation(passthrough, "inputTexture"),
-                       0);
+    setUniformInt(passthrough, "inputTexture", aTextureUnit);
 
     return passthrough;
 }

@@ -71,9 +71,9 @@ public:
         return std::abs(mBitmap.pitch) * rows();
     }
 
-    const unsigned char * data() const
+    const std::byte * data() const
     {
-        return mBitmap.buffer;
+        return reinterpret_cast<const std::byte *>(mBitmap.buffer);
     }
 
 private:
@@ -94,6 +94,21 @@ public:
         ResourceGuard<FT_Face>{initialize(aLibrary, aFontPath), &FT_Done_Face}
     {}
 
+
+    FontFace & inverseYAxis(bool aInverse)
+    {
+        static FT_Matrix inversion {1<<16, 0, 0, -1<<16};
+        if (aInverse)
+        {
+            FT_Set_Transform(*this, &inversion, nullptr);
+        }
+        else
+        {
+            FT_Set_Transform(*this, nullptr, nullptr);
+        }
+        return *this;
+    }
+
     /// \brief Define the pixel size of the GlyphBitmaps that will be obtained via `getGlyph()`.
     FontFace & setPixelSize(math::Size<2, int> aSize)
     {
@@ -107,6 +122,11 @@ public:
     FontFace & setPixelHeight(int aHeight)
     {
         return setPixelSize({0, aHeight});
+    }
+
+    bool hasGlyph(FT_ULong aCharcode) const
+    {
+        return FT_Get_Char_Index(*this, aCharcode) != 0;
     }
 
     GlyphBitmap getGlyph(FT_ULong aCharcode) const

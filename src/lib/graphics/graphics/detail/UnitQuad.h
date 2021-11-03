@@ -31,7 +31,8 @@ VertexSpecification make_UnitQuad();
 
 /// \brief Notably usefull to copy from one framebuffer to another framebuffer
 /// using a quad covering the whole buffer.
-Program make_PassthroughProgram();
+/// \important The input texture will be read from texture unit `aTextureUnit`.
+Program make_PassthroughProgram(GLint aTextureUnit = 0);
 
 
 } // namespace detail
