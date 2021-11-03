@@ -22,6 +22,7 @@ if(BUILD_tests)
     add_subdirectory(app/prototypes/chader)
     add_subdirectory(app/prototypes/polyline)
     add_subdirectory(app/prototypes/curve)
+    add_subdirectory(app/prototypes/font)
 
     add_subdirectory(app/samples/trivial_linestrip/trivial_linestrip)
     add_subdirectory(app/samples/trivial_shaping/trivial_shaping)

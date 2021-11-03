@@ -25,6 +25,7 @@ class GraphicsConan(ConanFile):
 
     requires = (
         ("boost/1.77.0"),
+        ("freetype/2.11.0"),
         ("glad/0.1.34"),
         ("glfw/3.3.4"),
         ("nlohmann_json/3.9.1"),
