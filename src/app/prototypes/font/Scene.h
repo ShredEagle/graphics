@@ -45,6 +45,7 @@ struct Glyph
     math::Size<2, GLfloat> boundingBox;
     Vec2 bearing;
     Vec2 penAdvance;
+    FT_UInt ftIndex;
 };
 
 
@@ -90,11 +91,14 @@ struct Scene
     graphics::Texture mFontAtlas;
     graphics::Program mPassthrough;
     graphics::Program mFontProgram;
+    Freetype mFreetype;
+    FontFace mFontface;
     graphics::VertexSpecification mScreenQuadVertex{graphics::detail::make_UnitQuad()};
     graphics::VertexSpecification mGlyphQuadVertex{
         graphics::detail::make_Rectangle({ {0.f, -1.f}, {1.f, 1.f} })};
-    bool mShowAtlas{false};
     GLsizei mGlyphCount{0};
+    bool mShowAtlas{false};
+    bool mKerning{true};
 };
 
 
@@ -119,7 +123,8 @@ inline Scene::Scene(const filesystem::path & aFontPath,
     mFontProgram{ makeLinkedProgram({
         {GL_VERTEX_SHADER,   gFontVertexShader},
         {GL_FRAGMENT_SHADER, gFontFragmentShader}
-    })}
+    })},
+    mFontface{mFreetype.load(aFontPath)}
 {
     // Keyboard callback
     using namespace std::placeholders;
@@ -151,18 +156,16 @@ inline Scene::Scene(const filesystem::path & aFontPath,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 
-    Freetype freetype;
-    FontFace face = freetype.load(aFontPath);
-    face.inverseYAxis(true);
-    face.setPixelHeight(aGlyphPixelHeight);
+    mFontface.inverseYAxis(true);
+    mFontface.setPixelHeight(aGlyphPixelHeight);
 
     GLint textureX = 0;
     while(true)
     {
         auto charcode = startingCharcode++;
-        if (face.hasGlyph(charcode))
+        if (mFontface.hasGlyph(charcode))
         {
-            GlyphSlot glyph = face.getGlyph(charcode);
+            GlyphSlot glyph = mFontface.getGlyph(charcode);
             GlyphBitmap bitmap = glyph.render();
             InputImageParameters inputParams{
                 {bitmap.width(), bitmap.rows()},
@@ -182,6 +185,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
                 {toFloat(glyph.metric().width), toFloat(glyph.metric().height)},
                 {toFloat(glyph.metric().horiBearingX), toFloat(glyph.metric().horiBearingY)},
                 {toFloat(glyph.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
+                glyph.index(),
             });
 
             textureX += bitmap.width() + gHorizontalMargin;
@@ -198,21 +202,40 @@ void Scene::onKey(int key, int scancode, int action, int mods)
     {
         mShowAtlas = !mShowAtlas;
     }
+    else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+    {
+        mKerning = !mKerning;
+    }
 }
 
 
 inline void Scene::step(const Timer & aTimer)
 {
-    const std::string message{"Salut, monde."};
-    Position2 penPosition{-26.f, 0.f};
-
     std::vector<GlyphInstance> instances;
-    for (char c : message)
+    auto addMessage = [&](const std::string message, Position2 penPosition)
     {
-        std::size_t cacheIndex = (int)c - gStartingCharcode;
-        instances.emplace_back(penPosition, mGlyphCache[cacheIndex]);
-        penPosition += mGlyphCache[cacheIndex].penAdvance.cwMul(mPixelToWorld.as<math::Vec>());
-    }
+        FT_UInt previousIndex = 0;
+        for (char c : message)
+        {
+            std::size_t cacheIndex = (std::size_t)c - gStartingCharcode;
+
+            if (mKerning && (previousIndex != 0))
+            {
+                Vec2 kerning = mFontface.kern(previousIndex, mGlyphCache[cacheIndex].ftIndex);
+                penPosition += kerning.cwMul(mPixelToWorld.as<math::Vec>());
+            }
+            previousIndex = mGlyphCache[cacheIndex].ftIndex;
+
+            instances.emplace_back(penPosition, mGlyphCache[cacheIndex]);
+            penPosition += mGlyphCache[cacheIndex].penAdvance.cwMul(mPixelToWorld.as<math::Vec>());
+        }
+    };
+
+    Position2 penPosition{-26.f, 0.f};
+    addMessage({"Salut, monde."}, penPosition);
+
+    penPosition = {-26.f, -10.f};
+    addMessage({"WAV!"}, penPosition);
 
     respecifyBuffer<GlyphInstance>(mGlyphQuadVertex.mVertexBuffers.back(), instances);
     mGlyphCount = instances.size();

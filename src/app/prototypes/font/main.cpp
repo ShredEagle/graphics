@@ -15,6 +15,7 @@
 // Usage
 // Provide a path as first argument to output a dollar sign PGM image there.
 // Press enter to switch between message display and font atlas display.
+// Press space to toggle kerning.
 
 void bitmapToFile(FT_ULong aCharacterCode, const ad::filesystem::path & aOutputPgm)
 {
@@ -48,7 +49,9 @@ int main(int argc, const char * argv[])
         const GLfloat glyphWorldHeight = 
             glyphPixelHeight * screenWorldHeight
             / application.getAppInterface()->getFramebufferSize().height();
-        ad::font::Scene scene{ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"), 
+        //ad::filesystem::path relativeFontPath{"fonts/souvenir/souvenirdemiitalic.otf"};
+        ad::filesystem::path relativeFontPath{"fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"};
+        ad::font::Scene scene{ad::resource::pathFor(relativeFontPath), 
                               glyphPixelHeight, 
                               glyphWorldHeight,
                               screenWorldHeight,

@@ -116,12 +116,19 @@ public:
         return mGlyphSlot->metrics;
     }
 
+    FT_UInt index() const
+    {
+        return mGlyphIndex;
+    }
+
 private:
-    GlyphSlot(FT_GlyphSlot aGlyph) :
-        mGlyphSlot{std::move(aGlyph)}
+    GlyphSlot(FT_GlyphSlot aGlyph, FT_UInt aGlyphIndex) :
+        mGlyphSlot{std::move(aGlyph)},
+        mGlyphIndex{aGlyphIndex}
     {};
 
     FT_GlyphSlot mGlyphSlot;
+    FT_UInt mGlyphIndex;
 };
 
 
@@ -182,9 +189,19 @@ public:
             throw GENERIC_LOGICERROR(error);
         }
 
-        return GlyphSlot{mResource->glyph};
+        return GlyphSlot{mResource->glyph, glyphIndex};
     }
 
+    math::Vec<2, float> kern(FT_UInt aLeftGlyphIndex, FT_UInt aRightGlyphIndex)
+    {
+        FT_Vector kerning;
+        FT_Get_Kerning(*this, aLeftGlyphIndex, aRightGlyphIndex, FT_KERNING_DEFAULT, &kerning);
+        return {
+            (float)kerning.x / (1 << 6),
+            (float)kerning.y / (1 << 6) 
+        };
+    }
+        
 
 private:
     static FT_Face initialize(FT_Library aLibrary, const filesystem::path & aFontPath)
