@@ -154,12 +154,14 @@ inline const GLchar* gPassthroughVertexShader = R"#(
 layout (location=0) in vec4 ve_Position;
 layout (location=1) in vec2 ve_TextureUV;
 
+uniform vec2 u_UVScaling = vec2(1., 1.);
+
 out vec2 ex_TextureUV;
 
 void main(void)
 {
     gl_Position = ve_Position;
-    ex_TextureUV = ve_TextureUV;
+    ex_TextureUV = ve_TextureUV * u_UVScaling;
 }
 )#";
 

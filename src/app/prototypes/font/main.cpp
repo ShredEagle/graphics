@@ -14,13 +14,14 @@
 
 // Usage
 // Provide a path as first argument to output a dollar sign PGM image there.
+// Press enter to switch between message display and font atlas display.
 
 void bitmapToFile(FT_ULong aCharacterCode, const ad::filesystem::path & aOutputPgm)
 {
     ad::graphics::Freetype freetype;
     FontFace dejavu = freetype.load(ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"));
     dejavu.setPixelHeight(640);
-    GlyphBitmap bitmap = dejavu.getGlyph(aCharacterCode);
+    GlyphBitmap bitmap = dejavu.getGlyph(aCharacterCode).render();
     std::unique_ptr<char []> raster{new char[bitmap.bytesize()]};
     std::memcpy(raster.get(), bitmap.data(), bitmap.bytesize());
 
@@ -42,8 +43,13 @@ int main(int argc, const char * argv[])
         ad::graphics::Timer timer{glfwGetTime(), 0.};
 
         constexpr int glyphPixelHeight = 256;
+        // TODO exact pixel
+        constexpr GLfloat glyphWorldHeight = 10;
+        constexpr GLfloat screenWorldHeight = 100;
         ad::font::Scene scene{ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"), 
-                              glyphPixelHeight};
+                              glyphPixelHeight, glyphWorldHeight,
+                              screenWorldHeight,
+                              *application.getAppInterface()};
 
         while(application.nextFrame())
         {

@@ -49,11 +49,18 @@ private:
 };
 
 
+class GlyphSlot;
+
 /// \brief Wrap the bitmap for a specific glyph.
-/// \warning The FontFace instance must outlive the GlyphBitmap.
+///
+/// \warning The FontFace instance must outlive the GlyphBitmap
+///
+/// \note The GlyphSlot does not need to outlive the GlyphSlot.
+/// It is actually kept alive in the FontFace as long as the glyph is not changed with 
+/// `FontFace::getGlyph()`.
 class GlyphBitmap
 {
-    friend class FontFace;
+    friend class GlyphSlot;
 public:
     int width() const
     {
@@ -85,6 +92,39 @@ private:
 };
 
 
+// Note: GlyphSlot might be copied to get value semantic, with
+// the instance becoming independant of the FontFace and its currently active glyph.
+// Yet, we keep it minimal (and optimal) as the current use case can live with the limitations.
+/// \brief Wrap the glyph slot currently active in a FontFace.
+/// \warning The FontFace instance must outlive the GlyphBitmap.
+class GlyphSlot
+{
+    friend class FontFace;
+
+public:
+    GlyphBitmap render() const
+    {
+        if (FT_Error error = FT_Render_Glyph(mGlyphSlot, FT_RENDER_MODE_NORMAL))
+        {
+            throw GENERIC_LOGICERROR(error);
+        }
+        return GlyphBitmap{mGlyphSlot->bitmap};
+    }
+
+    FT_Glyph_Metrics metric() const
+    {
+        return mGlyphSlot->metrics;
+    }
+
+private:
+    GlyphSlot(FT_GlyphSlot aGlyph) :
+        mGlyphSlot{std::move(aGlyph)}
+    {};
+
+    FT_GlyphSlot mGlyphSlot;
+};
+
+
 /// \brief Wrap a font face.
 /// \warning The library object must outlive the FontFace.
 class FontFace : public ResourceGuard<FT_Face>
@@ -97,7 +137,7 @@ public:
 
     FontFace & inverseYAxis(bool aInverse)
     {
-        static FT_Matrix inversion {1<<16, 0, 0, -1<<16};
+        static FT_Matrix inversion {1<<16, 0, 0, -(1<<16)};
         if (aInverse)
         {
             FT_Set_Transform(*this, &inversion, nullptr);
@@ -129,7 +169,7 @@ public:
         return FT_Get_Char_Index(*this, aCharcode) != 0;
     }
 
-    GlyphBitmap getGlyph(FT_ULong aCharcode) const
+    GlyphSlot getGlyph(FT_ULong aCharcode) const
     {
         FT_UInt glyphIndex = FT_Get_Char_Index(*this, aCharcode);
         if (glyphIndex == 0)
@@ -142,11 +182,7 @@ public:
             throw GENERIC_LOGICERROR(error);
         }
 
-        if (FT_Error error = FT_Render_Glyph(mResource->glyph, FT_RENDER_MODE_NORMAL))
-        {
-            throw GENERIC_LOGICERROR(error);
-        }
-        return GlyphBitmap{mResource->glyph->bitmap};
+        return GlyphSlot{mResource->glyph};
     }
 
 
@@ -180,6 +216,8 @@ FontFace Freetype::load(const filesystem::path & aFontPath) const
     return FontFace{*this, aFontPath};
 }
 
+
+#undef GENERIC_LOGICERROR
 
 
 } // namespace graphics

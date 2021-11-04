@@ -15,7 +15,7 @@ namespace detail {
 
 struct VertexUnitQuad
 {
-    Vec2<GLfloat> mPosition;
+    Position2<GLfloat> mPosition;
     Vec2<GLfloat> mUV;
 };
 
@@ -26,6 +26,7 @@ constexpr std::initializer_list<AttributeDescription> gVertexScreenDescription =
 };
 
 
+VertexSpecification make_Rectangle(math::Rectangle<GLfloat> aVertices);
 // TODO make a global VertexSpecification instance instead
 VertexSpecification make_UnitQuad();
 
