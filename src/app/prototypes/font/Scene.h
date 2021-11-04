@@ -33,7 +33,9 @@ using Position2 = math::Position<2, GLfloat>;
 using Size2 = math::Size<2, GLfloat>;
 
 constexpr GLint gTextureUnit = 2;
-constexpr FT_ULong gStartingCharcode = 0x61; // 'a'
+constexpr FT_ULong gStartingCharcode = 0x20; // space 
+constexpr int gGlyphPerLine = 0x7B /* { */ - gStartingCharcode;
+constexpr int gHorizontalMargin = 1; // pixels
 
 
 /// \brief A glyph info in the cache
@@ -140,9 +142,14 @@ inline Scene::Scene(const filesystem::path & aFontPath,
     
     // Font atlas generation
     auto startingCharcode = gStartingCharcode;
-    constexpr int glyphPerLine = 20;
-    GLsizei textureWidth = glyphPerLine * aGlyphPixelHeight;
-    allocateStorage(mFontAtlas, GL_R8, textureWidth, aGlyphPixelHeight);
+    GLsizei textureWidth = gGlyphPerLine * (aGlyphPixelHeight + gHorizontalMargin);
+    // Add 1 in height, for example character 253 'ý' from DejaVuSans
+    // has 129 rows when the pixel height is set to 128...
+    allocateStorage(mFontAtlas, GL_R8, textureWidth, aGlyphPixelHeight + 1);
+    bind(mFontAtlas);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 
     Freetype freetype;
     FontFace face = freetype.load(aFontPath);
@@ -164,7 +171,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
                 1
             };
 
-            if ( (textureX + bitmap.width()) > textureWidth )
+            if ( (textureX + bitmap.width() + gHorizontalMargin) > textureWidth )
             {
                 break;
             }
@@ -177,7 +184,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
                 {toFloat(glyph.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
             });
 
-            textureX += bitmap.width();
+            textureX += bitmap.width() + gHorizontalMargin;
         }
     }
 
@@ -196,9 +203,8 @@ void Scene::onKey(int key, int scancode, int action, int mods)
 
 inline void Scene::step(const Timer & aTimer)
 {
-    //const std::string = "Salut, monde.";
-    const std::string message{"salutmonde"};
-    Position2 penPosition{-20.f, 0.f};
+    const std::string message{"Salut, monde."};
+    Position2 penPosition{-26.f, 0.f};
 
     std::vector<GlyphInstance> instances;
     for (char c : message)

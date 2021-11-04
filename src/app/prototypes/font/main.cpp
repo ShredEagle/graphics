@@ -38,16 +38,19 @@ int main(int argc, const char * argv[])
             bitmapToFile(0x24, ad::filesystem::path{argv[1]} / "dollar.pgm");
         }
 
-        ad::graphics::ApplicationGlfw application("Font", 800, 600);
+        ad::graphics::ApplicationGlfw application("Font", 1400, 800);
 
         ad::graphics::Timer timer{glfwGetTime(), 0.};
 
-        constexpr int glyphPixelHeight = 256;
-        // TODO exact pixel
-        constexpr GLfloat glyphWorldHeight = 10;
-        constexpr GLfloat screenWorldHeight = 100;
+        constexpr int glyphPixelHeight = 128;
+        constexpr GLfloat screenWorldHeight = 50;
+        // cross multiplication to get the glyph world height which maps to the actual pixel height.
+        const GLfloat glyphWorldHeight = 
+            glyphPixelHeight * screenWorldHeight
+            / application.getAppInterface()->getFramebufferSize().height();
         ad::font::Scene scene{ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"), 
-                              glyphPixelHeight, glyphWorldHeight,
+                              glyphPixelHeight, 
+                              glyphWorldHeight,
                               screenWorldHeight,
                               *application.getAppInterface()};
 
