@@ -1,6 +1,6 @@
-#include "Freetype.h"
 #include "Scene.h"
 
+#include <arte/Freetype.h>
 #include <arte/Image.h>
 
 #include <graphics/ApplicationGlfw.h>

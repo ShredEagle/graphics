@@ -1,7 +1,6 @@
 set(TARGET_NAME font)
 
 set(${TARGET_NAME}_HEADERS
-    Freetype.h
     Scene.h
     shaders.h
 )
@@ -12,7 +11,6 @@ set(${TARGET_NAME}_SOURCES
 
 find_package(glfw3 3.3 REQUIRED)
 find_package(glad REQUIRED)
-find_package(Freetype REQUIRED)
 
 find_package(math REQUIRED)
 
@@ -23,7 +21,6 @@ add_executable(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE
-        Freetype::Freetype
         glad::glad
         glfw
 

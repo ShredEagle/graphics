@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "Freetype.h"
+#include <arte/Freetype.h>
 
 #include "shaders.h"
 
