@@ -44,7 +44,7 @@ public:
                      std::shared_ptr<AppInterface> aAppInterface);
 
     /// [aFirst, aLast[
-    void prepareGlyphs(arte::CharCode aFirst, arte::CharCode aLast);
+    void loadGlyphs(arte::CharCode aFirst, arte::CharCode aLast);
 
     void updateInstances(gsl::span<const Instance> aInstances);
     void render() const;
@@ -63,11 +63,10 @@ private:
     VertexBufferObject mInstanceBuffer; // Will use the VAO from vertex spec
     Program mGpuProgram;
 
-    Texture mFontAtlas{0};
     arte::Freetype mFreetype;
     arte::FontFace mFontFace;
     math::Size<2, GLfloat> mPixelToWorld;
-    detail::GlyphMap mGlyphCache;
+    detail::StaticGlyphCache mGlyphCache;
     GLsizei mInstanceCount{0};
 };
 

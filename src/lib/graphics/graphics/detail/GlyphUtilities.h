@@ -53,12 +53,6 @@ inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters a
     return thisOffset;
 }
 
-template <class T_atlas>
-struct AtlasRepository
-{
-    std::vector<T_atlas> atlases;
-};
-
 
 struct RenderedGlyph
 {
@@ -74,6 +68,42 @@ struct RenderedGlyph
 using GlyphMap = std::unordered_map<arte::CharCode, RenderedGlyph>;
 
 
+template <class T_atlas>
+struct AtlasRepository
+{
+    std::vector<T_atlas> atlases;
+};
+
+
+struct StaticGlyphCache
+{
+    Texture atlas{0};
+    GlyphMap glyphMap;
+    arte::CharCode placeholder = 0x3F; // '?'
+
+    // The empty cache
+    StaticGlyphCache() = default;
+
+    StaticGlyphCache(const arte::FontFace & aFontFace,
+                     arte::CharCode aFirst, arte::CharCode aLast,
+                     math::Vec<2, GLint> aDimensionExtension = {1, 0});
+
+    RenderedGlyph at(arte::CharCode aCharCode) const
+    {
+        if(auto found = glyphMap.find(aCharCode); found != glyphMap.end())
+        {
+            return found->second;
+        }
+        else
+        {
+            return glyphMap.at(placeholder);
+        }
+    }
+};
+
+
+//T_atlas(* grower)()
+
 inline GLfloat fixedToFloat(FT_Pos aPos, int aFixedDecimals = 6)
 {
     return (GLfloat)aPos / (1 << aFixedDecimals);
@@ -82,7 +112,7 @@ inline GLfloat fixedToFloat(FT_Pos aPos, int aFixedDecimals = 6)
 
 Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                             arte::CharCode aFirst, arte::CharCode aLast,
-                            GlyphMap & aGlyphCache,
+                            GlyphMap & aGlyphMap,
                             math::Vec<2, GLint> aDimensionExtension = {1, 0});
 
 

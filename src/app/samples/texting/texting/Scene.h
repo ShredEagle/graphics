@@ -30,13 +30,17 @@ public:
             aAppInterface
         }
     {
-        mTexting.prepareGlyphs(0x20, 0x7F);
+        mTexting.loadGlyphs(0x20, 0x7F);
     }
 
     void step(const Timer & aTimer)
     {
+    }
+    
+    void setMessage(const std::string & aMessage)
+    {
         std::vector<Texting::Instance> glyphs;
-        mTexting.prepareString("Salut monde !", {0.f, 0.f}, std::back_inserter(glyphs));
+        mTexting.prepareString(aMessage, {0.f, 0.f}, std::back_inserter(glyphs));
         mTexting.updateInstances(glyphs);
     }
 

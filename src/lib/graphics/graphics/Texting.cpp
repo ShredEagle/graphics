@@ -57,9 +57,9 @@ Texting::Texting(filesystem::path aFontPath,
 }
 
 
-void Texting::prepareGlyphs(arte::CharCode aFirst, arte::CharCode aLast)
+void Texting::loadGlyphs(arte::CharCode aFirst, arte::CharCode aLast)
 {
-    mFontAtlas = detail::makeTightGlyphAtlas(mFontFace, aFirst, aLast, mGlyphCache);
+    mGlyphCache = detail::StaticGlyphCache{mFontFace, aFirst, aLast};
 }
 
 
@@ -73,7 +73,7 @@ void Texting::updateInstances(gsl::span<const Instance> aInstances)
 void Texting::render() const
 {
     glActiveTexture(GL_TEXTURE0 + gTextureUnit);
-    bind(mFontAtlas);
+    bind(mGlyphCache.atlas);
     activate(mVertexSpecification, mGpuProgram);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, gVertexCount, mInstanceCount);
 }

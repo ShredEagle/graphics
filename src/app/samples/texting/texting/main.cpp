@@ -6,9 +6,22 @@
 
 #include <resource/PathProvider.h>
 
+#include <future>
+#include <thread>
+
 
 using namespace ad;
 using namespace ad::graphics;
+
+
+std::string readLine()
+{
+    std::cout << "Your message: " << std::flush;
+    std::string message;
+    std::getline(std::cin, message);
+    return message;
+}
+
 
 int main(int argc, const char * argv[])
 {
@@ -23,8 +36,14 @@ int main(int argc, const char * argv[])
         Scene scene{resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"),
                     application.getAppInterface() };
 
+        std::future line = std::async(&readLine);
         while(application.nextFrame())
         {
+            if (line.wait_for(std::chrono::seconds{0}) == std::future_status::ready)
+            {
+                scene.setMessage(line.get());
+                line = std::async(&readLine);
+            }
             timer.mark(glfwGetTime());
             scene.step(timer);
             application.getAppInterface()->clear();

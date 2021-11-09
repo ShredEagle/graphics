@@ -6,9 +6,16 @@ namespace graphics {
 namespace detail {
 
 
+StaticGlyphCache::StaticGlyphCache(const arte::FontFace & aFontFace,
+                                   arte::CharCode aFirst, arte::CharCode aLast,
+                                   math::Vec<2, GLint> aDimensionExtension)
+{
+    atlas = makeTightGlyphAtlas(aFontFace, aFirst, aLast, glyphMap, aDimensionExtension);
+}
+
 Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                             arte::CharCode aFirst, arte::CharCode aLast,
-                            GlyphMap & aGlyphCache,
+                            GlyphMap & aGlyphMap,
                             math::Vec<2, GLint> aDimensionExtension)
 {
     std::vector<std::tuple<arte::CharCode, arte::Glyph, RenderedGlyph>> glyphs;
@@ -70,7 +77,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
         };
         rendered.glTexture = ribon.texture;
         rendered.offsetInTexture = ribon.write(bitmap.data(), inputParams);
-        aGlyphCache.insert({charcode, rendered});
+        aGlyphMap.insert({charcode, rendered});
     }
 
     return std::move(ribon.texture);
