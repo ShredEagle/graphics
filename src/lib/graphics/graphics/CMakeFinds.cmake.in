@@ -1,4 +1,4 @@
-@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS handy renderer resource)
+@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS arte handy renderer resource)
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
 
 @find_package@(nlohmann_json 3.9 @REQUIRED@)

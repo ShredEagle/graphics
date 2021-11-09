@@ -10,6 +10,7 @@ set(${TARGET_NAME}_HEADERS
     shaders.h
     Sprite.h
     Spriting.h
+    Texting.h
     Tiling.h
     Timer.h
     TrivialLineStrip.h
@@ -21,6 +22,7 @@ set(${TARGET_NAME}_HEADERS
 
     detail/Logging.h
     detail/UnitQuad.h
+    detail/GlyphUtilities.h
 
     effects/GaussianBlur.h
     effects/GaussianBlur-shaders.h
@@ -30,6 +32,7 @@ set(${TARGET_NAME}_SOURCES
     Curving.cpp
     AppInterface.cpp
     Spriting.cpp
+    Texting.cpp
     Tiling.cpp
     TrivialLineStrip.cpp
     TrivialShaping.cpp
@@ -39,6 +42,7 @@ set(${TARGET_NAME}_SOURCES
 
     detail/Logging.cpp
     detail/UnitQuad.cpp
+    detail/GlyphUtilities.cpp
 
     effects/GaussianBlur.cpp
 )
@@ -65,6 +69,7 @@ cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
+        ad::arte
         ad::renderer
 
         ad::math

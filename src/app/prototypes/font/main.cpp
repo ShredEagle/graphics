@@ -19,10 +19,10 @@
 
 void bitmapToFile(FT_ULong aCharacterCode, const ad::filesystem::path & aOutputPgm)
 {
-    ad::graphics::Freetype freetype;
-    FontFace dejavu = freetype.load(ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"));
+    ad::arte::Freetype freetype;
+    ad::arte::FontFace dejavu = freetype.load(ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"));
     dejavu.setPixelHeight(640);
-    GlyphBitmap bitmap = dejavu.getGlyph(aCharacterCode).render();
+    ad::arte::GlyphBitmap bitmap = dejavu.getGlyphSlot(aCharacterCode).render();
     std::unique_ptr<char []> raster{new char[bitmap.bytesize()]};
     std::memcpy(raster.get(), bitmap.data(), bitmap.bytesize());
 

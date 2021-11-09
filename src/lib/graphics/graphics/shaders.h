@@ -181,5 +181,52 @@ void main(void)
 )#";
 
 
+namespace texting
+{
+    inline const GLchar* gGlyphVertexShader = R"#(
+        #version 400
+        
+        layout(location=0) in vec2 ve_Position_u;
+        layout(location=1) in vec2 ve_UV; // not integral, it is multiplied by the float bbox anyway.
+
+        layout(location=2) in vec2  in_Position_w;
+        layout(location=3) in ivec2 in_TextureOffset; // implicit 0 on y
+        layout(location=4) in vec2  in_BoundingBox;
+        layout(location=5) in vec2  in_Bearing;
+        
+        uniform vec2 u_PixelToWorld;
+        uniform mat4 u_WorldToCamera;
+        uniform mat4 u_Projection;
+
+        out vec2  ex_TextureUV;
+
+        void main(void)
+        {
+            vec2 worldBearing     = in_Bearing * u_PixelToWorld;
+            vec2 worldBoundingBox = in_BoundingBox * u_PixelToWorld;
+            vec2 worldPosition    = in_Position_w + worldBearing + (ve_Position_u * worldBoundingBox);
+
+            gl_Position = vec4(worldPosition, 0., 1.) * u_WorldToCamera * u_Projection;
+            ex_TextureUV = in_TextureOffset + (ve_UV * in_BoundingBox);
+        }
+    )#";
+
+    inline const GLchar* gGlyphFragmentShader = R"#(
+        #version 400
+
+        in vec2 ex_TextureUV;
+        out vec4 out_Color;
+
+        uniform sampler2DRect u_FontAtlas;
+
+        void main(void)
+        {
+            float alpha = texture(u_FontAtlas, ex_TextureUV).r;
+            out_Color = vec4(1., 1., 1., alpha);
+        }
+    )#";
+};
+
+
 } // namespace graphics
 } // namespace ad

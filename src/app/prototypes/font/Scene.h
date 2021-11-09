@@ -91,8 +91,8 @@ struct Scene
     graphics::Texture mFontAtlas;
     graphics::Program mPassthrough;
     graphics::Program mFontProgram;
-    Freetype mFreetype;
-    FontFace mFontface;
+    arte::Freetype mFreetype;
+    arte::FontFace mFontface;
     graphics::VertexSpecification mScreenQuadVertex{graphics::detail::make_UnitQuad()};
     graphics::VertexSpecification mGlyphQuadVertex{
         graphics::detail::make_Rectangle({ {0.f, -1.f}, {1.f, 1.f} })};
@@ -165,8 +165,8 @@ inline Scene::Scene(const filesystem::path & aFontPath,
         auto charcode = startingCharcode++;
         if (mFontface.hasGlyph(charcode))
         {
-            GlyphSlot glyph = mFontface.getGlyph(charcode);
-            GlyphBitmap bitmap = glyph.render();
+            arte::GlyphSlot glyph = mFontface.getGlyphSlot(charcode);
+            arte::GlyphBitmap bitmap = glyph.render();
             InputImageParameters inputParams{
                 {bitmap.width(), bitmap.rows()},
                 GL_RED,

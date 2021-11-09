@@ -9,17 +9,22 @@
 
 #include "ft2build.h"
 #include FT_FREETYPE_H
+#include FT_GLYPH_H // For bbox measurements
 
 #include <exception>
 #include <iostream>
 
 
 namespace ad {
-namespace graphics {
+namespace arte {
 
 #define GENERIC_LOGICERROR(fterror) \
     std::logic_error{"Error " + std::to_string(fterror) + \
                      " in " + __func__ + "(" + std::to_string(__LINE__) + ")."}
+
+
+using CharCode = std::uint32_t;
+
 
 class FontFace;
 
@@ -61,6 +66,7 @@ class GlyphSlot;
 class GlyphBitmap
 {
     friend class GlyphSlot;
+    friend class Glyph;
 public:
     int width() const
     {
@@ -92,6 +98,47 @@ private:
 };
 
 
+
+class GlyphSlot;
+
+
+class Glyph : public ResourceGuard<FT_Glyph>
+{
+    friend class GlyphSlot;
+
+public:
+    math::Size<2, int> getBoundingDimension()
+    {
+        FT_BBox bbox;
+        //FT_Glyph_Get_CBox(*this, FT_GLYPH_BBOX_TRUNCATE, &bbox);
+        FT_Glyph_Get_CBox(*this, FT_GLYPH_BBOX_PIXELS, &bbox);
+        return {
+            bbox.xMax - bbox.xMin,
+            bbox.yMax - bbox.yMin
+        };
+    }
+
+    GlyphBitmap render()
+    {
+        FT_Glyph resource{get()};
+        if (FT_Error error = FT_Glyph_To_Bitmap(&resource,
+                                                FT_RENDER_MODE_NORMAL,
+                                                nullptr/*offset*/,
+                                                0/*do **not** destroy input glyph, resetResource() will*/))
+        {
+            throw GENERIC_LOGICERROR(error);
+        }
+        resetResource(resource, &FT_Done_Glyph);
+        return ((FT_BitmapGlyph)get())->bitmap;
+    }
+
+private:
+    Glyph(FT_Glyph aGlyph) :
+        ResourceGuard<FT_Glyph>{aGlyph, &FT_Done_Glyph}
+    {}
+};
+
+
 // Note: GlyphSlot might be copied to get value semantic, with
 // the instance becoming independant of the FontFace and its currently active glyph.
 // Yet, we keep it minimal (and optimal) as the current use case can live with the limitations.
@@ -120,6 +167,14 @@ public:
     {
         return mGlyphIndex;
     }
+
+    Glyph getGlyph() const
+    {
+        FT_Glyph glyph;
+        FT_Get_Glyph(mGlyphSlot, &glyph);
+        return Glyph{glyph};
+    }
+
 
 private:
     GlyphSlot(FT_GlyphSlot aGlyph, FT_UInt aGlyphIndex) :
@@ -171,12 +226,13 @@ public:
         return setPixelSize({0, aHeight});
     }
 
-    bool hasGlyph(FT_ULong aCharcode) const
+    bool hasGlyph(CharCode aCharcode) const
     {
-        return FT_Get_Char_Index(*this, aCharcode) != 0;
+        // Explicit conversion to check it cannot lose precision.
+        return FT_Get_Char_Index(*this, FT_ULong{aCharcode}) != 0;
     }
 
-    GlyphSlot getGlyph(FT_ULong aCharcode) const
+    GlyphSlot getGlyphSlot(FT_ULong aCharcode) const
     {
         FT_UInt glyphIndex = FT_Get_Char_Index(*this, aCharcode);
         if (glyphIndex == 0)
@@ -189,7 +245,7 @@ public:
             throw GENERIC_LOGICERROR(error);
         }
 
-        return GlyphSlot{mResource->glyph, glyphIndex};
+        return GlyphSlot{get()->glyph, glyphIndex};
     }
 
     math::Vec<2, float> kern(FT_UInt aLeftGlyphIndex, FT_UInt aRightGlyphIndex)
@@ -228,7 +284,7 @@ private:
 //
 // Implementations
 //
-FontFace Freetype::load(const filesystem::path & aFontPath) const
+inline FontFace Freetype::load(const filesystem::path & aFontPath) const
 {
     return FontFace{*this, aFontPath};
 }
@@ -237,5 +293,5 @@ FontFace Freetype::load(const filesystem::path & aFontPath) const
 #undef GENERIC_LOGICERROR
 
 
-} // namespace graphics
+} // namespace arte
 } // namespace ad
