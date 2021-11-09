@@ -12,20 +12,29 @@
 namespace ad {
 namespace graphics {
 
+
+inline stbi_uc * loadWithStbi(const std::string & aFilePath, Size2<int> & aDimension, int aSourceComponents)
+{
+    stbi_set_flip_vertically_on_load(true); // adapt to OpenGL
+    return stbi_load(aFilePath.c_str(),
+                     &aDimension.width(),
+                     &aDimension.height(),
+                     &aSourceComponents,
+                     STBI_rgb_alpha /*equivalent to gComponents*/);
+}
+
+
 struct Image : public ResourceGuard<unsigned char *>
 {
     Image(const std::string & aFilePath) :
         ResourceGuard<unsigned char*>(nullptr, stbi_image_free),
         mDimension(mDimension.Zero())
     {
-        stbi_set_flip_vertically_on_load(true); // adapt to OpenGL
-        mResource = stbi_load(aFilePath.c_str(),
-                              &mDimension.width(),
-                              &mDimension.height(),
-                              &mSourceComponents,
-                              STBI_rgb_alpha /*equivalent to gComponents*/);
-
-        if (mResource == nullptr)
+        // It would be better to directly initialize on the resource guard constructor.
+        // Yet stbi_load also assigns the dimension, and the mDimension member is initialized after 
+        // the base ResourceGuard...
+        resetResource(loadWithStbi(aFilePath, mDimension, mSourceComponents), stbi_image_free);
+        if (get() == nullptr)
         {
             const std::string message = "Unable to load image from file '" + aFilePath + "'";
             std::cerr << message;
@@ -39,8 +48,8 @@ struct Image : public ResourceGuard<unsigned char *>
         int startOffset = (aZone.y()*mDimension.width() + aZone.x());
         for (int line = 0; line != aZone.height(); ++line)
         {
-            aDestination = std::copy(mResource + (startOffset)*gComponents,
-                                     mResource + (startOffset + aZone.width())*gComponents,
+            aDestination = std::copy(get() + (startOffset)*gComponents,
+                                     get() + (startOffset + aZone.width())*gComponents,
                                      aDestination);
             startOffset += mDimension.width();
         }
