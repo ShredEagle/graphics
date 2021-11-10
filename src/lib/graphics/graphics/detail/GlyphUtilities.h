@@ -68,11 +68,16 @@ struct RenderedGlyph
 using GlyphMap = std::unordered_map<arte::CharCode, RenderedGlyph>;
 
 
-template <class T_atlas>
-struct AtlasRepository
+inline GLfloat fixedToFloat(FT_Pos aPos, int aFixedDecimals = 6)
 {
-    std::vector<T_atlas> atlases;
-};
+    return (GLfloat)aPos / (1 << aFixedDecimals);
+}
+
+
+Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
+                            arte::CharCode aFirst, arte::CharCode aLast,
+                            GlyphMap & aGlyphMap,
+                            math::Vec<2, GLint> aDimensionExtension = {1, 0});
 
 
 struct StaticGlyphCache
@@ -88,32 +93,42 @@ struct StaticGlyphCache
                      arte::CharCode aFirst, arte::CharCode aLast,
                      math::Vec<2, GLint> aDimensionExtension = {1, 0});
 
-    RenderedGlyph at(arte::CharCode aCharCode) const
+    RenderedGlyph at(arte::CharCode aCharCode) const;
+};
+
+
+struct DynamicGlyphCache
+{
+    std::vector<TextureRibon> atlases;
+    GlyphMap glyphMap;
+    math::Size<2, GLint> ribonDimension = {0, 0};
+    arte::CharCode placeholder = 0x3F; // '?'
+
+    DynamicGlyphCache() = default;
+
+    // The empty cache
+    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p) :
+        ribonDimension{aRibonDimension_p}
     {
-        if(auto found = glyphMap.find(aCharCode); found != glyphMap.end())
+        growAtlas();
+    }
+
+    void growAtlas()
+    {
+        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8));
+    }
+
+    RenderedGlyph at(arte::CharCode aCharCode, const arte::FontFace & aFontFace);
+
+    void preloadGlyphs(const arte::FontFace & aFontFace, arte::CharCode aFirst, arte::CharCode aLast)
+    {
+        for(; aFirst != aLast; ++aFirst)
         {
-            return found->second;
-        }
-        else
-        {
-            return glyphMap.at(placeholder);
+            at(aFirst, aFontFace);
         }
     }
 };
 
-
-//T_atlas(* grower)()
-
-inline GLfloat fixedToFloat(FT_Pos aPos, int aFixedDecimals = 6)
-{
-    return (GLfloat)aPos / (1 << aFixedDecimals);
-}
-
-
-Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
-                            arte::CharCode aFirst, arte::CharCode aLast,
-                            GlyphMap & aGlyphMap,
-                            math::Vec<2, GLint> aDimensionExtension = {1, 0});
 
 
 } // namespace detail

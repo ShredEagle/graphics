@@ -1,5 +1,7 @@
 #include "GlyphUtilities.h"
 
+#include "Logging.h"
+
 
 namespace ad {
 namespace graphics {
@@ -12,6 +14,68 @@ StaticGlyphCache::StaticGlyphCache(const arte::FontFace & aFontFace,
 {
     atlas = makeTightGlyphAtlas(aFontFace, aFirst, aLast, glyphMap, aDimensionExtension);
 }
+
+
+RenderedGlyph StaticGlyphCache::at(arte::CharCode aCharCode) const
+{
+    if(auto found = glyphMap.find(aCharCode); found != glyphMap.end())
+    {
+        return found->second;
+    }
+    else
+    {
+        return glyphMap.at(placeholder);
+    }
+}
+
+
+RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFace & aFontFace)
+{
+    if(auto found = glyphMap.find(aCharCode); found != glyphMap.end())
+    {
+        return found->second;
+    }
+    else
+    {
+        LOG(graphics, trace)("Glyph for charcode {} not found in cache, rendering.", aCharCode);
+        if (aFontFace.hasGlyph(aCharCode))
+        {
+            arte::GlyphSlot slot = aFontFace.getGlyphSlot(aCharCode);
+            arte::GlyphBitmap bitmap = slot.render();
+
+            if (!atlases.back().isFitting(bitmap.width()))
+            {
+                LOG(graphics, info)("Growing dynamic atlas with a new texture.", aCharCode);
+                growAtlas();
+            }
+            assert(atlases.back().isFitting(bitmap.width()));
+
+            InputImageParameters inputParams{
+                {bitmap.width(), bitmap.rows()},
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                1
+            };
+
+            RenderedGlyph rendered{
+                atlases.back().texture,
+                atlases.back().write(bitmap.data(), inputParams),
+                {fixedToFloat(slot.metric().width), fixedToFloat(slot.metric().height)},
+                {fixedToFloat(slot.metric().horiBearingX), fixedToFloat(slot.metric().horiBearingY)},
+                {fixedToFloat(slot.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
+                slot.index()
+            };
+            return glyphMap.insert({aCharCode, rendered}).first->second;
+        }
+        else
+        {
+            LOG(graphics, warn)("No glyph for character code: {}", aCharCode);
+        }
+    }
+    assert(aCharCode != placeholder); // otherwise infinity open its time consuming arms
+    return at(placeholder, aFontFace);
+}
+
 
 Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                             arte::CharCode aFirst, arte::CharCode aLast,

@@ -22,6 +22,8 @@ constexpr AttributeDescriptionList gGlyphInstanceDescription{
 };
 
 
+constexpr GLint gTextureWidthCount = 256;
+
 Texting::Texting(filesystem::path aFontPath,
                  GLfloat aGlyphWorldHeight, 
                  GLfloat aScreenWorldHeight,
@@ -51,6 +53,11 @@ Texting::Texting(filesystem::path aFontPath,
 
     setUniformInt(mGpuProgram, "u_FontAtlas", gTextureUnit);
 
+    mGlyphCache = detail::DynamicGlyphCache{
+        {(GLint)(gTextureWidthCount * glyphPixelHeight),
+         (GLint)(glyphPixelHeight + 1)}
+    };
+
     // Font setup
     mFontFace.inverseYAxis(true);
     mFontFace.setPixelHeight(glyphPixelHeight);
@@ -59,7 +66,7 @@ Texting::Texting(filesystem::path aFontPath,
 
 void Texting::loadGlyphs(arte::CharCode aFirst, arte::CharCode aLast)
 {
-    mGlyphCache = detail::StaticGlyphCache{mFontFace, aFirst, aLast};
+    mGlyphCache.preloadGlyphs(mFontFace, aFirst, aLast);
 }
 
 
@@ -73,10 +80,11 @@ void Texting::updateInstances(gsl::span<const Instance> aInstances)
 void Texting::render() const
 {
     glActiveTexture(GL_TEXTURE0 + gTextureUnit);
-    bind(mGlyphCache.atlas);
+    bind(mGlyphCache.atlases.back().texture);
     activate(mVertexSpecification, mGpuProgram);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, gVertexCount, mInstanceCount);
 }
+
 
 void Texting::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
 {

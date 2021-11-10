@@ -16,6 +16,8 @@
 
 #include <glad/glad.h>
 
+#include <utf8.h> // utfcpp lib
+
 
 
 namespace ad {
@@ -66,7 +68,8 @@ private:
     arte::Freetype mFreetype;
     arte::FontFace mFontFace;
     math::Size<2, GLfloat> mPixelToWorld;
-    detail::StaticGlyphCache mGlyphCache;
+    //detail::StaticGlyphCache mGlyphCache;
+    detail::DynamicGlyphCache mGlyphCache;
     GLsizei mInstanceCount{0};
 };
 
@@ -86,9 +89,12 @@ template <class T_outputIterator>
 void Texting::prepareString(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w, T_outputIterator aOutput)
 {
     unsigned int previousIndex = 0;
-    for (arte::CharCode codePoint : aString)
+    for (std::string::const_iterator it = aString.begin();
+         it != aString.end();
+         /* in body */)
     {
-        detail::RenderedGlyph rendered = mGlyphCache.at(codePoint);
+        arte::CharCode codePoint = utf8::next(it, aString.end());
+        detail::RenderedGlyph rendered = mGlyphCache.at(codePoint, mFontFace);
         
         // Kerning
         if (previousIndex != 0)

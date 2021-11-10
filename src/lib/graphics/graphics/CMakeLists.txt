@@ -76,6 +76,7 @@ target_link_libraries(${TARGET_NAME}
 
         glad::glad
         glfw
+        utf8cpp # part of header of Texting.h
     PRIVATE
         ad::handy
         ad::resource

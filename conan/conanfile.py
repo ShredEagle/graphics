@@ -30,6 +30,7 @@ class GraphicsConan(ConanFile):
         ("glfw/3.3.4"),
         ("nlohmann_json/3.9.1"),
         ("spdlog/1.9.2"),
+        ("utfcpp/3.2.1"),
 
         ("math/8294e87cda@adnn/develop"),
     )
