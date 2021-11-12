@@ -6,6 +6,8 @@
 
 #include <arte/Freetype.h>
 
+#include <handy/Pool.h>
+
 #include <math/Homogeneous.h>
 #include <math/Vector.h>
 
@@ -18,84 +20,9 @@
 
 #include <utf8.h> // utfcpp lib
 
-#include <forward_list>
-#include <functional>
 
 namespace ad {
 namespace graphics {
-
-
-// TODO The pool should automatically handle freeing elements, probably by returning some smart handle
-template <class T>
-class Pool
-{
-private:
-    void freeHandle(T * aResource)
-    {
-        mFreeList.push_front(aResource);
-        --mLiveHandles;
-    }
-
-
-public:
-    using Grower_t = std::function<T()>;
-    using SmartHandle = std::unique_ptr<T, decltype(std::bind(&Pool::freeHandle,
-                                                    std::declval<Pool*>(),
-                                                    std::placeholders::_1))>;
-
-    Pool(Grower_t aGrower) :
-        mGrower{std::move(aGrower)}
-    {}
-
-    ~Pool()
-    {
-        // Otherwise, it means the Pool is destructed while handles are still out there.
-        // Note: size() is not available on forward_list
-        //assert(mFreeList.size() == mInstances.size());
-        assert(mLiveHandles == 0);
-    }
-
-    SmartHandle getNext()
-    {
-        if (mFreeList.empty())
-        {
-            grow();
-        }
-        T * free = mFreeList.front();
-        mFreeList.pop_front();
-        ++mLiveHandles;
-        return SmartHandle{free, std::bind(&Pool::freeHandle, this, std::placeholders::_1)};
-    }
-
-    void grow()
-    {
-        // TODO adapt logging
-        //LOG(handy, debug)("Growing the pool");
-        mInstances.push_front(mGrower());
-        mFreeList.push_front(&mInstances.front());
-    }
-
-private:
-    Grower_t mGrower;
-    std::forward_list<T> mInstances;
-    std::forward_list<T *> mFreeList;
-    std::size_t mLiveHandles{0}; // only used for debug assertions, could be macro guarded
-};
-
-
-template <class T>
-using Pooled = typename Pool<T>::SmartHandle;
-    
-
-template <class T_vertex>
-VertexBufferObject loadUnattachedVertexBuffer(gsl::span<const T_vertex> aVertices,
-                                              GLenum aHint = GL_STATIC_DRAW)
-{
-    VertexBufferObject vbo;
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, aVertices.size_bytes(), aVertices.data(), aHint);
-    return vbo;
-}
 
 
 class Texting
@@ -150,8 +77,8 @@ private:
     };
 
     VertexBufferObject mQuadVbo; // will shared by all per-texture VAOs
-    Pool<PerTextureVao> mVaoPool;
-    std::vector<Pooled<PerTextureVao>> mPerTexture;
+    handy::Pool<PerTextureVao> mVaoPool;
+    std::vector<handy::Pooled<PerTextureVao>> mPerTexture;
     Program mGpuProgram;
 
     arte::Freetype mFreetype;
@@ -181,7 +108,7 @@ void Texting::updateInstances(T_mapping aTextureMappedBuffers)
 
     for (const auto & [texture, buffer] : aTextureMappedBuffers)
     {
-        Pooled<PerTextureVao> perTexture = mVaoPool.getNext();
+        handy::Pooled<PerTextureVao> perTexture = mVaoPool.getNext();
         perTexture->texture = texture;
         respecifyBuffer(perTexture->instanceBuffer, gsl::make_span(buffer));
         perTexture->instanceCount = (GLsizei)buffer.size();
@@ -189,9 +116,10 @@ void Texting::updateInstances(T_mapping aTextureMappedBuffers)
         mPerTexture.push_back(std::move(perTexture));
     }
 
-    // Note: Life would be simple if we had "ARB_base_instance" on all platforms (i.e. if macos)
+    // Note: Life would be simple if we had "ARB_base_instance" on all platforms (i.e. if it was available on macos)
     // We would create a single instancebuffer with all instances, and do sub-range of instances
-    // per draw call. Instead, we are stuck with huge machinery to switch entire VAOs between draw calls.
+    // per draw call with `glDrawElementsInstancedBaseInstance`.
+    // Instead, we are stuck with huge machinery to switch entire VAOs between draw calls.
     //mPerTexture.clear();
     //std::size_t count = 0;
     //for (const auto & [texture, buffer] : aTextureMappedBuffers)
