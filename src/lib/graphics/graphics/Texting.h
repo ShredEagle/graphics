@@ -18,6 +18,7 @@
 
 #include <utf8.h> // utfcpp lib
 
+#include <forward_list>
 #include <functional>
 
 namespace ad {
@@ -28,18 +29,33 @@ namespace graphics {
 template <class T>
 class Pool
 {
+private:
+    void freeHandle(T * aResource)
+    {
+        mFreeList.push_front(aResource);
+        --mLiveHandles;
+    }
+
+
 public:
     using Grower_t = std::function<T()>;
-
-    Grower_t mGrower;
-    std::list<T> mInstances;
-    std::list<T *> mFreeList;
+    using SmartHandle = std::unique_ptr<T, decltype(std::bind(&Pool::freeHandle,
+                                                    std::declval<Pool*>(),
+                                                    std::placeholders::_1))>;
 
     Pool(Grower_t aGrower) :
         mGrower{std::move(aGrower)}
     {}
 
-    T * getNext()
+    ~Pool()
+    {
+        // Otherwise, it means the Pool is destructed while handles are still out there.
+        // Note: size() is not available on forward_list
+        //assert(mFreeList.size() == mInstances.size());
+        assert(mLiveHandles == 0);
+    }
+
+    SmartHandle getNext()
     {
         if (mFreeList.empty())
         {
@@ -47,25 +63,28 @@ public:
         }
         T * free = mFreeList.front();
         mFreeList.pop_front();
-        return free;
+        ++mLiveHandles;
+        return SmartHandle{free, std::bind(&Pool::freeHandle, this, std::placeholders::_1)};
     }
 
     void grow()
     {
         // TODO adapt logging
         //LOG(handy, debug)("Growing the pool");
-        mInstances.push_back(mGrower());
-        mFreeList.push_back(&mInstances.back());
+        mInstances.push_front(mGrower());
+        mFreeList.push_front(&mInstances.front());
     }
 
-    void freeAll()
-    {
-        for(auto & instance : mInstances)
-        {
-            mFreeList.push_back(&instance);
-        }
-    }
+private:
+    Grower_t mGrower;
+    std::forward_list<T> mInstances;
+    std::forward_list<T *> mFreeList;
+    std::size_t mLiveHandles{0}; // only used for debug assertions, could be macro guarded
 };
+
+
+template <class T>
+using Pooled = typename Pool<T>::SmartHandle;
     
 
 template <class T_vertex>
@@ -132,7 +151,7 @@ private:
 
     VertexBufferObject mQuadVbo; // will shared by all per-texture VAOs
     Pool<PerTextureVao> mVaoPool;
-    std::vector<PerTextureVao *> mPerTexture;
+    std::vector<Pooled<PerTextureVao>> mPerTexture;
     Program mGpuProgram;
 
     arte::Freetype mFreetype;
@@ -159,16 +178,15 @@ template <class T_mapping>
 void Texting::updateInstances(T_mapping aTextureMappedBuffers)
 {
     mPerTexture.clear();
-    mVaoPool.freeAll();
 
     for (const auto & [texture, buffer] : aTextureMappedBuffers)
     {
-        PerTextureVao * perTexture = mVaoPool.getNext();
+        Pooled<PerTextureVao> perTexture = mVaoPool.getNext();
         perTexture->texture = texture;
         respecifyBuffer(perTexture->instanceBuffer, gsl::make_span(buffer));
         perTexture->instanceCount = (GLsizei)buffer.size();
 
-        mPerTexture.push_back(perTexture);
+        mPerTexture.push_back(std::move(perTexture));
     }
 
     // Note: Life would be simple if we had "ARB_base_instance" on all platforms (i.e. if macos)

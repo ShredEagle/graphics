@@ -88,7 +88,7 @@ void Texting::render() const
 
     // glDrawElementsInstancedBaseInstance not supported on macOS,
     // so workaround using several instance buffers.
-    for (PerTextureVao * perTexture : mPerTexture)
+    for (const Pooled<PerTextureVao> & perTexture : mPerTexture)
     {
         glBindVertexArray(perTexture->vao);
         bind(*perTexture->texture);
