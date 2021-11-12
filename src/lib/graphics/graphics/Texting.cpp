@@ -28,11 +28,22 @@ Texting::Texting(filesystem::path aFontPath,
                  GLfloat aGlyphWorldHeight, 
                  GLfloat aScreenWorldHeight,
                  std::shared_ptr<AppInterface> aAppInterface) :
-    mVertexSpecification{detail::make_Rectangle({ {0.f, -1.f}, {1.f, 1.f} })},
-    mInstanceBuffer{initVertexBuffer<Instance>(
-        mVertexSpecification.mVertexArray,
-        gGlyphInstanceDescription, 
-        1)},
+    mQuadVbo{
+        loadUnattachedVertexBuffer<detail::VertexUnitQuad>(
+            detail::make_RectangleVertices({ {0.f, -1.f}, {1.f, 1.f} }))
+    },
+    mVaoPool{
+        [this]()
+        {
+            VertexArrayObject vao;
+            attachVertexBuffer<detail::VertexUnitQuad>(mQuadVbo, vao, detail::gVertexScreenDescription);
+            VertexBufferObject instanceBuffer = initVertexBuffer<Instance>(vao, gGlyphInstanceDescription, 1);
+            return PerTextureVao{
+                std::move(vao),
+                std::move(instanceBuffer)
+            };
+        }
+    },
     mGpuProgram{makeLinkedProgram({
         {GL_VERTEX_SHADER,   texting::gGlyphVertexShader},
         {GL_FRAGMENT_SHADER, texting::gGlyphFragmentShader},
@@ -70,19 +81,19 @@ void Texting::loadGlyphs(arte::CharCode aFirst, arte::CharCode aLast)
 }
 
 
-void Texting::updateInstances(gsl::span<const Instance> aInstances)
-{
-    respecifyBuffer(mInstanceBuffer, aInstances);
-    mInstanceCount = (GLsizei)aInstances.size();
-}
-
-
 void Texting::render() const
 {
+    glUseProgram(mGpuProgram);
     glActiveTexture(GL_TEXTURE0 + gTextureUnit);
-    bind(mGlyphCache.atlases.back().texture);
-    activate(mVertexSpecification, mGpuProgram);
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, gVertexCount, mInstanceCount);
+
+    // glDrawElementsInstancedBaseInstance not supported on macOS,
+    // so workaround using several instance buffers.
+    for (PerTextureVao * perTexture : mPerTexture)
+    {
+        glBindVertexArray(perTexture->vao);
+        bind(*perTexture->texture);
+        glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, gVertexCount, perTexture->instanceCount);
+    }
 }
 
 

@@ -11,6 +11,8 @@
 // Dirty include, to get the GLFW input definitions
 #include <GLFW/glfw3.h>
 
+#include <map>
+
 
 namespace ad {
 namespace graphics {
@@ -39,8 +41,8 @@ public:
     
     void setMessage(const std::string & aMessage)
     {
-        std::vector<Texting::Instance> glyphs;
-        mTexting.prepareString(aMessage, {0.f, 0.f}, std::back_inserter(glyphs));
+        std::map<Texture *, std::vector<Texting::Instance>> glyphs;
+        mTexting.prepareString(aMessage, {-50.f, 0.f}, glyphs);
         mTexting.updateInstances(glyphs);
     }
 

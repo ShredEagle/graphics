@@ -25,12 +25,15 @@ std::string windowsWcsToUtf8(const std::wstring & aWcs)
         WideCharToMultiByte(CP_UTF8, 0, aWcs.data(), aWcs.length(),
                             nullptr, 0, NULL, NULL);
     std::string result(outputSize, '\0');
-    int mbLength =
-        WideCharToMultiByte(CP_UTF8, 0, aWcs.data(), aWcs.length(),
-                            result.data(), result.size(), NULL, NULL);
-    if (mbLength == 0)
+    if (outputSize != 0)
     {
-        throw std::logic_error{"wcs to utf8 error."};
+        int mbLength =
+            WideCharToMultiByte(CP_UTF8, 0, aWcs.data(), aWcs.length(),
+                                result.data(), result.size(), NULL, NULL);
+        if (mbLength == 0)
+        {
+            throw std::logic_error{"wcs to utf8 error."};
+        }
     }
     return result;
 }

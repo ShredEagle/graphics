@@ -56,7 +56,8 @@ inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters a
 
 struct RenderedGlyph
 {
-    GLuint glTexture;
+    // TODO Storing a naked texture pointer is not ideal
+    Texture * texture;
     GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position.
     math::Size<2, GLfloat> boundingBox;
     math::Vec<2, GLfloat> bearing;
@@ -99,7 +100,8 @@ struct StaticGlyphCache
 
 struct DynamicGlyphCache
 {
-    std::vector<TextureRibon> atlases;
+    // Since we are storing texture pointer, growing the atlas should not re-allocate!
+    std::list<TextureRibon> atlases;
     GlyphMap glyphMap;
     math::Size<2, GLint> ribonDimension = {0, 0};
     arte::CharCode placeholder = 0x3F; // '?'

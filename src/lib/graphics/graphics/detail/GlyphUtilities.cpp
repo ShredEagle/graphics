@@ -58,7 +58,7 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
             };
 
             RenderedGlyph rendered{
-                atlases.back().texture,
+                &atlases.back().texture,
                 atlases.back().write(bitmap.data(), inputParams),
                 {fixedToFloat(slot.metric().width), fixedToFloat(slot.metric().height)},
                 {fixedToFloat(slot.metric().horiBearingX), fixedToFloat(slot.metric().horiBearingY)},
@@ -100,7 +100,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                 aFirst,
                 slot.getGlyph(),
                 RenderedGlyph{
-                    0,
+                    nullptr,
                     0,
                     {fixedToFloat(slot.metric().width), fixedToFloat(slot.metric().height)},
                     {fixedToFloat(slot.metric().horiBearingX), fixedToFloat(slot.metric().horiBearingY)},
@@ -139,7 +139,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
             GL_UNSIGNED_BYTE,
             1
         };
-        rendered.glTexture = ribon.texture;
+        rendered.texture = &ribon.texture;
         rendered.offsetInTexture = ribon.write(bitmap.data(), inputParams);
         aGlyphMap.insert({charcode, rendered});
     }

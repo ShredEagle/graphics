@@ -106,6 +106,23 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 
+/// \brief Attach an existing VertexBuffer to an exisiting VertexArray,
+/// without providing initial data.
+void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
+                        const VertexArrayObject & aVertexArray,
+                        AttributeDescriptionList aAttributes,
+                        GLsizei aStride,
+                        GLuint aAttributeDivisor = 0);
+
+template <class T_vertex>
+void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
+                        const VertexArrayObject & aVertexArray,
+                        AttributeDescriptionList aAttributes,
+                        GLuint aAttributeDivisor = 0)
+{
+    return attachVertexBuffer(aVertexBuffer, aVertexArray, aAttributes, sizeof(T_vertex), aAttributeDivisor);
+}
+
 /// \brief Intialize a VertexBufferObject, without providing initial data.
 VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
                                     AttributeDescriptionList aAttributes,
