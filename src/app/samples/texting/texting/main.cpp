@@ -77,7 +77,7 @@ std::string readLine()
     //std::getline(std::wcin, message);
 
     return windowsWcsToUtf8(message);
-#elif
+#else
     std::string message;
     std::getline(std::cin, message);
     return message;
