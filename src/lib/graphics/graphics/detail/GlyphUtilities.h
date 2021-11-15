@@ -59,7 +59,7 @@ struct RenderedGlyph
     // TODO Storing a naked texture pointer is not ideal
     Texture * texture;
     GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position.
-    math::Size<2, GLfloat> boundingBox;
+    math::Size<2, GLfloat> controlBoxSize;
     math::Vec<2, GLfloat> bearing;
     math::Vec<2, GLfloat> penAdvance;
     unsigned int freetypeIndex; // Notably usefull for kerning queries.
@@ -131,6 +131,14 @@ struct DynamicGlyphCache
     }
 };
 
+
+// TODO aPixelToLocal should be removed, when the Texting rendering does all "local layout" in pixel coordinates
+void forEachGlyph(const std::string & aString,
+                  math::Position<2, GLfloat> aPenOrigin_w,
+                  DynamicGlyphCache & aGlyphCache, 
+                  arte::FontFace & aFontFace,
+                  math::Size<2, GLfloat> aPixelToLocal,
+                  std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback);
 
 
 } // namespace detail

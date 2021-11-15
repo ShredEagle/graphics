@@ -18,7 +18,7 @@
 
 #include <glad/glad.h>
 
-#include <utf8.h> // utfcpp lib
+#include <map>
 
 
 namespace ad {
@@ -39,6 +39,9 @@ public:
         math::Size<2, GLfloat> boundingBox_p; // glyph bounding box in texture pixel coordinates;
         math::Vec<2, GLfloat> bearing_p;
     };
+
+    /// \brief A good type for the templated T_mapping (but not the only possiblity).
+    using Mapping = std::map<Texture *, std::vector<Texting::Instance>>;
 
     /// \param aCurveSubdivisions is the number of line segments used to approximate the curve.
     explicit Texting(filesystem::path aFontPath,
@@ -64,6 +67,13 @@ public:
     template <class T_mapping>
     void prepareString(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w, T_mapping & aOutputMap);
 
+    /// \brief Compute a string's bounding box in world space. 
+    ///
+    /// It is a "tight" bounding box.
+    /// The bounding-box will include all glyphs pixels, but not necessarily the pen origin / the final pen position.
+    /// It is probably not exact due to Freetype details (but it should be close enough for most applications).
+    math::Rectangle<GLfloat> getStringBounds(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w);
+
 private:
     static constexpr GLsizei gVertexCount{4}; 
     static constexpr GLint gTextureUnit{0}; 
@@ -83,6 +93,11 @@ private:
 
     arte::Freetype mFreetype;
     arte::FontFace mFontFace;
+    // TODO mPixelToWorld should be removed, and all "string local" pen computation be done in pixel units.
+    // This would imply there is a "per string" buffer attribute which is the whole string transformation.
+    // By using different cache, it would notably mean one can animate strings without respecifying all glyphs each frame
+    // (but only the local-to-world transforms).
+    // Note: It might still be required in order to compute string bounding box in world space? (or it would just take the transformation)
     math::Size<2, GLfloat> mPixelToWorld;
     // An alternative, with a single texture that has to be entirely pre-computed at instantiation.
     //detail::StaticGlyphCache mGlyphCache;
@@ -96,7 +111,7 @@ private:
 inline Texting::Instance::Instance(math::Position<2, GLfloat> aPenOrigin_w, const detail::RenderedGlyph & aRendered) :
     position_w{aPenOrigin_w},
     offsetInTexture_p{aRendered.offsetInTexture},
-    boundingBox_p{aRendered.boundingBox},
+    boundingBox_p{aRendered.controlBoxSize},
     bearing_p{aRendered.bearing}
 {}
 
@@ -153,26 +168,11 @@ void Texting::updateInstances(T_mapping aTextureMappedBuffers)
 template <class T_mapping>
 void Texting::prepareString(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w, T_mapping & aOutputMap)
 {
-    unsigned int previousIndex = 0;
-    for (std::string::const_iterator it = aString.begin();
-         it != aString.end();
-         /* in body */)
-    {
-        // Decode utf8 encoded string to individual Unicode code points
-        arte::CharCode codePoint = utf8::next(it, aString.end());
-        detail::RenderedGlyph rendered = mGlyphCache.at(codePoint, mFontFace);
-        
-        // Kerning
-        if (previousIndex != 0)
+    forEachGlyph(aString, aPenOrigin_w, mGlyphCache, mFontFace, mPixelToWorld,
+        [&aOutputMap](const detail::RenderedGlyph & rendered, math::Position<2, GLfloat> penPosition_w)
         {
-            Vec2<GLfloat> kerning = mFontFace.kern(previousIndex, rendered.freetypeIndex);
-            aPenOrigin_w += kerning.cwMul(mPixelToWorld.as<math::Vec>());
-        }
-        previousIndex = rendered.freetypeIndex;
-
-        aOutputMap[rendered.texture].push_back(Texting::Instance{aPenOrigin_w, rendered});
-        aPenOrigin_w += rendered.penAdvance.cwMul(mPixelToWorld.as<math::Vec>());
-    }
+            aOutputMap[rendered.texture].push_back(Texting::Instance{penPosition_w, rendered});
+        });
 }
 
 

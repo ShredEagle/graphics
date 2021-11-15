@@ -2,6 +2,8 @@
 
 #include "Logging.h"
 
+#include <utf8.h> // utfcpp lib
+
 
 namespace ad {
 namespace graphics {
@@ -74,6 +76,36 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
     }
     assert(aCharCode != placeholder); // otherwise infinity open its time consuming arms
     return at(placeholder, aFontFace);
+}
+
+
+void forEachGlyph(const std::string & aString,
+                  math::Position<2, GLfloat> aPenOrigin_w,
+                  DynamicGlyphCache & aGlyphCache, 
+                  arte::FontFace & aFontFace,
+                  math::Size<2, GLfloat> aPixelToLocal,
+                  std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback)
+{
+    unsigned int previousIndex = 0;
+    for (std::string::const_iterator it = aString.begin();
+         it != aString.end();
+         /* in body */)
+    {
+        // Decode utf8 encoded string to individual Unicode code points
+        arte::CharCode codePoint = utf8::next(it, aString.end());
+        detail::RenderedGlyph rendered = aGlyphCache.at(codePoint, aFontFace);
+        
+        // Kerning
+        if (previousIndex != 0)
+        {
+            Vec2<GLfloat> kerning = aFontFace.kern(previousIndex, rendered.freetypeIndex);
+            aPenOrigin_w += kerning.cwMul(aPixelToLocal.as<math::Vec>());
+        }
+        previousIndex = rendered.freetypeIndex;
+
+        aGlyphCallback(rendered, aPenOrigin_w);
+        aPenOrigin_w += rendered.penAdvance.cwMul(aPixelToLocal.as<math::Vec>());
+    }
 }
 
 

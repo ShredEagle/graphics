@@ -109,5 +109,40 @@ void Texting::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> &
 }
 
 
+math::Rectangle<GLfloat> Texting::getStringBounds(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w)
+{
+    math::Vec<2, GLfloat> pixelToWorld = mPixelToWorld.as<math::Vec>();
+    math::Rectangle<GLfloat> boundingBox{aPenOrigin_w, {0.f, 0.f}};
+
+    // Get rid of the first character bearing 
+    // (i.e. difference between initial pen position, and a corner of the glyph bounding box).
+    if(!aString.empty())
+    {
+        forEachGlyph({aString.begin(), aString.begin()+1}, aPenOrigin_w, mGlyphCache, mFontFace, mPixelToWorld,
+            [&boundingBox, pixelToWorld](const detail::RenderedGlyph & rendered, math::Position<2, GLfloat> penPosition_w)
+            {
+                boundingBox.origin() += rendered.bearing.cwMul(pixelToWorld);
+            });
+    }
+
+    forEachGlyph(aString, aPenOrigin_w, mGlyphCache, mFontFace, mPixelToWorld,
+        [&boundingBox, pixelToWorld](const detail::RenderedGlyph & rendered, math::Position<2, GLfloat> penPosition_w)
+        {
+            // Those computations should work for both horizontal and vertical layouts.
+            // Top-left corner of the glyph bounding box.
+            boundingBox.extendTo(penPosition_w 
+                                    + rendered.bearing.cwMul(pixelToWorld)); 
+            // Bottom-right corner of the glyph bounding box.
+            boundingBox.extendTo(penPosition_w 
+                                    + rendered.bearing.cwMul(pixelToWorld)
+                                    + math::Vec<2, GLfloat>{
+                                        +rendered.controlBoxSize.width(),
+                                        -rendered.controlBoxSize.height()}.cwMul(pixelToWorld));
+        });
+
+    return boundingBox;
+}
+
+
 } // namespace graphics
 } // namespace ad
