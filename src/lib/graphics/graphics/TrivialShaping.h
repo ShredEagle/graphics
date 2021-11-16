@@ -18,20 +18,15 @@ class TrivialShaping
 public:
     struct Rectangle;
     struct RectangleAngle;
-private:
-    using InstanceData = std::vector<Rectangle>;
 
 public:
     /// \brief Initialize the rendering to show the rectangle {{0., 0.}, aRenderResolution}.
     TrivialShaping(Size2<int> aRenderResolution);
 
-    /// \brief Remove all shapes that were previously added.
+    /// \brief Replace all instances that will be drawn when calling `render()`.
     ///
-    /// Should be called between each frame to implement animation.
-    void clearShapes();
-
-    void addRectangle(Rectangle aRectangleData);
-    void addRectangle(RectangleAngle aRectangleData);
+    /// Actually push to the vertex buffers.
+    void updateInstances(gsl::span<const Rectangle> aInstances);
 
     /// \brief Render all shapes that were added since the last call to `clearShapes()`.
     void render() const;
@@ -42,7 +37,7 @@ public:
 
 private:
     DrawContext mDrawContext;
-    InstanceData mInstances;
+    GLsizei mInstanceCount{0};
 };
 
 
@@ -59,6 +54,8 @@ struct TrivialShaping::RectangleAngle
     math::Radian<GLfloat> angle;
     Color mColor;
     math::Position<2, GLfloat> center = mGeometry.origin();
+
+    /*implicit*/ operator Rectangle ();
 };
 
 
