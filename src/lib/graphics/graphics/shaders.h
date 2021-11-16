@@ -195,8 +195,8 @@ namespace texting
         layout(location=5) in vec2  in_Bearing;
         
         uniform vec2 u_PixelToWorld;
-        uniform mat4 u_WorldToCamera;
-        uniform mat4 u_Projection;
+        uniform mat3 u_WorldToCamera;
+        uniform mat3 u_Projection;
 
         out vec2  ex_TextureUV;
 
@@ -206,7 +206,8 @@ namespace texting
             vec2 worldBoundingBox = in_BoundingBox * u_PixelToWorld;
             vec2 worldPosition    = in_Position_w + worldBearing + (ve_Position_u * worldBoundingBox);
 
-            gl_Position = vec4(worldPosition, 0., 1.) * u_WorldToCamera * u_Projection;
+            vec3 transformed = u_Projection * u_WorldToCamera * vec3(worldPosition, 1.);
+            gl_Position = vec4(transformed.xy, 0., 1.);
             ex_TextureUV = in_TextureOffset + (ve_UV * in_BoundingBox);
         }
     )#";

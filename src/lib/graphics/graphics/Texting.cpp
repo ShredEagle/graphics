@@ -51,10 +51,10 @@ Texting::Texting(filesystem::path aFontPath,
     mFontFace{mFreetype.load(aFontPath)},
     mPixelToWorld{decltype(mPixelToWorld)::Zero()}
 {
-    setCameraTransformation(math::AffineMatrix<4, GLfloat>::Identity());
+    setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
     setProjectionTransformation(
-        math::trans3d::orthographicProjection<GLfloat>(
-            getViewVolume(aAppInterface->getFramebufferSize(), aScreenWorldHeight, 1, -1)));
+        math::trans2d::orthographicProjection<GLfloat>(
+            getViewRectangle(aAppInterface->getFramebufferSize(), aScreenWorldHeight)));
 
     GLfloat glyphPixelHeight =
         aGlyphWorldHeight * aAppInterface->getFramebufferSize().height() / aScreenWorldHeight;
@@ -97,13 +97,13 @@ void Texting::render() const
 }
 
 
-void Texting::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+void Texting::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
     setUniform(mGpuProgram, "u_WorldToCamera", aTransformation); 
 }
 
 
-void Texting::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+void Texting::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
     setUniform(mGpuProgram, "u_Projection", aTransformation); 
 }

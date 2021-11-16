@@ -60,8 +60,8 @@ public:
     /// \brief Render all strings loaded in the buffers via `updateInstances()`.
     void render() const;
 
-    void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
-    void setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
+    void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
 
     /// \brief The interface to convert the user string to be rendered into a mapping accepted by `updateInstance()`.
     template <class T_mapping>
