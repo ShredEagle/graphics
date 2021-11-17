@@ -45,14 +45,16 @@ struct TextureRibon
 };
 
 
-inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum aInternalFormat, math::Vec<2, GLint> aMargins)
+// Note: Linear offers smoother translations, at the cost of sharpness.
+// Note: Nearest currently has a drawback that all letters of a string do not necessarily advance a pixel together.
+inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum aInternalFormat, math::Vec<2, GLint> aMargins, GLenum aTextureFiltering)
 {
     TextureRibon ribon{Texture{GL_TEXTURE_RECTANGLE}, aDimensions.width(), aMargins};
     allocateStorage(ribon.texture, aInternalFormat, aDimensions.width(), aDimensions.height());
 
     bind(ribon.texture);
-    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, aTextureFiltering);
+    glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MAG_FILTER, aTextureFiltering);
     glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
@@ -118,6 +120,7 @@ struct DynamicGlyphCache
     // Since we are storing texture pointer, growing the atlas should not re-allocate!
     std::list<TextureRibon> atlases;
     GlyphMap glyphMap;
+    GLenum textureFiltering = GL_LINEAR;
     math::Size<2, GLint> ribonDimension = {0, 0};
     math::Vec<2, GLint> margins = {0, 0};
     arte::CharCode placeholder = 0x3F; // '?'
@@ -125,7 +128,8 @@ struct DynamicGlyphCache
     DynamicGlyphCache() = default;
 
     // The empty cache
-    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p, math::Vec<2, GLint> aMargins) :
+    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p, math::Vec<2, GLint> aMargins, GLenum aTextureFiltering) :
+        textureFiltering{aTextureFiltering},
         ribonDimension{aRibonDimension_p},
         margins{std::move(aMargins)}
     {
@@ -134,7 +138,7 @@ struct DynamicGlyphCache
 
     void growAtlas()
     {
-        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8, margins));
+        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8, margins, textureFiltering));
     }
 
     RenderedGlyph at(arte::CharCode aCharCode, const arte::FontFace & aFontFace);

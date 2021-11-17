@@ -63,6 +63,7 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
 
             RenderedGlyph rendered{
                 &atlases.back().texture,
+                // TODO it would simplify overall comprehension to get rid of this division by 2 of the margin (yet it would currently lead to bleeding).
                 atlases.back().write(bitmap.data(), inputParams) - (margins.x() / 2), // go back half the horizontal margin (not full margin to avoid bleeding)
                 //{fixedToFloat(slot.metric().width), fixedToFloat(slot.metric().height)},
                 // Note: We observe noticeable "edge trimming" when using the exact glyph bounding box.
@@ -161,7 +162,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
     //
     // Fill in the atlas
     //
-    TextureRibon ribon = make_TextureRibon(atlasDimensions, GL_R8, aMargins);
+    TextureRibon ribon = make_TextureRibon(atlasDimensions, GL_R8, aMargins, GL_LINEAR);
     for (auto & [charcode, glyph, rendered] : glyphs)
     {
         arte::GlyphBitmap bitmap = glyph.render();

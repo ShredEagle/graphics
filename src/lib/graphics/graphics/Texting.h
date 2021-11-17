@@ -28,6 +28,12 @@ namespace graphics {
 class Texting
 {
 public:
+    enum Filtering
+    {
+        Linear,
+        Nearest,
+    };
+
     struct Instance
     {
         Instance(math::Position<2, GLfloat> aPenOrigin_w, const detail::RenderedGlyph & aRendered);
@@ -47,7 +53,8 @@ public:
     explicit Texting(filesystem::path aFontPath,
                      GLfloat aGlyphWorldHeight, 
                      GLfloat aScreenWorldHeight,
-                     std::shared_ptr<AppInterface> aAppInterface);
+                     std::shared_ptr<AppInterface> aAppInterface,
+                     Filtering aTextureFiltering = Linear);
 
     /// [aFirst, aLast[
     void loadGlyphs(arte::CharCode aFirst, arte::CharCode aLast);

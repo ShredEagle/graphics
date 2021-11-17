@@ -27,7 +27,8 @@ constexpr GLint gTextureWidthCount = 256;
 Texting::Texting(filesystem::path aFontPath,
                  GLfloat aGlyphWorldHeight, 
                  GLfloat aScreenWorldHeight,
-                 std::shared_ptr<AppInterface> aAppInterface) :
+                 std::shared_ptr<AppInterface> aAppInterface,
+                 Filtering aTextureFiltering) :
     mQuadVbo{
         loadUnattachedVertexBuffer<detail::VertexUnitQuad>(
             detail::make_RectangleVertices({ {0.f, -1.f}, {1.f, 1.f} }))
@@ -70,6 +71,7 @@ Texting::Texting(filesystem::path aFontPath,
         {(GLint)(gTextureWidthCount * glyphPixelHeight),
          (GLint)(glyphPixelHeight + (2 * ribonMargins.y()))}, // Margin above and below
         ribonMargins,
+        (aTextureFiltering == Filtering::Linear) ? (GLenum)GL_LINEAR : GL_NEAREST
     };
 
     // TODO I don't like this coupling to GlyphUtilities.cpp, DynamicGlyphCache::at()
