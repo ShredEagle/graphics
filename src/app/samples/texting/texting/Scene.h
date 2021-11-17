@@ -11,6 +11,7 @@
 // Dirty include, to get the GLFW input definitions
 #include <GLFW/glfw3.h>
 
+#include <functional>
 #include <map>
 
 
@@ -18,32 +19,34 @@ namespace ad {
 namespace graphics {
 
 
-constexpr GLfloat gScreenWorldHeight = 100;
-constexpr GLfloat gGlyphWorldHeight = 10;
+constexpr GLfloat gScreenWorldHeight = 1000;
 
 class Scene
 {
 public:
-    Scene(filesystem::path aFontPath, std::shared_ptr<AppInterface> aAppInterface) :
+    Scene(filesystem::path aFontPath, std::shared_ptr<AppInterface> aAppInterface, double aGlyphWorldHeight) :
         mTexting{
             aFontPath,
-            gGlyphWorldHeight,
+            aGlyphWorldHeight,
             gScreenWorldHeight,
             aAppInterface
         }
     {
+        using namespace std::placeholders;
+        aAppInterface->registerKeyCallback(std::bind(&Scene::onKey, this, _1, _2, _3, _4));
         mTexting.loadGlyphs(0x20, 0x7F);
     }
 
     void step(const Timer & aTimer)
     {
+        std::map<Texture *, std::vector<Texting::Instance>> glyphs;
+        mTexting.prepareString(mMessage, mPenPosition, glyphs);
+        mTexting.updateInstances(glyphs);
     }
     
     void setMessage(const std::string & aMessage)
     {
-        std::map<Texture *, std::vector<Texting::Instance>> glyphs;
-        mTexting.prepareString(aMessage, {-50.f, 0.f}, glyphs);
-        mTexting.updateInstances(glyphs);
+        mMessage = aMessage;
     }
 
     void render()
@@ -53,14 +56,30 @@ public:
 
 private:
 
-    void callbackKey(int key, int scancode, int action, int mods)
+    void onKey(int key, int scancode, int action, int mods)
     {
-        if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+        constexpr double step = 0.5f;
+        if (key == GLFW_KEY_UP && action == GLFW_PRESS)
         {
+            mPenPosition.y() += step;
+        }
+        else if (key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+        {
+            mPenPosition.y() -= step;
+        }
+        else if (key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+        {
+            mPenPosition.x() += step;
+        }
+        else if (key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+        {
+            mPenPosition.x() -= step;
         }
     }
 
     Texting mTexting;
+    std::string mMessage;
+    math::Position<2, GLfloat> mPenPosition{-50.f, 0.f};
 };
 
 

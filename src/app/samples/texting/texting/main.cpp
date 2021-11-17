@@ -85,10 +85,20 @@ std::string readLine()
 }
 
 
+/// Usage:
+/// Accept one optional command line argument, the glyph world height 
+/// (The windows is 1000 world unit tall, i.e. initial framebuffer pixel height).
+/// Control text position using keyboard directions.
 int main(int argc, const char * argv[])
 {
     try
     {
+        double glyphWorldHeight = 10;
+        if (argc == 2)
+        {
+            glyphWorldHeight = std::stod(argv[1]);
+        }
+
         // I suspect this is the default anyway
         //SetConsoleCP(CP_ACP);
         ApplicationGlfw application("Texting", 1600, 1000,
@@ -96,7 +106,8 @@ int main(int argc, const char * argv[])
 
         Timer timer{glfwGetTime(), 0.};
         Scene scene{resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"),
-                    application.getAppInterface() };
+                    application.getAppInterface(),
+                    glyphWorldHeight};
 
         std::future line = std::async(&readLine);
         while(application.nextFrame())
