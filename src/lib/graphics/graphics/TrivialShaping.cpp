@@ -67,6 +67,16 @@ namespace
 } // anonymous namespace
 
 
+TrivialShaping::RectangleAngle::operator TrivialShaping::Rectangle ()
+{
+    return Rectangle{
+        mGeometry,
+        mColor,
+        math::trans2d::rotateAbout(angle, center),
+    };
+}
+
+
 TrivialShaping::TrivialShaping(Size2<int> aRenderResolution) :
     mDrawContext{
         make_VertexSpecification(),
@@ -81,25 +91,15 @@ TrivialShaping::TrivialShaping(Size2<int> aRenderResolution) :
 }
 
 
-void TrivialShaping::clearShapes()
+void TrivialShaping::updateInstances(gsl::span<const TrivialShaping::Rectangle> aInstances)
 {
-    mInstances.clear();
-}
-
-
-void TrivialShaping::addRectangle(Rectangle aRectangleData)
-{
-    mInstances.push_back(std::move(aRectangleData));
-}
-
-
-void TrivialShaping::addRectangle(RectangleAngle aRectangleData)
-{
-    mInstances.push_back({
-        aRectangleData.mGeometry,
-        aRectangleData.mColor,
-        math::trans2d::rotateAbout(aRectangleData.angle, aRectangleData.center),
-    });
+    //
+    // Stream vertex attributes
+    //
+    // The last vertex buffer added to the specification is the per instance data.
+    respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
+                    aInstances);
+    mInstanceCount = aInstances.size();
 }
 
 
@@ -108,20 +108,12 @@ void TrivialShaping::render() const
     activate(mDrawContext);
 
     //
-    // Stream vertex attributes
-    //
-
-    // The last vertex buffer added to the specification is the per instance data.
-    respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    gsl::span<const Rectangle>{mInstances});
-
-    //
     // Draw
     //
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,
-                          static_cast<GLsizei>(mInstances.size()));
+                          static_cast<GLsizei>(mInstanceCount));
 }
 
 

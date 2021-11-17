@@ -10,6 +10,7 @@ set(${TARGET_NAME}_HEADERS
     shaders.h
     Sprite.h
     Spriting.h
+    Texting.h
     Tiling.h
     Timer.h
     TrivialLineStrip.h
@@ -21,7 +22,8 @@ set(${TARGET_NAME}_HEADERS
     dataformat/tiles.h
 
     detail/Logging.h
-    detail/ScreenQuad.h
+    detail/UnitQuad.h
+    detail/GlyphUtilities.h
 
     effects/GaussianBlur.h
     effects/GaussianBlur-shaders.h
@@ -31,6 +33,7 @@ set(${TARGET_NAME}_SOURCES
     Curving.cpp
     AppInterface.cpp
     Spriting.cpp
+    Texting.cpp
     Tiling.cpp
     TrivialLineStrip.cpp
     TrivialPolygon.cpp
@@ -40,7 +43,8 @@ set(${TARGET_NAME}_SOURCES
     dataformat/tiles.cpp
 
     detail/Logging.cpp
-    detail/ScreenQuad.cpp
+    detail/UnitQuad.cpp
+    detail/GlyphUtilities.cpp
 
     effects/GaussianBlur.cpp
 )
@@ -67,12 +71,14 @@ cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
+        ad::arte
         ad::renderer
 
         ad::math
 
         glad::glad
         glfw
+        utf8cpp # part of header of Texting.h
     PRIVATE
         ad::handy
         ad::resource

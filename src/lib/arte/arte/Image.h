@@ -142,6 +142,8 @@ public:
     void saveFile(const filesystem::path & aDestination,
                   ImageOrientation aOrientation = ImageOrientation::Default) const;
 
+    void clear(T_pixelFormat aClearColor);
+
     // TODO Is it a good idea? It works with the usual image semantix, i.e. [x][y], yet
     //   it is the opposite than for matrices. Plus the implementation creates complexity.
     Column operator[](std::size_t aColumnId);

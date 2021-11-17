@@ -3,6 +3,9 @@
 #include <functional>
 #include <iostream>
 
+
+namespace ad {
+
 class [[nodiscard]] Guard
 {
 public:
@@ -26,6 +29,7 @@ public:
 
     Guard & operator=(Guard && aOther)
     {
+        this->~Guard(); //explicitly call the destructor for this, to ensure the current releaser is called.
         mReleaser = std::move(aOther.mReleaser);
         aOther.mReleaser = &Guard::turnOff;
         return *this;
@@ -60,6 +64,7 @@ public:
 
     ResourceGuard(T aResource, release_fun aReleaser):
         mResource{std::move(aResource)},
+        // Note: bind a copy, not a reference. Otherwise move sematic would lead to UB.
         mGuard{std::bind(aReleaser, mResource)}
     {}
 
@@ -67,14 +72,27 @@ public:
     ResourceGuard(ResourceGuard && aOther) = default;
     ResourceGuard & operator=(ResourceGuard &&) = default;
 
-    operator const T& () const
+    /// \brief Allows to change the resource managed by the ResourceGuard.
+    ///
+    /// The previous resource will be released.
+    void resetResource(T aResource, release_fun aReleaser)
+    {
+        mResource = std::move(aResource);
+        mGuard = Guard{std::bind(aReleaser, mResource)};
+    }
+
+    /*implicit*/ operator const T& () const
     {
         return mResource;
     }
 
-protected:
-    T mResource;
+    const T & get() const
+    {
+        return mResource;
+    }
+
 private:
+    T mResource;
     Guard mGuard;
 };
 
@@ -82,3 +100,6 @@ template <class T>
 ResourceGuard<T> guard(T aResource, typename ResourceGuard<T>::release_fun aReleaser) {
     return ResourceGuard<T>(std::move(aResource), std::move(aReleaser));
 }
+
+
+} // namespace ad

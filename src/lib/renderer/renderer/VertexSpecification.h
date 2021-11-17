@@ -106,14 +106,41 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 
+/***
+ *
+ * Vertex Buffer
+ *
+ ***/
+
+/// \brief Attach an existing VertexBuffer to an exisiting VertexArray,
+/// without providing initial data.
+void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
+                        const VertexArrayObject & aVertexArray,
+                        AttributeDescriptionList aAttributes,
+                        GLsizei aStride,
+                        GLuint aAttributeDivisor = 0);
+
+/// \brief This overload deduces the stride from T_vertex.
+template <class T_vertex>
+void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
+                        const VertexArrayObject & aVertexArray,
+                        AttributeDescriptionList aAttributes,
+                        GLuint aAttributeDivisor = 0)
+{
+    return attachVertexBuffer(aVertexBuffer, aVertexArray, aAttributes, sizeof(T_vertex), aAttributeDivisor);
+}
+
 /// \brief Intialize a VertexBufferObject, without providing initial data.
+///
+/// This is an extension of `attachVertexBuffer()`, which constructs the vertex buffer it attaches,
+/// instead of expecting it as argument.
 VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
                                     AttributeDescriptionList aAttributes,
                                     GLsizei aStride,
                                     GLuint aAttributeDivisor = 0);
 
 
-/// \brief This overload
+/// \brief This overload deduces the stride from T_vertex.
 template <class T_vertex>
 VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
                                     AttributeDescriptionList aAttributes,
@@ -125,7 +152,11 @@ VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
 /// \brief Create a VertexBufferObject with provided attributes, load it with data,
 /// and associate the data to attributes of `aVertexArray`.
 ///
-/// This is the lowest level overload, with explicit attribute description and raw data pointer.
+/// This is an extension of `initVertexBuffer()`, which loads data into the initialized vertex buffer.
+///
+/// \param aAttribute describes the associaiton.
+///
+/// \note This is the lowest level overload, with explicit attribute description and raw data pointer.
 /// Other overloads end-up calling it.
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     AttributeDescriptionList aAttributes,
@@ -135,10 +166,8 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     GLuint aAttributeDivisor = 0);
 
 
-/// \brief Load vertex data from `aVertices` into the returned `VertexBufferObject`,
-/// and associate the data to attributes of `aVertexArray`.
-///
-/// The association is described by `aAttributes`.
+/// \brief This overload deduces the stride and size from T_vertex,
+/// which could itself be deduced from the provided span.
 template <class T_vertex>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     const AttributeDescriptionList & aAttributes,
@@ -154,7 +183,25 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
 }
 
 
+/// \brief Create a VertexBufferObject and load it with provided data.
+/// But do **not** attach it to a VertexArrayObject / do **not** associate the vertex data to attributes.
+///
+/// \note Attachment to a VertexArrayObject as well as attributes association might be done later with
+/// `attachVertexBuffer()`.
+template <class T_vertex>
+VertexBufferObject loadUnattachedVertexBuffer(gsl::span<const T_vertex> aVertices,
+                                              GLenum aHint = GL_STATIC_DRAW)
+{
+    VertexBufferObject vbo;
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER, aVertices.size_bytes(), aVertices.data(), aHint);
+    return vbo;
+}
+
+
 /// \brief High-level function directly appending a loaded VertexBuffer to a VertexSpecification.
+///
+/// This is an extension to `loadVertexBuffer()`, which appends the loaded vertex buffer to `aSpecification`.
 template <class T_vertex>
 void appendToVertexSpecification(VertexSpecification & aSpecification,
                                  const AttributeDescriptionList & aAttributes,
@@ -169,11 +216,43 @@ void appendToVertexSpecification(VertexSpecification & aSpecification,
 }
 
 
-template <class T_index>
-IndexBufferObject makeLoadedIndexBuffer(const gsl::span<T_index> aIndices, const BufferHint aHint)
+/***
+ *
+ * Index Buffer
+ *
+ ***/
+
+/// \brief Attach an existing IndexBuffer to an exisiting VertexArray,
+/// without providing initial data.
+inline void attachIndexBuffer(const IndexBufferObject & aIndexBuffer,
+                              const VertexArrayObject & aVertexArray)
+{
+    glBindVertexArray(aVertexArray);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIndexBuffer);
+}
+
+
+/// \brief Intialize and attach an IndexBufferObject, without providing initial data.
+///
+/// This is an extension of `attachIndexBuffer()`, which constructs the index buffer it attaches,
+/// instead of expecting it as argument.
+inline IndexBufferObject initIndexBuffer(const VertexArrayObject & aVertexArray)
 {
     IndexBufferObject ibo;
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    attachIndexBuffer(ibo, aVertexArray);
+    return ibo;
+}
+
+
+/// \brief Initialize, attach and load data into an IndexBufferObject.
+///
+/// This is an extension of `initIndexBuffer()`, which loads data into the initialized vertex buffer.
+template <class T_index>
+IndexBufferObject loadIndexBuffer(const VertexArrayObject & aVertexArray,
+                                  const gsl::span<T_index> aIndices,
+                                  const BufferHint aHint)
+{
+    IndexBufferObject ibo = initIndexBuffer(aVertexArray);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, aIndices.size_bytes(), aIndices.data(), getGLBufferHint(aHint));
     return ibo;
 }
@@ -184,7 +263,6 @@ IndexBufferObject makeLoadedIndexBuffer(const gsl::span<T_index> aIndices, const
  *
  * see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming#Buffer_re-specification
  ***/
-
 
 /// \brief Respecify content of a vertex buffer.
 inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aData, GLsizei aSize)
@@ -224,6 +302,7 @@ void respecifyBuffer(const T_buffer & aBufferObject, const gsl::span<T_values> a
 
 
 /// \brief Respecify a vertex buffer with the exactly same size (allowing potential optimizations).
+///
 /// \attention This is undefined behaviour is aData does not point to at least the same amount
 /// of data that was present before in the re-specified vertex buffer.
 inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoid * aData)

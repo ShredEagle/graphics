@@ -49,6 +49,11 @@ inline void activate(const VertexArrayObject & aVertexArray, const Program & aPr
     glUseProgram(aProgram);
 }
 
+inline void activate(const VertexSpecification & aVertexSpecification, const Program & aProgram)
+{
+    activate(aVertexSpecification.mVertexArray, aProgram);
+}
+
 inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
 {
     return aDrawContext.mVertexSpecification.mVertexBuffers;

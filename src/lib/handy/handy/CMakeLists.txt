@@ -4,6 +4,7 @@ set(${TARGET_NAME}_HEADERS
     array_utils.h
     Guard.h
     Observer.h
+    Pool.h
     random.h
     tuple_utils.h
     vector_utils.h

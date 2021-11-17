@@ -121,6 +121,14 @@ void Image<T_pixelFormat>::saveFile(const filesystem::path & aDestination, Image
 }
 
 
+template <class T_pixelFormat>
+void Image<T_pixelFormat>::clear(T_pixelFormat aClearColor)
+{
+    // TODO is there a more efficient approach?
+    std::fill(begin(), end(), aClearColor);
+}
+
+
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 {
     auto destination = std::make_unique<char []>(aSource.dimensions().area());

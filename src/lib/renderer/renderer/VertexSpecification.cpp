@@ -15,16 +15,15 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 }
 
 
-VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
-                                    std::initializer_list<AttributeDescription> aAttributes,
-                                    GLsizei aStride,
-                                    GLuint aAttributeDivisor)
+void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
+                        const VertexArrayObject & aVertexArray,
+                        AttributeDescriptionList aAttributes,
+                        GLsizei aStride,
+                        GLuint aAttributeDivisor)
 {
     // TODO some static assertions on the PODness of the element type
     glBindVertexArray(aVertexArray);
-
-    VertexBufferObject vbo;
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, aVertexBuffer);
 
     for (const auto & attribute : aAttributes)
     {
@@ -58,10 +57,17 @@ VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
 
         glEnableVertexAttribArray(attribute.mIndex);
     }
-
-    return vbo;
 }
 
+VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
+                                    std::initializer_list<AttributeDescription> aAttributes,
+                                    GLsizei aStride,
+                                    GLuint aAttributeDivisor)
+{
+    VertexBufferObject vbo;
+    attachVertexBuffer(vbo, aVertexArray, aAttributes, aStride, aAttributeDivisor);
+    return vbo;
+}
 
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     AttributeDescriptionList aAttributes,

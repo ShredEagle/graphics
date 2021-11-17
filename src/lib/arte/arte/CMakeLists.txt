@@ -1,6 +1,7 @@
 set(TARGET_NAME arte)
 
 set(${TARGET_NAME}_HEADERS
+    Freetype.h
     Image.h
 
     details/ImageFormats/Netpbm.h
@@ -35,7 +36,10 @@ target_link_libraries(${TARGET_NAME}
         ad::handy
         ad::platform
 
-        ad::math)
+        ad::math
+
+        Freetype::Freetype
+)
 
 ##
 ## Install

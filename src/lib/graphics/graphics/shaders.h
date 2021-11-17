@@ -176,12 +176,14 @@ inline const GLchar* gPassthroughVertexShader = R"#(
 layout (location=0) in vec4 ve_Position;
 layout (location=1) in vec2 ve_TextureUV;
 
+uniform vec2 u_UVScaling = vec2(1., 1.);
+
 out vec2 ex_TextureUV;
 
 void main(void)
 {
     gl_Position = ve_Position;
-    ex_TextureUV = ve_TextureUV;
+    ex_TextureUV = ve_TextureUV * u_UVScaling;
 }
 )#";
 
@@ -199,6 +201,56 @@ void main(void)
     out_Color = texture(inputTexture, ex_TextureUV);
 }
 )#";
+
+
+namespace texting
+{
+    inline const GLchar* gGlyphVertexShader = R"#(
+        #version 400
+        
+        layout(location=0) in vec2 ve_Position_u;
+        layout(location=1) in vec2 ve_UV; // not integral, it is multiplied by the float bbox anyway.
+
+        layout(location=2) in vec2  in_Position_w;
+        layout(location=3) in ivec2 in_TextureOffset; // implicit 0 on y
+        layout(location=4) in vec2  in_BoundingBox;
+        layout(location=5) in vec2  in_Bearing;
+        
+        uniform vec2 u_BoundingOffsets_pixel;
+        uniform vec2 u_PixelToWorld;
+        uniform mat3 u_WorldToCamera;
+        uniform mat3 u_Projection;
+
+        out vec2  ex_TextureUV;
+
+        void main(void)
+        {
+            // Go back (left) by horizontal offset, but advance (up) by vertical offset.
+            vec2 worldBearing     = vec2(in_Bearing.x - u_BoundingOffsets_pixel.x, in_Bearing.y + u_BoundingOffsets_pixel.y) * u_PixelToWorld;
+            vec2 worldBoundingBox = in_BoundingBox * u_PixelToWorld;
+            vec2 worldPosition    = in_Position_w + worldBearing + (ve_Position_u * worldBoundingBox);
+
+            vec3 transformed = u_Projection * u_WorldToCamera * vec3(worldPosition, 1.);
+            gl_Position = vec4(transformed.xy, 0., 1.);
+            ex_TextureUV = in_TextureOffset + (ve_UV * in_BoundingBox);
+        }
+    )#";
+
+    inline const GLchar* gGlyphFragmentShader = R"#(
+        #version 400
+
+        in vec2 ex_TextureUV;
+        out vec4 out_Color;
+
+        uniform sampler2DRect u_FontAtlas;
+
+        void main(void)
+        {
+            float alpha = texture(u_FontAtlas, ex_TextureUV).r;
+            out_Color = vec4(1., 1., 1., alpha);
+        }
+    )#";
+};
 
 
 } // namespace graphics

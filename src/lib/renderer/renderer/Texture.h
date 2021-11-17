@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "gl_helpers.h"
 #include "Image.h"
@@ -59,6 +59,37 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
     }
 }
 
+
+struct InputImageParameters
+{
+    math::Size<2, GLsizei> resolution;
+    GLenum format;
+    GLenum type;
+    GLint alignment; // maps to GL_UNPACK_ALIGNMENT
+};
+
+/// \brief OpenGL pixel unpack operation.
+inline void writeTo(const Texture & aTexture,
+                    const std::byte * aRawData,
+                    const InputImageParameters & aInput,
+                    math::Position<2, GLint> aTextureOffset = {0, 0},
+                    GLint aMipmapLevel = 0)
+{
+    bind(aTexture);
+
+    // Handle alignment
+    GLint previousAlignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
+    glPixelStorei(GL_UNPACK_ALIGNMENT, aInput.alignment);
+
+    glTexSubImage2D(aTexture.mTarget, aMipmapLevel,
+                    aTextureOffset.x(), aTextureOffset.y(),
+                    aInput.resolution.width(), aInput.resolution.height(),
+                    aInput.format, aInput.type,
+                    aRawData);
+}
+
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             math::Size<2, GLsizei> aResolution)
 {
@@ -73,7 +104,8 @@ inline void loadSprite(const Texture & aTexture,
 {
     assert(aTexture.mTarget == GL_TEXTURE_2D);
 
-    glActiveTexture(aTextureUnit);
+    // TODO remove aTextureUnit from all those calls, it was tested to be not related.
+//    glActiveTexture(aTextureUnit);
     glBindTexture(aTexture.mTarget, aTexture);
 
     if (GL_ARB_texture_storage)
