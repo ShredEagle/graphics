@@ -24,7 +24,7 @@ constexpr GLfloat gScreenWorldHeight = 1000;
 class Scene
 {
 public:
-    Scene(filesystem::path aFontPath, std::shared_ptr<AppInterface> aAppInterface, double aGlyphWorldHeight) :
+    Scene(filesystem::path aFontPath, std::shared_ptr<AppInterface> aAppInterface, GLfloat aGlyphWorldHeight) :
         mTexting{
             aFontPath,
             aGlyphWorldHeight,
