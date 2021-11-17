@@ -20,10 +20,23 @@ namespace detail {
 /// Unidimensionnal array of rasters
 struct TextureRibon
 {
+    /// \param aMargins The empty margin on each side of the glyph. 
+    /// This is the margin that will be left empty on the left and below each glyph when copying
+    /// their bitmap to the texture.
+    /// In particular, this makes no guarantee about the margin on top, which
+    /// is implicitly texture_height - glyph_height - margin_y.
+    TextureRibon(Texture aTexture, GLint aWidth, math::Vec<2, GLint> aMargins) :
+        texture{std::move(aTexture)},
+        width{aWidth},
+        margins{std::move(aMargins)}
+    {}
+
     Texture texture;
-    GLint width;
-    GLint margin = 1;
-    GLint nextXOffset = 0;
+    GLint width{0};
+    math::Vec<2, GLint> margins;
+    GLint nextXOffset = margins.x(); // Add the margin before the first glyph
+
+    static constexpr math::Vec<2, GLint> gRecommendedMargins{2, 1};
 
     GLint isFitting(GLint aCandidateWidth)
     { return aCandidateWidth <= (width - nextXOffset); }
@@ -32,9 +45,9 @@ struct TextureRibon
 };
 
 
-inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum aInternalFormat)
+inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum aInternalFormat, math::Vec<2, GLint> aMargins)
 {
-    TextureRibon ribon{Texture{GL_TEXTURE_RECTANGLE}, aDimensions.width()};
+    TextureRibon ribon{Texture{GL_TEXTURE_RECTANGLE}, aDimensions.width(), aMargins};
     allocateStorage(ribon.texture, aInternalFormat, aDimensions.width(), aDimensions.height());
 
     bind(ribon.texture);
@@ -49,9 +62,9 @@ inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum a
 
 inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters aInputParameters)
 {
-    writeTo(texture, aData, aInputParameters, {nextXOffset, 0});
+    writeTo(texture, aData, aInputParameters, {nextXOffset, margins.y()});
     GLint thisOffset = nextXOffset;
-    nextXOffset += aInputParameters.resolution.width() + margin;
+    nextXOffset += aInputParameters.resolution.width() + margins.x();
     return thisOffset;
 }
 
@@ -80,7 +93,7 @@ inline GLfloat fixedToFloat(FT_Pos aPos, int aFixedDecimals = 6)
 Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                             arte::CharCode aFirst, arte::CharCode aLast,
                             GlyphMap & aGlyphMap,
-                            math::Vec<2, GLint> aDimensionExtension = {1, 0});
+                            math::Vec<2, GLint> aMargins = TextureRibon::gRecommendedMargins);
 
 
 struct StaticGlyphCache
@@ -106,20 +119,22 @@ struct DynamicGlyphCache
     std::list<TextureRibon> atlases;
     GlyphMap glyphMap;
     math::Size<2, GLint> ribonDimension = {0, 0};
+    math::Vec<2, GLint> margins = {0, 0};
     arte::CharCode placeholder = 0x3F; // '?'
 
     DynamicGlyphCache() = default;
 
     // The empty cache
-    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p) :
-        ribonDimension{aRibonDimension_p}
+    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p, math::Vec<2, GLint> aMargins) :
+        ribonDimension{aRibonDimension_p},
+        margins{std::move(aMargins)}
     {
         growAtlas();
     }
 
     void growAtlas()
     {
-        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8));
+        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8, margins));
     }
 
     RenderedGlyph at(arte::CharCode aCharCode, const arte::FontFace & aFontFace);

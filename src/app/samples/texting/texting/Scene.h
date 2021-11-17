@@ -58,7 +58,7 @@ private:
 
     void onKey(int key, int scancode, int action, int mods)
     {
-        constexpr double step = 0.5f;
+        constexpr double step = 0.25f;
         if (key == GLFW_KEY_UP && action == GLFW_PRESS)
         {
             mPenPosition.y() += step;

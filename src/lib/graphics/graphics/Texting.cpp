@@ -64,10 +64,19 @@ Texting::Texting(filesystem::path aFontPath,
 
     setUniformInt(mGpuProgram, "u_FontAtlas", gTextureUnit);
 
+    // use recommended ribon margins
+    auto ribonMargins = detail::TextureRibon::gRecommendedMargins;
     mGlyphCache = detail::DynamicGlyphCache{
         {(GLint)(gTextureWidthCount * glyphPixelHeight),
-         (GLint)(glyphPixelHeight + 1)}
+         (GLint)(glyphPixelHeight + (2 * ribonMargins.y()))}, // Margin above and below
+        ribonMargins,
     };
+
+    // TODO I don't like this coupling to GlyphUtilities.cpp, DynamicGlyphCache::at()
+    // where we have to provide the same offset to the shader.
+    setUniform(mGpuProgram, "u_BoundingOffsets_pixel", math::Vec<2, GLfloat>{
+        (GLfloat)ribonMargins.x() / 2.f, // division by 2 matches RenderedGlyph data 
+        (GLfloat)ribonMargins.y()});
 
     // Font setup
     mFontFace.inverseYAxis(true);
