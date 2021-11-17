@@ -51,7 +51,9 @@ TrivialPolygon::TrivialPolygon(Size2<int> aRenderResolution) :
         make_VertexSpecification(),
         make_Program()
     },
-    mIbo{ makeLoadedIndexBuffer(gsl::span<Index>{}, BufferHint::StreamDraw) }
+    mIbo{ loadIndexBuffer(mDrawContext.mVertexSpecification.mVertexArray,
+                          gsl::span<Index>{},
+                          BufferHint::StreamDraw) }
 {
     setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
     setProjectionTransformation(math::trans2d::window<GLfloat>(
