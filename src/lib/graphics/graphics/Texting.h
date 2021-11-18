@@ -50,7 +50,7 @@ public:
     using Mapping = std::map<Texture *, std::vector<Texting::Instance>>;
 
     /// \param aCurveSubdivisions is the number of line segments used to approximate the curve.
-    explicit Texting(filesystem::path aFontPath,
+    explicit Texting(const filesystem::path & aFontPath,
                      GLfloat aGlyphWorldHeight, 
                      GLfloat aScreenWorldHeight,
                      std::shared_ptr<AppInterface> aAppInterface,

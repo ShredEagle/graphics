@@ -24,7 +24,7 @@ constexpr AttributeDescriptionList gGlyphInstanceDescription{
 
 constexpr GLint gTextureWidthCount = 256;
 
-Texting::Texting(filesystem::path aFontPath,
+Texting::Texting(const filesystem::path & aFontPath,
                  GLfloat aGlyphWorldHeight, 
                  GLfloat aScreenWorldHeight,
                  std::shared_ptr<AppInterface> aAppInterface,
