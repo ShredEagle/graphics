@@ -4,7 +4,7 @@ set(${TARGET_NAME}_HEADERS
     Freetype.h
     Image.h
 
-    details/ImageFormats/Netpbm.h
+    detail/ImageFormats/Netpbm.h
 )
 
 set(${TARGET_NAME}_SOURCES

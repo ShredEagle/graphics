@@ -1,6 +1,6 @@
 #include "Image.h"
 
-#include "details/ImageFormats/Netpbm.h"
+#include "detail/ImageFormats/Netpbm.h"
 
 #include <algorithm>
 #include <string>
@@ -12,7 +12,7 @@ namespace arte {
 
 
 template <class T_pixelFormat>
-Image<T_pixelFormat>::Image(math::Size<2, int> aDimensions, std::unique_ptr<char[]> aRaster) :
+Image<T_pixelFormat>::Image(math::Size<2, int> aDimensions, std::unique_ptr<unsigned char[]> aRaster) :
     mDimensions{aDimensions},
     mRaster{std::move(aRaster)}
 {}
@@ -21,7 +21,7 @@ Image<T_pixelFormat>::Image(math::Size<2, int> aDimensions, std::unique_ptr<char
 template <class T_pixelFormat>
 Image<T_pixelFormat>::Image(math::Size<2, int> aDimensions, T_pixelFormat aBackgroundValue) :
     mDimensions{aDimensions},
-    mRaster{new char[mDimensions.area()*pixel_size_v]}
+    mRaster{new unsigned char[mDimensions.area()*pixel_size_v]}
 {
     std::fill(begin(), end(), aBackgroundValue);
 }
@@ -30,7 +30,7 @@ Image<T_pixelFormat>::Image(math::Size<2, int> aDimensions, T_pixelFormat aBackg
 template <class T_pixelFormat>
 Image<T_pixelFormat>::Image(const Image & aRhs) :
     mDimensions(aRhs.mDimensions),
-    mRaster{new char[mDimensions.area()*pixel_size_v]}
+    mRaster{new unsigned char[mDimensions.area()*pixel_size_v]}
 {
     std::copy(aRhs.begin(), aRhs.end(), begin());
 }
@@ -131,7 +131,7 @@ void Image<T_pixelFormat>::clear(T_pixelFormat aClearColor)
 
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 {
-    auto destination = std::make_unique<char []>(aSource.dimensions().area());
+    auto destination = std::make_unique<unsigned char[]>(aSource.dimensions().area());
 
     std::transform(aSource.begin(), aSource.end(), destination.get(),
                    [](math::sdr::Rgb aPixel) -> math::sdr::Grayscale

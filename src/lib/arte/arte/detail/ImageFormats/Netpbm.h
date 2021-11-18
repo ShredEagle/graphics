@@ -102,13 +102,14 @@ namespace detail {
             auto dimensions = ReadHeader(aIn);
 
             std::size_t remainingBytes = dimensions.area() * sizeof(pixel_type);
-            auto data = std::make_unique<char[]>(remainingBytes);
-            char * currentDestination = data.get();
+            auto data = std::make_unique<unsigned char[]>(remainingBytes);
+            unsigned char * currentDestination = data.get();
 
             while (remainingBytes)
             {
                 std::size_t readSize = std::min(remainingBytes, gChunkSize);
-                if (!aIn.read(currentDestination, readSize).good())
+                // read() only accepts char*, but we know the bit patterns really match an unsigned char.
+                if (!aIn.read(reinterpret_cast<char *>(currentDestination), readSize).good())
                 {
                     // If the stream is not good, but its converts to "true", it means it reached eof
                     // see: https://en.cppreference.com/w/cpp/io/basic_ios/good#see_also

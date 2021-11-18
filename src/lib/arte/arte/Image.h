@@ -6,7 +6,6 @@
 
 #include <math/Color.h>
 
-#include <filesystem>
 #include <map>
 #include <memory>
 
@@ -122,7 +121,7 @@ public:
 
     // \brief Low-level constructor, intended for loaders implementation, not general usage
     // \attention The calling code is responsible for providing a raster of appropriate size
-    Image(math::Size<2, int> aDimensions, std::unique_ptr<char[]> aRaster);
+    Image(math::Size<2, int> aDimensions, std::unique_ptr<unsigned char[]> aRaster);
 
     // \brief Creates an image
     Image(math::Size<2, int> aDimensions, pixel_format_t aBackgroundValue);
@@ -208,7 +207,7 @@ private:
     // NOTE: it is not possible to allocate an array of non-default constructible objects
     //std::unique_ptr<T_pixelFormat[]> mRaster{nullptr};
     // TODO try with byte
-    std::unique_ptr<char[]> mRaster{nullptr};
+    std::unique_ptr<unsigned char[]> mRaster{nullptr};
 };
 
 
