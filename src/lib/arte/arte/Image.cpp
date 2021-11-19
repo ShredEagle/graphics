@@ -1,6 +1,7 @@
 #include "Image.h"
 
 #include "detail/ImageFormats/Netpbm.h"
+#include "detail/ImageFormats/StbImageFormats.h"
 
 #include <algorithm>
 #include <string>
@@ -83,6 +84,8 @@ Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat, std::istr
     {
     case ImageFormat::Ppm:
         return detail::Netpbm<detail::NetpbmFormat::Ppm>::Read(aIn);
+    case ImageFormat::Png:
+        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn);
     default:
         throw std::runtime_error{"Unsupported read format for RGB image: "
                                  + to_string(aFormat)};

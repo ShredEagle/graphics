@@ -18,6 +18,7 @@ enum class ImageFormat
 {
     Pgm,
     Ppm,
+    Png,
 };
 
 
@@ -38,6 +39,7 @@ struct FormatInfo
 static const std::map<ImageFormat, FormatInfo> gImageFormatMap {
     {ImageFormat::Pgm, {"PGM", ".pgm"}},
     {ImageFormat::Ppm, {"PPM", ".ppm"}},
+    {ImageFormat::Png, {"PNG", ".png"}},
 };
 
 
@@ -168,6 +170,9 @@ public:
 
     const pixel_format_t * data() const
     { return reinterpret_cast<const pixel_format_t *>(mRaster.get()); }
+
+    explicit operator const unsigned char * () const
+    { return mRaster.get(); }
 
     std::size_t size_bytes() const
     { return dimensions().area() * pixel_size_v; }

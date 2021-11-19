@@ -1,5 +1,7 @@
 #pragma once
 
+#include <arte/SpriteSheet.h>
+
 #include <renderer/Image.h>
 #include <renderer/commons.h>
 
@@ -10,7 +12,7 @@ namespace ad {
 namespace graphics {
 
 // Essentially a cutout in a spritesheet image
-typedef Rectangle<int> SpriteArea;
+using SpriteArea = arte::SpriteSheet::SpriteArea;
 
 /// \todo How to address it cleanly? We don't know how client code wants to represent sprites
 struct Sprite
