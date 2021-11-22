@@ -69,6 +69,14 @@ void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut,
 
 
 template <>
+void Image<math::sdr::Rgba>::write(ImageFormat aFormat, std::ostream & aOut,
+                                   ImageOrientation aOrientation) const
+{
+    throw std::runtime_error{"Writing RGBA image is not implemented."};
+}
+
+
+template <>
 void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut,
                                         ImageOrientation aOrientation) const
 {
@@ -98,7 +106,26 @@ Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat,
     case ImageFormat::Bmp:
         return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     default:
-        throw std::runtime_error{"Unsupported read format for RGB image: "
+        throw std::runtime_error{"Unsupported read format to produce and RGB image: "
+                                 + to_string(aFormat)};
+    }
+}
+
+
+template <>
+Image<math::sdr::Rgba> Image<math::sdr::Rgba>::Read(ImageFormat aFormat,
+                                                    std::istream & aIn,
+                                                    ImageOrientation aOrientation)
+{
+    // Important: PPM standard does **not** support a transparency channel.
+    switch(aFormat)
+    {
+    case ImageFormat::Png:
+        return detail::StbImageFormats::Read<math::sdr::Rgba>(aIn, aOrientation);
+    case ImageFormat::Bmp:
+        return detail::StbImageFormats::Read<math::sdr::Rgba>(aIn, aOrientation);
+    default:
+        throw std::runtime_error{"Unsupported read format to produce and RGBA image: "
                                  + to_string(aFormat)};
     }
 }
@@ -188,7 +215,8 @@ Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 //
 // Explicit instantiations
 //
-template class Image<>;
+template class Image<math::sdr::Rgb>;
+template class Image<math::sdr::Rgba>;
 template class Image<math::sdr::Grayscale>;
 
 

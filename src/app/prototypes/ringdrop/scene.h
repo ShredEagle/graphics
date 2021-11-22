@@ -92,7 +92,7 @@ DrawContext animatedRing()
     // Texture
     //
     {
-        static const arte::Image<>
+        static const arte::ImageRgba
             ring{resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
                  arte::ImageOrientation::InvertVerticalAxis};
 
@@ -112,7 +112,7 @@ DrawContext animatedRing()
                 {2103, 3},
                 {2453, 3},
         };
-        arte::Image<> animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), frame);
+        arte::ImageRgba animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), frame);
 
         // First-sprite
         // Found by measuring in the image raster

@@ -22,6 +22,13 @@ struct stbi_channels<math::sdr::Rgb>
 };
 
 
+template <>
+struct stbi_channels<math::sdr::Rgba>
+{
+    static constexpr int value = STBI_rgb_alpha;
+};
+
+
 struct StbImageFormats
 {
     inline static const stbi_io_callbacks streamCallbacks{

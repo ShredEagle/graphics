@@ -128,7 +128,7 @@ Scene setupScene()
     //
     // From file image texture
     //
-    static const arte::Image<> ring{
+    static const arte::ImageRgba ring{
         resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
         arte::ImageOrientation::InvertVerticalAxis
     };
@@ -148,7 +148,7 @@ Scene setupScene()
 
     // First-sprite
     // Found by measuring in the image raster
-    static const arte::Image<> firstRing = ring.crop({{3, 3}, {width, height}});
+    static const arte::ImageRgba firstRing = ring.crop({{3, 3}, {width, height}});
     const GLvoid * imageData = static_cast<const unsigned char *>(firstRing);
 
     // Complete animation
@@ -162,7 +162,7 @@ Scene setupScene()
             {2103, 3},
             {2453, 3},
     };
-    arte::Image<> animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), {width, height});
+    arte::ImageRgba animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), {width, height});
 
       //
       // Single image

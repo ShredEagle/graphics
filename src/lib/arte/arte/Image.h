@@ -246,6 +246,9 @@ private:
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
 
 
+using ImageRgba = Image<math::sdr::Rgba>;
+
+
 //
 // Implementations
 //

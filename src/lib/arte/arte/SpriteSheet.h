@@ -50,7 +50,7 @@ public:
     std::size_t frameCount() const
     { return mFrames.size(); }
 
-    const Image<> image() const
+    const ImageRgba image() const
     { return mSheet; }
 
     auto beginFrames() const
@@ -65,7 +65,7 @@ private:
     std::string mName;
     float mScale{1};
     Duration_t mTotalDuration{0};
-    Image<> mSheet;
+    ImageRgba mSheet;
     std::vector<Frame> mFrames;
 };
 

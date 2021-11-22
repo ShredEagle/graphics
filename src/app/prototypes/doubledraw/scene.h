@@ -115,7 +115,7 @@ typedef std::vector<Entity> Scene;
 
 DrawContext staticEggman()
 {
-    static const arte::Image<> eggman{
+    static const arte::ImageRgba eggman{
         resource::pathFor("ec1ccd86c2ddb52.png").string(),
         arte::ImageOrientation::InvertVerticalAxis};
     DrawContext drawing = [&](){
@@ -162,7 +162,7 @@ DrawContext staticEggman()
     return drawing;
 }
 
-DrawContext staticRing(const arte::Image<> &aImage, const math::Size<2, int> aFrame)
+DrawContext staticRing(const arte::ImageRgba &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -199,7 +199,7 @@ DrawContext staticRing(const arte::Image<> &aImage, const math::Size<2, int> aFr
     {
         // First-sprite
         // Found by measuring in the image raster
-        arte::Image<> firstRing = aImage.crop({{3, 3}, aFrame});
+        arte::ImageRgba firstRing = aImage.crop({{3, 3}, aFrame});
         Texture texture{GL_TEXTURE_2D};
         loadSprite(texture, GL_TEXTURE1, firstRing);
 
@@ -209,7 +209,7 @@ DrawContext staticRing(const arte::Image<> &aImage, const math::Size<2, int> aFr
     return drawing;
 }
 
-DrawContext animatedRing(const arte::Image<> &aImage, const math::Size<2, int> aFrame)
+DrawContext animatedRing(const arte::ImageRgba &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -255,7 +255,7 @@ DrawContext animatedRing(const arte::Image<> &aImage, const math::Size<2, int> a
                 {2103, 3},
                 {2453, 3},
         };
-        arte::Image<> animationArray = aImage.prepareArray(framePositions.begin(), framePositions.end(), aFrame);
+        arte::ImageRgba animationArray = aImage.prepareArray(framePositions.begin(), framePositions.end(), aFrame);
 
         // First-sprite
         // Found by measuring in the image raster
@@ -287,7 +287,7 @@ void noop(const Entity &)
 Scene setupScene()
 {
 
-    static const arte::Image<> ring{
+    static const arte::ImageRgba ring{
         resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
         arte::ImageOrientation::InvertVerticalAxis};
 

@@ -9,7 +9,7 @@ namespace arte {
 
 SpriteSheet::SpriteSheet(std::string aName, const filesystem::path & aSheetImage) :
     mName{std::move(aName)},
-    mSheet{Image<>::LoadFile(aSheetImage)}
+    mSheet{ImageRgba::LoadFile(aSheetImage, ImageOrientation::InvertVerticalAxis)}
 {}
 
 

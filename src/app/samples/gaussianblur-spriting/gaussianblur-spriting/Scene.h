@@ -88,7 +88,7 @@ private:
             {{2453, 3}, frameDimensions},
         };
 
-        const arte::Image<> ring{
+        const arte::ImageRgba ring{
             resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
             arte::ImageOrientation::InvertVerticalAxis
         };
