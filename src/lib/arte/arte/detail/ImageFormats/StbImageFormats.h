@@ -1,6 +1,8 @@
 #pragma once
 
 
+#include "../../Image.h"
+
 #include "../3rdparty/stb_image_include.h"
 
 
@@ -46,10 +48,12 @@ struct StbImageFormats
 
 
     template <class T_pixel>
-    static Image<T_pixel> Read(std::istream & aIn)
+    static Image<T_pixel> Read(std::istream & aIn, ImageOrientation aOrientation)
     {
-        //  TODO
-        //stbi_set_flip_vertically_on_load(true);
+        if (aOrientation == ImageOrientation::InvertVerticalAxis)
+        {
+            stbi_set_flip_vertically_on_load(true);
+        }
 
         math::Size<2, int> dimension = math::Size<2, int>::Zero();
         int channelsInFile;

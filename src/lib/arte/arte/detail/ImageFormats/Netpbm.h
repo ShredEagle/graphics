@@ -69,6 +69,9 @@ namespace detail {
         static constexpr const char * magic = magicNumber(N_format);
         using pixel_type = typename format_trait<N_format>::pixel_type;
 
+        //
+        // Read
+        //
         static math::Size<2, int> ReadHeader(std::istream & aIn)
         {
             char magic1{0}, magic2{0};
@@ -97,7 +100,7 @@ namespace detail {
             return {width, height};
         }
 
-        static Image<pixel_type> Read(std::istream & aIn)
+        static Image<pixel_type> Read(std::istream & aIn, ImageOrientation aOrientation)
         {
             auto dimensions = ReadHeader(aIn);
 
@@ -105,19 +108,17 @@ namespace detail {
             auto data = std::make_unique<unsigned char[]>(remainingBytes);
             unsigned char * currentDestination = data.get();
 
-            while (remainingBytes)
+            switch (aOrientation)
             {
-                std::size_t readSize = std::min(remainingBytes, gChunkSize);
-                // read() only accepts char*, but we know the bit patterns really match an unsigned char.
-                if (!aIn.read(reinterpret_cast<char *>(currentDestination), readSize).good())
-                {
-                    // If the stream is not good, but its converts to "true", it means it reached eof
-                    // see: https://en.cppreference.com/w/cpp/io/basic_ios/good#see_also
-                    throw std::runtime_error("Invalid " + to_string(N_format) + " content: " +
-                        (aIn ? "truncated content" : "read error"));
-                }
-                remainingBytes -= readSize;
-                currentDestination += readSize;
+            case ImageOrientation::Unchanged:
+                ReadVerticalDefault(aIn, remainingBytes, currentDestination);
+                break;
+            case ImageOrientation::InvertVerticalAxis:
+                ReadVerticalInverted(
+                    aIn, dimensions.height(), dimensions.width() * sizeof(pixel_type), currentDestination);
+                break;
+            default:
+                throw std::runtime_error("Unhandled orientation on image write.");
             }
 
             if (aIn.peek(), !aIn.eof())
@@ -129,6 +130,54 @@ namespace detail {
             return {dimensions, std::move(data)};
         }
 
+        static void ReadVerticalDefault(std::istream & aIn,
+                                        std::size_t aRemainingBytes,
+                                        unsigned char * aCurrentDestination)
+        {
+            while (aRemainingBytes)
+            {
+                std::size_t readSize = std::min(aRemainingBytes, gChunkSize);
+                // read() only accepts char*, but we know the bit patterns really match an unsigned char.
+                if (!aIn.read(reinterpret_cast<char *>(aCurrentDestination), readSize).good())
+                {
+                    // If the stream is not good, but its converts to "true", it means it reached eof
+                    // see: https://en.cppreference.com/w/cpp/io/basic_ios/good#see_also
+                    throw std::runtime_error("Invalid " + to_string(N_format) + " content: " +
+                        (aIn ? "truncated content" : "read error"));
+                }
+                aRemainingBytes -= readSize;
+                aCurrentDestination += readSize;
+            }
+        }
+
+        static void ReadVerticalInverted(std::istream & aIn, 
+                                         int aHeight,
+                                         std::size_t aLineBytes,
+                                         unsigned char * const aDestination)
+        {
+            for (int currentLine = aHeight - 1; currentLine >= 0; --currentLine)
+            {
+                std::size_t remainingLineBytes = aLineBytes;
+                unsigned char * currentDestination = aDestination + currentLine * aLineBytes;
+
+                while (remainingLineBytes)
+                {
+                    std::size_t readSize = std::min(remainingLineBytes, gChunkSize);
+                    if (!aIn.read(reinterpret_cast<char *>(currentDestination), readSize).good())
+                    {
+                        throw std::runtime_error("Invalid " + to_string(N_format) + " content: " +
+                            (aIn ? "truncated content" : "read error"));
+                    }
+                    remainingLineBytes -= readSize;
+                    currentDestination += readSize;
+                }
+            }
+        }
+
+
+        //
+        // Write
+        //
         static void Write(std::ostream & aOut, const Image<pixel_type> & aImage,
                           ImageOrientation aOrientation)
         {
@@ -144,7 +193,7 @@ namespace detail {
 
             switch (aOrientation)
             {
-            case ImageOrientation::Default:
+            case ImageOrientation::Unchanged:
                 WriteVerticalDefault(aOut, aImage);
                 break;
             case ImageOrientation::InvertVerticalAxis:

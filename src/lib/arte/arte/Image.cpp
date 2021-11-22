@@ -45,6 +45,13 @@ Image<T_pixelFormat> & Image<T_pixelFormat>::operator=(const Image & aRhs)
 }
 
 
+template <class T_pixelFormat>
+Image<T_pixelFormat>::Image(const filesystem::path & aImageFile,
+                            ImageOrientation aOrientation) :
+    Image{LoadFile(aImageFile, aOrientation)}
+{}
+
+
 template <>
 void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut,
                                   ImageOrientation aOrientation) const
@@ -78,14 +85,18 @@ void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut
 
 
 template <>
-Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat, std::istream & aIn)
+Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat,
+                                                  std::istream & aIn,
+                                                  ImageOrientation aOrientation)
 {
     switch(aFormat)
     {
     case ImageFormat::Ppm:
-        return detail::Netpbm<detail::NetpbmFormat::Ppm>::Read(aIn);
+        return detail::Netpbm<detail::NetpbmFormat::Ppm>::Read(aIn, aOrientation);
     case ImageFormat::Png:
-        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn);
+        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
+    case ImageFormat::Bmp:
+        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     default:
         throw std::runtime_error{"Unsupported read format for RGB image: "
                                  + to_string(aFormat)};
@@ -94,12 +105,14 @@ Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat, std::istr
 
 
 template <>
-Image<math::sdr::Grayscale> Image<math::sdr::Grayscale>::Read(ImageFormat aFormat, std::istream & aIn)
+Image<math::sdr::Grayscale> Image<math::sdr::Grayscale>::Read(ImageFormat aFormat,
+                                                              std::istream & aIn,
+                                                              ImageOrientation aOrientation)
 {
     switch(aFormat)
     {
     case ImageFormat::Pgm:
-        return detail::Netpbm<detail::NetpbmFormat::Pgm>::Read(aIn);
+        return detail::Netpbm<detail::NetpbmFormat::Pgm>::Read(aIn, aOrientation);
     default:
         throw std::runtime_error{"Unsupported read format for grayscale image: "
                                  + to_string(aFormat)};
@@ -108,10 +121,12 @@ Image<math::sdr::Grayscale> Image<math::sdr::Grayscale>::Read(ImageFormat aForma
 
 
 template <class T_pixelFormat>
-Image<T_pixelFormat> Image<T_pixelFormat>::LoadFile(const filesystem::path & aImageFile)
+Image<T_pixelFormat> Image<T_pixelFormat>::LoadFile(const filesystem::path & aImageFile,
+                                                    ImageOrientation aOrientation)
 {
     return Read(from_extension(aImageFile.extension()),
-                std::ifstream{aImageFile.string(), std::ios_base::in | std::ios_base::binary});
+                std::ifstream{aImageFile.string(), std::ios_base::in | std::ios_base::binary},
+                aOrientation);
 }
 
 

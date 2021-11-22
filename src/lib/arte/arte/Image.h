@@ -19,12 +19,13 @@ enum class ImageFormat
     Pgm,
     Ppm,
     Png,
+    Bmp,
 };
 
 
 enum class ImageOrientation
 {
-    Default, 
+    Unchanged, 
     InvertVerticalAxis,
 };
 
@@ -40,6 +41,7 @@ static const std::map<ImageFormat, FormatInfo> gImageFormatMap {
     {ImageFormat::Pgm, {"PGM", ".pgm"}},
     {ImageFormat::Ppm, {"PPM", ".ppm"}},
     {ImageFormat::Png, {"PNG", ".png"}},
+    {ImageFormat::Bmp, {"BMP", ".bmp"}},
 };
 
 
@@ -121,27 +123,35 @@ public:
     Image(Image && aRhs) noexcept = default;
     Image & operator=(Image && aRhs) noexcept = default;
 
-    // \brief Low-level constructor, intended for loaders implementation, not general usage
-    // \attention The calling code is responsible for providing a raster of appropriate size
+    /// \brief Low-level constructor, intended for loaders implementation, not general usage
+    /// \attention The calling code is responsible for providing a raster of appropriate size
     Image(math::Size<2, int> aDimensions, std::unique_ptr<unsigned char[]> aRaster);
 
-    // \brief Creates an image
+    /// \brief Creates an image
     Image(math::Size<2, int> aDimensions, pixel_format_t aBackgroundValue);
+    
+    /// \brief Load an Image from a file on disk.
+    /// \note Similar functionality to LoadFile().
+    explicit Image(const filesystem::path & aImageFile,
+                   ImageOrientation aOrientation = ImageOrientation::Unchanged);
 
     void write(ImageFormat aFormat, std::ostream & aOut,
-               ImageOrientation aOrientation = ImageOrientation::Default) const;
+               ImageOrientation aOrientation = ImageOrientation::Unchanged) const;
     void write(ImageFormat aFormat, std::ostream && aOut,
-               ImageOrientation aOrientation = ImageOrientation::Default) const
+               ImageOrientation aOrientation = ImageOrientation::Unchanged) const
     { return write(aFormat, aOut, aOrientation); };
 
-    static Image Read(ImageFormat aFormat, std::istream & aIn);
-    static Image Read(ImageFormat aFormat, std::istream && aIn)
-    { return Read(aFormat, aIn); }
+    static Image Read(ImageFormat aFormat, std::istream & aIn,
+                      ImageOrientation aOrientation = ImageOrientation::Unchanged);
+    static Image Read(ImageFormat aFormat, std::istream && aIn,
+                      ImageOrientation aOrientation = ImageOrientation::Unchanged)
+    { return Read(aFormat, aIn, aOrientation); }
 
-    static Image LoadFile(const filesystem::path & aImageFile);
+    static Image LoadFile(const filesystem::path & aImageFile,
+                          ImageOrientation aOrientation = ImageOrientation::Unchanged);
 
     void saveFile(const filesystem::path & aDestination,
-                  ImageOrientation aOrientation = ImageOrientation::Default) const;
+                  ImageOrientation aOrientation = ImageOrientation::Unchanged) const;
 
     void clear(T_pixelFormat aClearColor);
 
@@ -206,6 +216,11 @@ public:
 
     math::Size<2, int> dimensions() const
     { return static_cast<math::Size<2, int>>(mDimensions); }
+
+    /// \The alignment of consecutive rows. This is important for OpenGL, which uses 4 by default.
+    /// \note Currently 1 in all the cases for us, even stb_image tightly packs rows.
+    std::size_t rowAlignment() const
+    { return 1; }
 
 private:
     math::Size<2, ZeroOnMove<int>> mDimensions{0, 0};
