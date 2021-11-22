@@ -247,6 +247,24 @@ SCENARIO("Image files creation, read, write")
                 toGrayscale(yacht).saveFile(resultfile);
                 REQUIRE(exists(resultfile));
             }
+
+            THEN("It can be cropped and writtent to a file")
+            {
+                filesystem::path resultfile = tempFolder/"cropped_yacht.ppm";
+                yacht.crop({ {127, 127}, {256, 256} }).saveFile(resultfile);
+                REQUIRE(exists(resultfile));
+            }
+
+            THEN("It can be prepared as an array")
+            {
+                filesystem::path resultfile = tempFolder/"array_yacht.ppm";
+                std::initializer_list<math::Position<2, int>> positions{
+                    {0, 0}, {0, 240}, {256, 0}, {256, 240}
+                };
+
+                yacht.prepareArray(positions.begin(), positions.end(), {256, 240}).saveFile(resultfile);
+                REQUIRE(exists(resultfile));
+            }
         }
     }
 }

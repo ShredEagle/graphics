@@ -5,6 +5,7 @@
 #include <platform/Filesystem.h>
 
 #include <math/Color.h>
+#include <math/Rectangle.h>
 
 #include <map>
 #include <memory>
@@ -222,7 +223,18 @@ public:
     std::size_t rowAlignment() const
     { return 1; }
 
+    //
+    // Image edition
+    //
+    Image crop(const math::Rectangle<int> & aZone) const;
+
+    template <class T_iterator>
+    Image prepareArray(T_iterator aFirstPosition, T_iterator aLastPosition, math::Size<2, int> aDimension) const;
+
 private:
+    /// \return Position immediatly after the last writen element.
+    T_pixelFormat * cropTo(T_pixelFormat * aDestination, const math::Rectangle<int> & aZone) const;
+
     math::Size<2, ZeroOnMove<int>> mDimensions{0, 0};
     // NOTE: it is not possible to allocate an array of non-default constructible objects
     //std::unique_ptr<T_pixelFormat[]> mRaster{nullptr};
@@ -249,6 +261,28 @@ template <class T_pixelFormat>
 auto Image<T_pixelFormat>::operator[](std::size_t aColumnId) const -> Image::const_Column
 {
     return const_Column{*this, aColumnId};
+}
+
+
+template <class T_pixelFormat>
+template <class T_iterator>
+Image<T_pixelFormat> Image<T_pixelFormat>::prepareArray(T_iterator aFirstPosition,
+                                                        T_iterator aLastPosition,
+                                                        math::Size<2, int> aDimension) const
+{
+    math::Size<2, int> targetDimensions{
+        aDimension.width(),
+        aDimension.height() * (int)std::distance(aFirstPosition, aLastPosition)};
+
+    auto target = std::make_unique<unsigned char[]>(targetDimensions.area() * pixel_size_v);
+
+    T_pixelFormat * destination = reinterpret_cast<T_pixelFormat *>(target.get());
+    for(; aFirstPosition != aLastPosition; ++aFirstPosition)
+    {
+        destination = cropTo(destination, {*aFirstPosition, aDimension});
+    }
+
+    return {targetDimensions, std::move(target)};
 }
 
 
