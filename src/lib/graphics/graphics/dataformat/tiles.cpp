@@ -22,7 +22,7 @@ SpriteSheet loadMeta(std::istream & aDatastream)
 
     SpriteSheet sheet{
         {},
-        arte::Image<>::LoadFile(resource::pathFor(content.at("file").get<std::string>()).string(),
+        arte::ImageRgba::LoadFile(resource::pathFor(content.at("file").get<std::string>()).string(),
                                 arte::ImageOrientation::InvertVerticalAxis)
     };
 

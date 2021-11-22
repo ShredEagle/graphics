@@ -72,7 +72,7 @@ inline ImageFormat from_extension(filesystem::path aExtension)
 
 
 
-template <class T_pixelFormat = math::sdr::Rgb>
+template <class T_pixelFormat>
 class Image
 {
     static_assert(std::is_trivially_copyable<T_pixelFormat>::value,
@@ -246,6 +246,7 @@ private:
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
 
 
+using ImageRgb = Image<math::sdr::Rgb>;
 using ImageRgba = Image<math::sdr::Rgba>;
 
 

@@ -24,7 +24,7 @@ struct Sprite
 struct SpriteSheet
 {
     std::vector<Sprite> mSprites;
-    arte::Image<> mRasterData;
+    arte::ImageRgba mRasterData;
 };
 
 // Implementer's note: Leave room for potential future optimization, by changing this type
