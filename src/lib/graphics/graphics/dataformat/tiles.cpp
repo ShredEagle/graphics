@@ -2,6 +2,8 @@
 
 #include "json.h"
 
+#include <arte/Image.h>
+
 #include <resource/PathProvider.h>
 
 #include <math/Range.h>
@@ -20,7 +22,8 @@ SpriteSheet loadMeta(std::istream & aDatastream)
 
     SpriteSheet sheet{
         {},
-        Image{resource::pathFor(content.at("file").get<std::string>()).string()}
+        arte::Image<>::LoadFile(resource::pathFor(content.at("file").get<std::string>()).string(),
+                                arte::ImageOrientation::InvertVerticalAxis)
     };
 
     const std::string prefix = content["set"]["prefix"];

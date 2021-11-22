@@ -28,9 +28,9 @@ public:
     void resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
     /// \brief Takes a pair of iterator to SpriteArea instances, and the corresponding raster data
-    template <class T_iterator>
+    template <class T_iterator, class T_pixel>
     std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
-                                   const Image & aRasterData);
+                                   const arte::Image<T_pixel> & aRasterData);
 
     iterator begin();
     iterator end();

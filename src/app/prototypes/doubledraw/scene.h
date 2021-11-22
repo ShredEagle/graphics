@@ -2,8 +2,9 @@
 
 #include "shaders.h"
 
+#include <arte/Image.h>
+
 #include <renderer/Drawing.h>
-#include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
@@ -114,7 +115,9 @@ typedef std::vector<Entity> Scene;
 
 DrawContext staticEggman()
 {
-    static const Image eggman(resource::pathFor("ec1ccd86c2ddb52.png").string());
+    static const arte::Image<> eggman{
+        resource::pathFor("ec1ccd86c2ddb52.png").string(),
+        arte::ImageOrientation::InvertVerticalAxis};
     DrawContext drawing = [&](){
         VertexSpecification specification;
 
@@ -159,7 +162,7 @@ DrawContext staticEggman()
     return drawing;
 }
 
-DrawContext staticRing(const Image &aImage, const math::Size<2, int> aFrame)
+DrawContext staticRing(const arte::Image<> &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -196,7 +199,7 @@ DrawContext staticRing(const Image &aImage, const math::Size<2, int> aFrame)
     {
         // First-sprite
         // Found by measuring in the image raster
-        Image firstRing = aImage.crop({{3, 3}, aFrame});
+        arte::Image<> firstRing = aImage.crop({{3, 3}, aFrame});
         Texture texture{GL_TEXTURE_2D};
         loadSprite(texture, GL_TEXTURE1, firstRing);
 
@@ -206,7 +209,7 @@ DrawContext staticRing(const Image &aImage, const math::Size<2, int> aFrame)
     return drawing;
 }
 
-DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
+DrawContext animatedRing(const arte::Image<> &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -252,7 +255,7 @@ DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
                 {2103, 3},
                 {2453, 3},
         };
-        Image animationArray = aImage.prepareArray(framePositions, aFrame);
+        arte::Image<> animationArray = aImage.prepareArray(framePositions.begin(), framePositions.end(), aFrame);
 
         // First-sprite
         // Found by measuring in the image raster
@@ -284,8 +287,9 @@ void noop(const Entity &)
 Scene setupScene()
 {
 
-    static const Image ring(
-        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+    static const arte::Image<> ring{
+        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+        arte::ImageOrientation::InvertVerticalAxis};
 
     //
     // Sub-parts

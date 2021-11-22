@@ -33,13 +33,23 @@ public:
 
     Spriting(Size2<int> aRenderResolution);
 
-    /// \brief Takes a pair of iterator to SpriteArea instances, and the corresponding raster data
-    template <class T_iterator>
-    std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
-                                   const Image & aRasterData);
+    /// \brief Take a pair of iterator to SpriteArea instances, and the corresponding raster data.
+    /// Invoke a callback for each frame.
+    template <class T_iterator, class T_pixel>
+    void loadCallback(T_iterator aFirst, T_iterator aLast,
+                      const arte::Image<T_pixel> & aRasterData,
+                      std::function<void(const LoadedSprite &,
+                                         const typename std::iterator_traits<T_iterator>::value_type &)>);
 
     /// \brief Load the entire image as a single sprite.
-    LoadedSprite load(const Image & aRasterData);
+    /// \return a vector of LoadedSprites.
+    template <class T_iterator, class T_pixel>
+    std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
+                                   const arte::Image<T_pixel> & aRasterData);
+
+    /// \brief Load the entire image as a single sprite.
+    template <class T_pixel>
+    LoadedSprite load(const arte::Image<T_pixel> & aRasterData);
 
     void render(gsl::span<const Instance> aInstances) const;
 
@@ -54,26 +64,47 @@ private:
 // Implementation
 //
 
-template <class T_iterator>
-std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
-                                         const Image & aRasterData)
+template <class T_iterator, class T_pixel>
+void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
+                            const arte::Image<T_pixel> & aRasterData,
+                            std::function<void(const LoadedSprite &,
+                                               const typename std::iterator_traits<T_iterator>::value_type &)> aFrameLoadCallback)
 {
     static_assert(std::is_convertible_v<decltype(*std::declval<T_iterator>()), SpriteArea>,
-        "Iterators must point to SpriteArea instances.");
+                  "Iterators must point to SpriteArea instances.");
 
     { // scope texture
         Texture texture{GL_TEXTURE_RECTANGLE};
-        loadSpriteSheet(texture, GL_TEXTURE0, aRasterData, aRasterData.dimension());
+        // TODO sort out hardcoded GL_TEXTURE0
+        loadSpriteSheet(texture, GL_TEXTURE0, aRasterData, aRasterData.dimensions());
         mDrawContext.mTextures.push_back(std::move(texture));
     }
 
-    std::vector<LoadedSprite> loadedSprites;
-    std::copy(aFirst, aLast, std::back_inserter(loadedSprites));
-    return loadedSprites;
+    for (; aFirst != aLast; ++aFirst)
+    {
+        // for now, LoadedSprite == SpriteArea
+        aFrameLoadCallback(static_cast<LoadedSprite>(*aFirst), *aFirst);
+    }
 }
 
 
-inline LoadedSprite Spriting::load(const Image & aRasterData)
+template <class T_iterator, class T_pixel>
+std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
+                                         const arte::Image<T_pixel> & aRasterData)
+{
+    std::vector<LoadedSprite> result;
+    loadCallback(aFirst, aLast, aRasterData,
+        [&](const auto & loadedSprite, auto)
+        {
+            result.push_back(loadedSprite);
+        }
+    );
+    return result;
+}
+
+
+template <class T_pixel>
+LoadedSprite Spriting::load(const arte::Image<T_pixel> & aRasterData)
 {
     std::initializer_list<SpriteArea> fullSize{ {{0, 0}, aRasterData.dimension()} };
     return load(fullSize.begin(), fullSize.end(), aRasterData).at(0);

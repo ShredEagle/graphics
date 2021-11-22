@@ -3,11 +3,12 @@
 #include "Ring.h"
 #include "shaders.h"
 
+#include <arte/Image.h>
+
 #include <handy/vector_utils.h>
 
 #include <renderer/commons.h>
 #include <renderer/Drawing.h>
-#include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
@@ -91,8 +92,9 @@ DrawContext animatedRing()
     // Texture
     //
     {
-        static const Image
-            ring{resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string()};
+        static const arte::Image<>
+            ring{resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+                 arte::ImageOrientation::InvertVerticalAxis};
 
         const Size2<int> frame {
             347-3,
@@ -110,7 +112,7 @@ DrawContext animatedRing()
                 {2103, 3},
                 {2453, 3},
         };
-        Image animationArray = ring.prepareArray(framePositions, frame);
+        arte::Image<> animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), frame);
 
         // First-sprite
         // Found by measuring in the image raster

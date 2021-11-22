@@ -1,7 +1,9 @@
 ﻿#pragma once
 
+#include "commons.h"
 #include "gl_helpers.h"
-#include "Image.h"
+
+#include <arte/Image.h>
 
 #include <handy/Guard.h>
 
@@ -59,6 +61,13 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
     }
 }
 
+inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
+                            math::Size<2, GLsizei> aResolution)
+{
+    return allocateStorage(aTexture, aInternalFormat,
+                           aResolution.width(), aResolution.height());
+}
+
 
 struct InputImageParameters
 {
@@ -90,28 +99,28 @@ inline void writeTo(const Texture & aTexture,
                     aRawData);
 }
 
-inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
-                            math::Size<2, GLsizei> aResolution)
-{
-    return allocateStorage(aTexture, aInternalFormat,
-                           aResolution.width(), aResolution.height());
-}
-
 /// \TODO probably useless to activate a texture unit here...
+template <class T_pixel>
 inline void loadSprite(const Texture & aTexture,
                        GLenum aTextureUnit,
-                       const Image & aImage)
+                       const arte::Image<T_pixel> & aImage)
 {
     assert(aTexture.mTarget == GL_TEXTURE_2D);
 
     // TODO remove aTextureUnit from all those calls, it was tested to be not related.
-//    glActiveTexture(aTextureUnit);
+    glActiveTexture(aTextureUnit);
     glBindTexture(aTexture.mTarget, aTexture);
+
+    // TODO factorize
+    GLint previousAlignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
+    glPixelStorei(GL_UNPACK_ALIGNMENT, aImage.rowAlignment());
 
     if (GL_ARB_texture_storage)
     {
         glTexStorage2D(aTexture.mTarget, 1, GL_RGBA8,
-                       aImage.mDimension.width(), aImage.mDimension.height());
+                       aImage.dimensions().width(), aImage.dimensions().height());
         {
             GLint isSuccess;
             glGetTexParameteriv(aTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
@@ -123,14 +132,14 @@ inline void loadSprite(const Texture & aTexture,
             }
         }
         glTexSubImage2D(aTexture.mTarget, 0,
-                        0, 0, aImage.mDimension.width(), aImage.mDimension.height(),
-                        GL_RGBA, GL_UNSIGNED_BYTE, aImage);
+                        0, 0, aImage.dimensions().width(), aImage.dimensions().height(),
+                        MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
     }
     else
     {
         glTexImage2D(aTexture.mTarget, 0, GL_RGBA,
-                     aImage.mDimension.width(), aImage.mDimension.height(),
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, aImage);
+                     aImage.dimensions().width(), aImage.dimensions().height(),
+                     0, MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
         // We don't generate mipmaps level,
         // so disable mipmap based filtering for the texture to be complete
         glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -140,20 +149,27 @@ inline void loadSprite(const Texture & aTexture,
     }
 }
 
+template <class T_pixel>
 inline void loadAnimationAsArray(const Texture & aTexture,
-                          GLenum aTextureUnit,
-                          const Image & aImage,
-                          const Size2<int> & aFrame,
-                          size_t aSteps)
+                                 GLenum aTextureUnit,
+                                 const arte::Image<T_pixel> & aImage,
+                                 const Size2<int> & aFrame,
+                                 size_t aSteps)
 {
     assert(aTexture.mTarget == GL_TEXTURE_2D_ARRAY);
 
     glActiveTexture(aTextureUnit);
     glBindTexture(aTexture.mTarget, aTexture);
 
+    // TODO factorize
+    GLint previousAlignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
+    glPixelStorei(GL_UNPACK_ALIGNMENT, aImage.rowAlignment());
+
     glTexImage3D(aTexture.mTarget, 0, GL_RGBA,
                  aFrame.width(), aFrame.height(), static_cast<GLsizei>(aSteps),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, aImage);
+                 0, MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
 
     // Texture parameters
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAX_LEVEL, 0);
@@ -162,10 +178,12 @@ inline void loadAnimationAsArray(const Texture & aTexture,
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
+// Why aFrame when we have dimension in the image?
+template <class T_pixel>
 inline void loadSpriteSheet(const Texture & aTexture,
-                     GLenum aTextureUnit,
-                     const Image & aImage,
-                     const Size2<int> & aFrame)
+                            GLenum aTextureUnit,
+                            const arte::Image<T_pixel> & aImage,
+                            const Size2<int> & aFrame)
 {
     /// \todo can be extended, many other target types are valid here
     assert(aTexture.mTarget == GL_TEXTURE_RECTANGLE);
@@ -173,9 +191,14 @@ inline void loadSpriteSheet(const Texture & aTexture,
     glActiveTexture(aTextureUnit);
     glBindTexture(aTexture.mTarget, aTexture);
 
+    GLint previousAlignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
+    glPixelStorei(GL_UNPACK_ALIGNMENT, aImage.rowAlignment());
+
     glTexImage2D(aTexture.mTarget, 0, GL_RGBA,
                  aFrame.width(), aFrame.height(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, aImage);
+                 0, MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
 
     // Sampler parameters
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

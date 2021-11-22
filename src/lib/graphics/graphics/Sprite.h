@@ -1,8 +1,8 @@
 #pragma once
 
+#include <arte/Image.h>
 #include <arte/SpriteSheet.h>
 
-#include <renderer/Image.h>
 #include <renderer/commons.h>
 
 #include <string>
@@ -24,7 +24,7 @@ struct Sprite
 struct SpriteSheet
 {
     std::vector<Sprite> mSprites;
-    Image mRasterData;
+    arte::Image<> mRasterData;
 };
 
 // Implementer's note: Leave room for potential future optimization, by changing this type

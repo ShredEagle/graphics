@@ -12,6 +12,7 @@ set(${TARGET_NAME}_HEADERS
     Spriting.h
     Texting.h
     Tiling.h
+    Tiling-impl.h
     Timer.h
     TrivialLineStrip.h
     TrivialPolygon.h

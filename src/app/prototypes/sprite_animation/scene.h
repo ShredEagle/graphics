@@ -3,7 +3,8 @@
 
 #include <resource/PathProvider.h>
 
-#include <renderer/Image.h>
+#include <arte/Image.h>
+
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification_deduction.h>
@@ -127,8 +128,10 @@ Scene setupScene()
     //
     // From file image texture
     //
-    static const Image ring(
-        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+    static const arte::Image<> ring{
+        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+        arte::ImageOrientation::InvertVerticalAxis
+    };
 
     ////
     //// Whole image
@@ -145,8 +148,8 @@ Scene setupScene()
 
     // First-sprite
     // Found by measuring in the image raster
-    static const Image firstRing = ring.crop({{3, 3}, {width, height}});
-    const GLvoid * imageData = firstRing;
+    static const arte::Image<> firstRing = ring.crop({{3, 3}, {width, height}});
+    const GLvoid * imageData = static_cast<const unsigned char *>(firstRing);
 
     // Complete animation
     std::vector<Position2<int>> framePositions = {
@@ -159,7 +162,7 @@ Scene setupScene()
             {2103, 3},
             {2453, 3},
     };
-    Image animationArray = ring.prepareArray(framePositions, {width, height});
+    arte::Image<> animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), {width, height});
 
       //
       // Single image
@@ -210,7 +213,7 @@ Scene setupScene()
 
         glTexImage3D(target, 0, GL_RGBA,
                      width, height, static_cast<GLsizei>(framePositions.size()),
-                     0, GL_RGBA, GL_UNSIGNED_BYTE, animationArray);
+                     0, GL_RGBA, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(animationArray));
 
         // Texture parameters
         glTexParameteri(target, GL_TEXTURE_MAX_LEVEL, 0);
@@ -255,6 +258,7 @@ Scene setupScene()
     }
 #endif
 
+    glClearColor(0.1f, 0.2f, 0.3f, 1.f);
 
     /// \TODO return the shader resource instances to keep correct lifetime
     /// note that deleting the shader is just marking them for deletion until no program use the,

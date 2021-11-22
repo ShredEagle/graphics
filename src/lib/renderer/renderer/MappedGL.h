@@ -1,25 +1,45 @@
 #pragma once
 
+
 #include "GL_Loader.h"
+
+#include <math/Color.h>
+
 
 namespace ad {
 namespace graphics {
 
+#define MAP(trait, type, enumval)       \
+    template <> struct trait<type>      \
+    { static constexpr GLenum enumerator = enumval; };
+
+//
+// Built-in types
+//
 template <class T_scalar>
 struct MappedGL;
 
-#define MAP(type, enumval)              \
-    template <> struct MappedGL<type>   \
-    { static const GLenum enumerator = enumval; };
+MAP(MappedGL, GLfloat, GL_FLOAT);
+MAP(MappedGL, GLdouble, GL_DOUBLE);
+MAP(MappedGL, GLbyte, GL_BYTE);
+MAP(MappedGL, GLubyte, GL_UNSIGNED_BYTE);
+MAP(MappedGL, GLshort, GL_SHORT);
+MAP(MappedGL, GLushort, GL_UNSIGNED_SHORT);
+MAP(MappedGL, GLint, GL_INT);
+MAP(MappedGL, GLuint, GL_UNSIGNED_INT);
 
-MAP(GLfloat, GL_FLOAT);
-MAP(GLdouble, GL_DOUBLE);
-MAP(GLbyte, GL_BYTE);
-MAP(GLubyte, GL_UNSIGNED_BYTE);
-MAP(GLshort, GL_SHORT);
-MAP(GLushort, GL_UNSIGNED_SHORT);
-MAP(GLint, GL_INT);
-MAP(GLuint, GL_UNSIGNED_INT);
+
+//
+// Pixel formats
+//
+template <class T_pixel>
+struct MappedPixel;
+
+MAP(MappedPixel, math::sdr::Rgb, GL_RGB);
+
+template <class T_pixel>
+constexpr GLenum MappedPixel_v = MappedPixel<T_pixel>::enumerator;
+
 
 #undef MAP
 
