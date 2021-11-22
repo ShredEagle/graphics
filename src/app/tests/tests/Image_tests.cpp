@@ -267,4 +267,20 @@ SCENARIO("Image files creation, read, write")
             }
         }
     }
+
+    GIVEN("A Jpeg image file.")
+    {
+        filesystem::path jpegPath{resource::pathFor("tests/Images/JPEG/Lion_Afrique.jpg").string()};
+
+        WHEN("It is loaded as an Rgb image with an inverted vertical axis")
+        {
+            ImageRgb image{jpegPath, ImageOrientation::InvertVerticalAxis};
+
+            THEN("It can be writen back as PPM file.")
+            {
+                filesystem::path resultfile = tempFolder/"inverted_vertical_lion.ppm";
+                image.saveFile(resultfile);
+            }
+        }
+    }
 }

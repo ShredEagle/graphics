@@ -19,8 +19,9 @@ enum class ImageFormat
 {
     Pgm,
     Ppm,
-    Png,
     Bmp,
+    Jpg,
+    Png,
 };
 
 
@@ -41,8 +42,9 @@ struct FormatInfo
 static const std::map<ImageFormat, FormatInfo> gImageFormatMap {
     {ImageFormat::Pgm, {"PGM", ".pgm"}},
     {ImageFormat::Ppm, {"PPM", ".ppm"}},
-    {ImageFormat::Png, {"PNG", ".png"}},
     {ImageFormat::Bmp, {"BMP", ".bmp"}},
+    {ImageFormat::Jpg, {"JPG", ".jpg"}},
+    {ImageFormat::Png, {"PNG", ".png"}},
 };
 
 

@@ -101,9 +101,11 @@ Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat,
     {
     case ImageFormat::Ppm:
         return detail::Netpbm<detail::NetpbmFormat::Ppm>::Read(aIn, aOrientation);
-    case ImageFormat::Png:
-        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     case ImageFormat::Bmp:
+        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
+    case ImageFormat::Jpg:
+        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
+    case ImageFormat::Png:
         return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     default:
         throw std::runtime_error{"Unsupported read format to produce and RGB image: "
@@ -120,9 +122,11 @@ Image<math::sdr::Rgba> Image<math::sdr::Rgba>::Read(ImageFormat aFormat,
     // Important: PPM standard does **not** support a transparency channel.
     switch(aFormat)
     {
-    case ImageFormat::Png:
-        return detail::StbImageFormats::Read<math::sdr::Rgba>(aIn, aOrientation);
     case ImageFormat::Bmp:
+        return detail::StbImageFormats::Read<math::sdr::Rgba>(aIn, aOrientation);
+    case ImageFormat::Jpg:
+        return detail::StbImageFormats::Read<math::sdr::Rgba>(aIn, aOrientation);
+    case ImageFormat::Png:
         return detail::StbImageFormats::Read<math::sdr::Rgba>(aIn, aOrientation);
     default:
         throw std::runtime_error{"Unsupported read format to produce and RGBA image: "
