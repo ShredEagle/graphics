@@ -62,6 +62,13 @@ inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
     unbind(aTexture);
 }
 
+inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
+{
+    bind_guard scoped{aTexture};
+    glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, aFiltering);
+    glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, aFiltering);
+}
+
 /// \brief Allocate texture storage.
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             const GLsizei aWidth, const GLsizei aHeight)

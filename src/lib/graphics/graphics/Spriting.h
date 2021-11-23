@@ -79,6 +79,7 @@ void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
         Texture texture{GL_TEXTURE_RECTANGLE};
         loadImage(texture, aRasterData);
         mDrawContext.mTextures.push_back(std::move(texture));
+        setFiltering(texture, GL_NEAREST);
     }
 
     for (; aFirst != aLast; ++aFirst)
