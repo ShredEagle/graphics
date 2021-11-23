@@ -117,7 +117,7 @@ DrawContext animatedRing()
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimationAsArray(texture, GL_TEXTURE2, animationArray, frame, framePositions.size());
+        loadAnimationAsArray(texture, GL_TEXTURE0 + 2, animationArray, frame, framePositions.size());
 
         drawing.mTextures.push_back(std::move(texture));
     }
@@ -207,6 +207,7 @@ void updateScene(Scene &aScene, double aTimeSeconds)
 void renderScene(Scene &aScene)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    bind(aScene.mDrawContext.mTextures.front(), GL_TEXTURE0 + 2);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,

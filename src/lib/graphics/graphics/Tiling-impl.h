@@ -9,8 +9,7 @@ std::vector<LoadedSprite> Tiling::load(T_iterator aFirst, T_iterator aLast,
 
     {
         Texture texture{GL_TEXTURE_RECTANGLE};
-        // TODO sort out hardcoded GL_TEXTURE1
-        loadSpriteSheet(texture, GL_TEXTURE1, aRasterData, aRasterData.dimensions());
+        loadImage(texture, aRasterData);
         mDrawContext.mTextures.push_back(std::move(texture)); 
     }
 

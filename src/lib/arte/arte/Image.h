@@ -191,6 +191,9 @@ public:
     explicit operator const unsigned char * () const
     { return mRaster.get(); }
 
+    explicit operator const std::byte * () const
+    { return reinterpret_cast<const std::byte *>(mRaster.get()); }
+
     std::size_t size_bytes() const
     { return dimensions().area() * pixel_size_v; }
 

@@ -154,7 +154,9 @@ DrawContext staticEggman()
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D};
-        loadSprite(texture, GL_TEXTURE1, eggman);
+        loadImage(texture, eggman);
+        // Should be done just before drawing, but more convenient here
+        bind(texture, GL_TEXTURE0 + 1);
 
         drawing.mTextures.push_back(std::move(texture));
     }
@@ -162,52 +164,6 @@ DrawContext staticEggman()
     return drawing;
 }
 
-DrawContext staticRing(const arte::ImageRgba &aImage, const math::Size<2, int> aFrame)
-{
-    DrawContext drawing = [&](){
-        VertexSpecification specification;
-
-        specification.mVertexBuffers.emplace_back(
-                loadVertexBuffer(
-                    specification.mVertexArray,
-                    {
-                        {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
-                        {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},
-                    },
-                    sizeof(Vertex),
-                    sizeof(gVerticesRing),
-                    gVerticesRing
-                ));
-
-        //
-        // Program
-        //
-        Program program = makeLinkedProgram({
-                                  {GL_VERTEX_SHADER, gVertexShader},
-                                  {GL_FRAGMENT_SHADER, gFragmentShader},
-                              });
-        glUseProgram(program);
-
-        glUniform1i(glGetUniformLocation(program, "spriteSampler"), 1);
-
-        return DrawContext{std::move(specification), std::move(program)};
-    }();
-
-    //
-    // Texture
-    //
-    {
-        // First-sprite
-        // Found by measuring in the image raster
-        arte::ImageRgba firstRing = aImage.crop({{3, 3}, aFrame});
-        Texture texture{GL_TEXTURE_2D};
-        loadSprite(texture, GL_TEXTURE1, firstRing);
-
-        drawing.mTextures.push_back(std::move(texture));
-    }
-
-    return drawing;
-}
 
 DrawContext animatedRing(const arte::ImageRgba &aImage, const math::Size<2, int> aFrame)
 {
@@ -260,7 +216,9 @@ DrawContext animatedRing(const arte::ImageRgba &aImage, const math::Size<2, int>
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimationAsArray(texture, GL_TEXTURE2, animationArray, aFrame, framePositions.size());
+        loadAnimationAsArray(texture, GL_TEXTURE0 + 2, animationArray, aFrame, framePositions.size());
+        // Should be done just before drawing, but more convenient here
+        bind(texture, GL_TEXTURE0 + 2);
 
         drawing.mTextures.push_back(std::move(texture));
     }

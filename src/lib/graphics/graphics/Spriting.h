@@ -55,6 +55,8 @@ public:
 
     void setBufferResolution(Size2<int> aNewResolution);
 
+    static constexpr GLint gTextureUnit{0};
+
 private:
     DrawContext mDrawContext;
 };
@@ -75,8 +77,7 @@ void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
 
     { // scope texture
         Texture texture{GL_TEXTURE_RECTANGLE};
-        // TODO sort out hardcoded GL_TEXTURE0
-        loadSpriteSheet(texture, GL_TEXTURE0, aRasterData, aRasterData.dimensions());
+        loadImage(texture, aRasterData);
         mDrawContext.mTextures.push_back(std::move(texture));
     }
 

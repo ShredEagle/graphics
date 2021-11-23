@@ -124,9 +124,9 @@ Scene::Scene(const char * argv[], const AppInterface * aAppInterface) :
 
     // Texture
     {
-        loadSprite(mNeonTexture, GL_TEXTURE0,
-                   arte::ImageRgba{resource::pathFor("st_outline.png").string(),
-                                   arte::ImageOrientation::InvertVerticalAxis});
+        loadImage(mNeonTexture,
+                  arte::ImageRgba{resource::pathFor("st_outline.png").string(),
+                                  arte::ImageOrientation::InvertVerticalAxis});
     }
 }
 

@@ -88,7 +88,7 @@ Program makeProgram()
                       });
 
     // Matches GL_TEXTURE0 from Spriting::load
-    glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), 0);
+    glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), Spriting::gTextureUnit);
 
     return program;
 }
@@ -115,6 +115,8 @@ void Spriting::render(gsl::span<const Instance> aInstances) const
     //
     // Draw
     //
+    bind_guard scopedTexture{mDrawContext.mTextures.front(), GL_TEXTURE0 + gTextureUnit};
+
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,

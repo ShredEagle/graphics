@@ -15,6 +15,20 @@
 namespace ad {
 namespace graphics {
 
+namespace detail {
+
+/// \brief Set the alignment of subsequent texture unpack (write) operation to `aAlignment`,
+/// then restore the previous alignment on returned guard destruction.
+inline Guard scopeUnpackAlignment(GLint aAlignment)
+{
+    GLint previousAlignment;
+    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, aAlignment);
+    return Guard{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
+}
+
+} // namespace detail
+
 struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 {
     Texture(GLenum aTarget) :
@@ -36,6 +50,19 @@ inline void unbind(const Texture & aTexture)
     glBindTexture(aTexture.mTarget, 0);
 }
 
+inline void bind(const Texture & aTexture, GLenum aTextureUnit)
+{
+    glActiveTexture(aTextureUnit);
+    bind(aTexture);
+}
+
+inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
+{
+    glActiveTexture(aTextureUnit);
+    unbind(aTexture);
+}
+
+/// \brief Allocate texture storage.
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             const GLsizei aWidth, const GLsizei aHeight)
 {
@@ -68,7 +95,7 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
                            aResolution.width(), aResolution.height());
 }
 
-
+/// \brief Parameter for `writeTo()` below.
 struct InputImageParameters
 {
     math::Size<2, GLsizei> resolution;
@@ -77,20 +104,17 @@ struct InputImageParameters
     GLint alignment; // maps to GL_UNPACK_ALIGNMENT
 };
 
-/// \brief OpenGL pixel unpack operation.
+/// \brief OpenGL pixel unpack operation, writing to a texture whose storage is already allocated.
 inline void writeTo(const Texture & aTexture,
                     const std::byte * aRawData,
                     const InputImageParameters & aInput,
                     math::Position<2, GLint> aTextureOffset = {0, 0},
                     GLint aMipmapLevel = 0)
 {
-    bind(aTexture);
+    bind_guard bound(aTexture);
 
     // Handle alignment
-    GLint previousAlignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
-    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
-    glPixelStorei(GL_UNPACK_ALIGNMENT, aInput.alignment);
+    Guard scopedAlignemnt = detail::scopeUnpackAlignment(aInput.alignment);
 
     glTexSubImage2D(aTexture.mTarget, aMipmapLevel,
                     aTextureOffset.x(), aTextureOffset.y(),
@@ -99,56 +123,21 @@ inline void writeTo(const Texture & aTexture,
                     aRawData);
 }
 
-/// \TODO probably useless to activate a texture unit here...
+/// \brief Allocate storage and read `aImage` into `aTexture`.
 template <class T_pixel>
-inline void loadSprite(const Texture & aTexture,
-                       GLenum aTextureUnit,
-                       const arte::Image<T_pixel> & aImage)
+inline void loadImage(const Texture & aTexture,
+                      const arte::Image<T_pixel> & aImage)
 {
-    assert(aTexture.mTarget == GL_TEXTURE_2D);
+    // Probably too restrictive
+    assert(aTexture.mTarget == GL_TEXTURE_2D 
+        || aTexture.mTarget == GL_TEXTURE_RECTANGLE);
 
-    // TODO remove aTextureUnit from all those calls, it was tested to be not related.
-    glActiveTexture(aTextureUnit);
-    glBindTexture(aTexture.mTarget, aTexture);
-
-    // TODO factorize
-    GLint previousAlignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
-    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
-    glPixelStorei(GL_UNPACK_ALIGNMENT, aImage.rowAlignment());
-
-    if (GL_ARB_texture_storage)
-    {
-        glTexStorage2D(aTexture.mTarget, 1, GL_RGBA8,
-                       aImage.dimensions().width(), aImage.dimensions().height());
-        {
-            GLint isSuccess;
-            glGetTexParameteriv(aTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
-            if ( isSuccess != GL_TRUE)
-            {
-                const std::string message{"Error calling 'glTexStorage2D'"};
-                std::cerr << message << std::endl;
-                throw std::runtime_error(message);
-            }
-        }
-        glTexSubImage2D(aTexture.mTarget, 0,
-                        0, 0, aImage.dimensions().width(), aImage.dimensions().height(),
-                        MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
-    }
-    else
-    {
-        glTexImage2D(aTexture.mTarget, 0, GL_RGBA,
-                     aImage.dimensions().width(), aImage.dimensions().height(),
-                     0, MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
-        // We don't generate mipmaps level,
-        // so disable mipmap based filtering for the texture to be complete
-        glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // Otherwise, we'd generate mipmap levels
-        //glGenerateMipmap(GL_TEXTURE_2D);
-    }
+    allocateStorage(aTexture, GL_RGBA8, aImage.dimensions());
+    writeTo(aTexture, static_cast<const std::byte *>(aImage), 
+            { aImage.dimensions(), MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, (GLint)aImage.rowAlignment() });
 }
 
+/// \brief Load an animation from an image containing a (column) array of frames.
 template <class T_pixel>
 inline void loadAnimationAsArray(const Texture & aTexture,
                                  GLenum aTextureUnit,
@@ -156,16 +145,15 @@ inline void loadAnimationAsArray(const Texture & aTexture,
                                  const Size2<int> & aFrame,
                                  size_t aSteps)
 {
+    // Implementers note:
+    // This implemention is kept with the "old-approach" to illustrate
+    // how it can be done pre GL_ARB_texture_storage
+
     assert(aTexture.mTarget == GL_TEXTURE_2D_ARRAY);
 
-    glActiveTexture(aTextureUnit);
-    glBindTexture(aTexture.mTarget, aTexture);
+    bind_guard bound(aTexture);
 
-    // TODO factorize
-    GLint previousAlignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
-    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
-    glPixelStorei(GL_UNPACK_ALIGNMENT, aImage.rowAlignment());
+    Guard scopedAlignemnt = detail::scopeUnpackAlignment(aImage.rowAlignment());
 
     glTexImage3D(aTexture.mTarget, 0, GL_RGBA,
                  aFrame.width(), aFrame.height(), static_cast<GLsizei>(aSteps),
@@ -178,32 +166,6 @@ inline void loadAnimationAsArray(const Texture & aTexture,
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-// Why aFrame when we have dimension in the image?
-template <class T_pixel>
-inline void loadSpriteSheet(const Texture & aTexture,
-                            GLenum aTextureUnit,
-                            const arte::Image<T_pixel> & aImage,
-                            const Size2<int> & aFrame)
-{
-    /// \todo can be extended, many other target types are valid here
-    assert(aTexture.mTarget == GL_TEXTURE_RECTANGLE);
-
-    glActiveTexture(aTextureUnit);
-    glBindTexture(aTexture.mTarget, aTexture);
-
-    GLint previousAlignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
-    Guard alignment{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
-    glPixelStorei(GL_UNPACK_ALIGNMENT, aImage.rowAlignment());
-
-    glTexImage2D(aTexture.mTarget, 0, GL_RGBA,
-                 aFrame.width(), aFrame.height(),
-                 0, MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, static_cast<const unsigned char *>(aImage));
-
-    // Sampler parameters
-    glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-}
 
 } // namespace graphics
 } // namespace ad

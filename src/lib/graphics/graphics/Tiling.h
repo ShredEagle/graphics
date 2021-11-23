@@ -49,6 +49,8 @@ public:
     Size2<GLint> getTileSize() const;
     Size2<GLint> getGridDefinition() const;
 
+    static constexpr GLint gTextureUnit{1};
+
 private:
     DrawContext mDrawContext;
     //instance_data mColors;

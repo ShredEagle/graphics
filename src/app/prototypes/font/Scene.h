@@ -138,6 +138,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
     setUniformInt(mPassthrough, "inputTexture", gTextureUnit);
 
     // Font program
+    setUniformInt(mFontProgram, "inputTexture", gTextureUnit);
     setUniform(mFontProgram, "u_PixelToWorld", mPixelToWorld);
     setUniform(mFontProgram, "u_WorldToCamera", math::AffineMatrix<4, GLfloat>::Identity());
     setUniform(mFontProgram, "u_Projection", 
