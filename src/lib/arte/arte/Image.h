@@ -77,6 +77,10 @@ inline ImageFormat from_extension(filesystem::path aExtension)
 template <class T_pixelFormat>
 class Image
 {
+    // > Objects of trivially-copyable types that are not potentially-overlapping subobjects 
+    // > are the only C++ objects that may be safely copied with std::memcpy
+    // > or serialized to/from binary files with std::ofstream::write()/std::ifstream::read().
+    // see: https://en.cppreference.com/w/cpp/types/is_trivially_copyable
     static_assert(std::is_trivially_copyable<T_pixelFormat>::value,
                   "T_pixelFormat must be a trivally copyable pixel type.");
 
