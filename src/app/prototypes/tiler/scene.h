@@ -7,7 +7,6 @@
 #include <graphics/Spriting.h>
 #include <graphics/Tiling.h>
 #include <graphics/Timer.h>
-#include <graphics/dataformat/tiles.h>
 
 #include <handy/random.h>
 
@@ -19,8 +18,11 @@
 namespace ad {
 namespace graphics {
 
+// Important: This adaptor is not required anymore since arte::TileSheet::Frame 
+// is implicitly convertible to a const SpriteArea &.
+// Keep the code around as an example regarding iterator_adaptor usage.
 class SpriteArea_const_iter : public boost::iterator_adaptor<SpriteArea_const_iter,
-                                                             std::vector<Sprite>::const_iterator,
+                                                             arte::TileSheet::const_iterator,
                                                              const SpriteArea>
 {
     // Inherit ctor
@@ -30,18 +32,17 @@ private:
     friend class boost::iterator_core_access;
     typename iterator_adaptor::reference dereference() const
     {
-        return base_reference()->mTextureArea;
+        return base_reference()->area;
     }
 };
 
 template <class T>
 std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
 {
-    std::ifstream ifs{aFile};
-    SpriteSheet sheet = dataformat::loadMeta(ifs);
-    return aDrawer.load(SpriteArea_const_iter{sheet.mSprites.cbegin()},
-                        SpriteArea_const_iter{sheet.mSprites.cend()},
-                        sheet.mRasterData);
+    arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aFile);
+    return aDrawer.load(SpriteArea_const_iter{sheet.cbegin()},
+                        SpriteArea_const_iter{sheet.cend()},
+                        sheet.image());
 }
 
 struct Scroller
