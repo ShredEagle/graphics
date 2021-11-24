@@ -45,24 +45,24 @@ public:
         constexpr double twoPi = 3.14159265359;
         const std::size_t frameCount = mSprites.size();
 
-        mSpriteInstances.clear();
-        mSpriteInstances.emplace_back(
+        std::vector<Spriting::Instance> spriteInstances;
+        spriteInstances.emplace_back(
             mPosition, 
             mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount),
             std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
         );
+        mSpriting.updateInstances(spriteInstances);
     }
 
     void render()
     {
-        mSpriting.render(mSpriteInstances);
+        mSpriting.render();
     }
 
 private:
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
     Position2<GLint> mPosition{0, 0};
-    std::vector<Spriting::Instance> mSpriteInstances;
 };
 
 

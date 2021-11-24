@@ -95,6 +95,7 @@ Program makeProgram()
 
 } // anonymous namespace
 
+
 Spriting::Spriting(Size2<int> aRenderResolution) :
         mDrawContext{makeQuad(), makeProgram()}
 {
@@ -102,25 +103,27 @@ Spriting::Spriting(Size2<int> aRenderResolution) :
 }
 
 
-void Spriting::render(gsl::span<const Instance> aInstances) const
+void Spriting::updateInstances(gsl::span<const Instance> aInstances)
 {
-    activate(mDrawContext);
-
     //
     // Stream vertex attributes
     //
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
                     aInstances);
+    mInstanceCount = static_cast<GLsizei>(aInstances.size());
+}
 
-    //
-    // Draw
-    //
+
+void Spriting::render() const
+{
+    activate(mDrawContext);
+
     bind_guard scopedTexture{mDrawContext.mTextures.front(), GL_TEXTURE0 + gTextureUnit};
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,
-                          static_cast<GLsizei>(aInstances.size()));
+                          mInstanceCount);
 }
 
 

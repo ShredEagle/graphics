@@ -43,11 +43,12 @@ public:
             mRotationFraction += aDeltaSeconds* rotationsPerSec;
         }
 
-        mSpriteInstances.clear();
-        mSpriteInstances.emplace_back(
+        std::vector<Spriting::Instance> spriteInstances;
+        spriteInstances.emplace_back(
             mPosition, 
             mSprites.at(static_cast<std::size_t>(mRotationFraction * frameCount) % frameCount)
         );
+        mSpriting.updateInstances(spriteInstances);
     }
 
     void render()
@@ -57,7 +58,7 @@ public:
             auto renderTexture = mFrameBuffers.bindTargetFrameBuffer();
             auto viewport = mFrameBuffers.scopeViewport();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            mSpriting.render(mSpriteInstances);
+            mSpriting.render();
             mFrameBuffers.swap();
         }
         if (mBlurring)
@@ -118,7 +119,6 @@ private:
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
     Position2<GLint> mPosition{0, 0};
-    std::vector<Spriting::Instance> mSpriteInstances;
 
     // Controls
     bool mBlurring{true};

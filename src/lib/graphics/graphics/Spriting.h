@@ -51,7 +51,9 @@ public:
     template <class T_pixel>
     LoadedSprite load(const arte::Image<T_pixel> & aRasterData);
 
-    void render(gsl::span<const Instance> aInstances) const;
+    void updateInstances(gsl::span<const Instance> aInstances);
+
+    void render() const;
 
     void setBufferResolution(Size2<int> aNewResolution);
 
@@ -59,6 +61,7 @@ public:
 
 private:
     DrawContext mDrawContext;
+    GLsizei mInstanceCount{0};
 };
 
 

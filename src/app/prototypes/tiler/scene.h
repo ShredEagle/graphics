@@ -134,7 +134,9 @@ struct Tiles
              mSpriting(aAppInterface.getWindowSize())
     {
         std::vector<LoadedSprite> frames{loadSheet(mSpriting, aSpriteSheet)};
-        mSpriteInstances.push_back(Spriting::Instance{{20, 10}, frames.front()});
+        std::vector<Spriting::Instance> spriteInstances{
+            Spriting::Instance{{20, 10}, frames.front()}};
+        mSpriting.updateInstances(spriteInstances);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
@@ -144,12 +146,11 @@ struct Tiles
 
     void render() const
     {
-        mSpriting.render(mSpriteInstances);
+        mSpriting.render();
     }
 
 private:
     Spriting mSpriting;
-    std::vector<Spriting::Instance> mSpriteInstances;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
 
