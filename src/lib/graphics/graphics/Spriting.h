@@ -75,6 +75,9 @@ void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
     static_assert(std::is_convertible_v<decltype(*std::declval<T_iterator>()), SpriteArea>,
                   "Iterators must point to SpriteArea instances.");
 
+    // Only support a single texture at the moment.
+    mDrawContext.mTextures.clear();
+
     { // scope texture
         Texture texture{GL_TEXTURE_RECTANGLE};
         loadImage(texture, aRasterData);
@@ -108,7 +111,7 @@ std::vector<LoadedSprite> Spriting::load(T_iterator aFirst, T_iterator aLast,
 template <class T_pixel>
 LoadedSprite Spriting::load(const arte::Image<T_pixel> & aRasterData)
 {
-    std::initializer_list<SpriteArea> fullSize{ {{0, 0}, aRasterData.dimension()} };
+    std::initializer_list<SpriteArea> fullSize{ {{0, 0}, aRasterData.dimensions()} };
     return load(fullSize.begin(), fullSize.end(), aRasterData).at(0);
 }
 
