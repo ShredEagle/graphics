@@ -1,0 +1,99 @@
+{ "frames": [
+   {
+    "filename": "run 0",
+    "frame": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 1",
+    "frame": { "x": 83, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 2",
+    "frame": { "x": 166, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 3",
+    "frame": { "x": 249, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 4",
+    "frame": { "x": 332, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 5",
+    "frame": { "x": 415, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 6",
+    "frame": { "x": 498, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   },
+   {
+    "filename": "run 7",
+    "frame": { "x": 581, "y": 0, "w": 83, "h": 97 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 83, "h": 97 },
+    "sourceSize": { "w": 83, "h": 97 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "https://www.aseprite.org/",
+  "version": "1.x-dev",
+  "image": "run.png",
+  "format": "RGBA8888",
+  "size": { "w": 664, "h": 97 },
+  "scale": "1",
+  "frameTags": [
+  ],
+  "layers": [
+   { "name": "Group 1" },
+   { "name": "left arm", "group": "Group 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "legs", "group": "Group 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "body", "group": "Group 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "head", "group": "Group 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "bag", "group": "Group 1", "opacity": 255, "blendMode": "normal" },
+   { "name": "arm and hair", "group": "Group 1" },
+   { "name": "rightarm", "group": "arm and hair", "opacity": 255, "blendMode": "normal" },
+   { "name": "graplle", "group": "arm and hair", "opacity": 255, "blendMode": "normal" },
+   { "name": "rope", "group": "Group 1", "opacity": 255, "blendMode": "normal" }
+  ],
+  "slices": [
+  ]
+ }
+}
