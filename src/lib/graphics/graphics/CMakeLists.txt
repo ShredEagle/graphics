@@ -9,6 +9,7 @@ set(${TARGET_NAME}_HEADERS
     commons.h
     shaders.h
     Sprite.h
+    SpriteAnimator.h
     Spriting.h
     Texting.h
     Tiling.h
@@ -31,6 +32,7 @@ set(${TARGET_NAME}_HEADERS
 set(${TARGET_NAME}_SOURCES
     Curving.cpp
     AppInterface.cpp
+    SpriteAnimator.cpp
     Spriting.cpp
     Texting.cpp
     Tiling.cpp

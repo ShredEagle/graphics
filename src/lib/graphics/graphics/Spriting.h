@@ -57,6 +57,10 @@ public:
 
     void setBufferResolution(Size2<int> aNewResolution);
 
+    void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
+
+
     static constexpr GLint gTextureUnit{0};
 
 private:
