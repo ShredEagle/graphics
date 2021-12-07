@@ -5,6 +5,7 @@
 #include <graphics/SpriteAnimator.h>
 #include <graphics/Spriting.h>
 
+#include <math/Transformations.h>
 #include <math/Interpolation/Interpolation.h>
 
 #include <resource/PathProvider.h>
@@ -25,8 +26,12 @@ class Scene
 {
 public:
     Scene(Size2<int> aRenderResolution) :
-        mSpriting{std::move(aRenderResolution)}
+        mSpriting{}
     {
+        mSpriting.setViewportVirtualResolution(aRenderResolution);
+        mSpriting.setCameraTransformation(
+            math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aRenderResolution) / 2) );
+
         arte::AnimationSpriteSheet sheet = 
             arte::AnimationSpriteSheet::LoadAseFile(resource::pathFor("animations/" + gAnimationName + ".json"));
 
@@ -42,7 +47,7 @@ public:
     void update(double aDelta)
     {
         Spriting::Instance instance = Spriting::Instance{
-            {0, 0},
+            {0.f, 0.f},
             mAnimator.at(gAnimationName, mAnimationParameter->advance(aDelta)),
         };
         mSpriting.updateInstances(std::vector<Spriting::Instance>{instance});

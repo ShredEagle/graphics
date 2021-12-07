@@ -10,6 +10,8 @@
 
 #include <handy/random.h>
 
+#include <math/Transformations.h>
+
 #include <boost/iterator/iterator_adaptor.hpp>
 
 #include <fstream>
@@ -130,17 +132,22 @@ struct Tiles
     Tiles(const Tiles &) = delete;
     Tiles & operator=(const Tiles &) = delete;
 
-    Tiles(std::string aSpriteSheet, AppInterface & aAppInterface) :
-             mSpriting(aAppInterface.getWindowSize())
+    Tiles(std::string aSpriteSheet, AppInterface & aAppInterface)
     {
+        mSpriting.setViewportVirtualResolution(aAppInterface.getWindowSize());
+        mSpriting.setCameraTransformation(
+            math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
+
         std::vector<LoadedSprite> frames{loadSheet(mSpriting, aSpriteSheet)};
         std::vector<Spriting::Instance> spriteInstances{
-            Spriting::Instance{{20, 10}, frames.front()}};
+            Spriting::Instance{{20.f, 10.f}, frames.front()}};
         mSpriting.updateInstances(spriteInstances);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            mSpriting.setBufferResolution(aNewSize);
+            mSpriting.setViewportVirtualResolution(aNewSize);
+            mSpriting.setCameraTransformation(
+                math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aNewSize) / 2) );
         });
     }
 

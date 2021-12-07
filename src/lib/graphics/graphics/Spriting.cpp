@@ -4,8 +4,11 @@
 #include "Vertex.h"
 
 #include <renderer/Texture.h>
+#include <renderer/Uniforms.h>
 
 #include <handy/vector_utils.h>
+
+#include <math/Transformations.h>
 
 
 namespace ad {
@@ -65,7 +68,7 @@ VertexSpecification makeQuad()
             specification.mVertexArray,
             {
                 // Sprite position
-                { 2,                               2, offsetof(Spriting::Instance, mPosition),    MappedGL<GLint>::enumerator},
+                { 2,                               2, offsetof(Spriting::Instance, mPosition),    MappedGL<GLfloat>::enumerator},
                 // LoadedSprite (i.e. sprite rectangle cutout in the texture)
                 { {3, Attribute::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite), MappedGL<GLint>::enumerator},
                 { 4,                               1, offsetof(Spriting::Instance, mOpacity),      MappedGL<GLfloat>::enumerator},
@@ -83,7 +86,7 @@ VertexSpecification makeQuad()
 Program makeProgram()
 {
     Program program = makeLinkedProgram({
-                          {GL_VERTEX_SHADER, gVertexShader},
+                          {GL_VERTEX_SHADER,   gSpriteVertexShader},
                           {GL_FRAGMENT_SHADER, gAnimationFragmentShader},
                       });
 
@@ -96,10 +99,13 @@ Program makeProgram()
 } // anonymous namespace
 
 
-Spriting::Spriting(Size2<int> aRenderResolution) :
+Spriting::Spriting(GLfloat aPixelSize) :
         mDrawContext{makeQuad(), makeProgram()}
 {
-    setBufferResolution(aRenderResolution);
+    setPixelWorldSize(aPixelSize);
+
+    setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
+    setProjectionTransformation(math::AffineMatrix<3, GLfloat>::Identity());
 }
 
 
@@ -127,10 +133,31 @@ void Spriting::render() const
 }
 
 
-void Spriting::setBufferResolution(Size2<int> aNewResolution)
+void Spriting::setPixelWorldSize(GLfloat aPixelSize)
 {
-    GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
-    glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());
+    setUniform(mDrawContext.mProgram, "u_pixelWorldSize", math::Vec<2, GLfloat>{aPixelSize, aPixelSize}); 
+}
+
+
+void Spriting::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mDrawContext.mProgram, "u_camera", aTransformation); 
+}
+
+
+void Spriting::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mDrawContext.mProgram, "u_projection", aTransformation); 
+}
+
+
+void Spriting::setViewportVirtualResolution(math::Size<2, int> aViewportPixelSize)
+{
+    setProjectionTransformation(
+        math::trans2d::orthographicProjection<GLfloat>(math::Rectangle<GLfloat>{
+            math::Position<2, GLfloat>::Zero(),
+            static_cast<math::Size<2, GLfloat>>(aViewportPixelSize)
+        }.centered()));
 }
 
 

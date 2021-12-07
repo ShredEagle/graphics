@@ -4,6 +4,8 @@
 
 #include "Sprite.h"
 
+#include <math/Homogeneous.h>
+
 #include <renderer/Drawing.h>
 #include <vector>
 
@@ -20,18 +22,18 @@ class Spriting
 public:
     struct Instance
     {
-        Instance(Position2<GLint> aRenderingPosition, LoadedSprite aSprite, GLfloat aOpacity = 1.f):
+        Instance(Position2<GLfloat> aRenderingPosition, LoadedSprite aSprite, GLfloat aOpacity = 1.f):
             mPosition{std::move(aRenderingPosition)},
             mLoadedSprite{std::move(aSprite)},
             mOpacity{aOpacity}
         {}
 
-        Position2<GLint> mPosition;
+        Position2<GLfloat> mPosition;
         LoadedSprite mLoadedSprite;
         GLfloat mOpacity;
     };
 
-    Spriting(Size2<int> aRenderResolution);
+    Spriting(GLfloat aPixelSize = 1.f);
 
     /// \brief Take a pair of iterator to SpriteArea instances, and the corresponding raster data.
     /// Invoke a callback for each frame.
@@ -55,7 +57,20 @@ public:
 
     void render() const;
 
-    void setBufferResolution(Size2<int> aNewResolution);
+    /// \brief Set the size of the viewport in sprite pixels (assuming the default pixel world size of 1).
+    ///
+    /// This is a helper around `setProjectionTransformation()`: it is setting the world size of the viewport. 
+    /// It makes it convenient to work with the virtual pixels as world unit.
+    ///
+    /// \important the viewport will be [-width/2, -height/2] x [width/2, height/2].
+    /// Additionally set a camera transformation if lower-left should be at [0, 0] instead.
+    void setViewportVirtualResolution(math::Size<2, int> aViewportPixelSize);
+
+    /// \brief Define the size of a pixel in world units.
+    /// 
+    /// When rendering pixel art, it is likely that one sprite pixel should always be the same world size,
+    /// independently from the render buffer resolution.
+    void setPixelWorldSize(GLfloat aPixelSize);
 
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);

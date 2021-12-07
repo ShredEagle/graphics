@@ -3,36 +3,35 @@
 namespace ad {
 namespace graphics {
 
-inline const GLchar* gVertexShader = R"#(
+
+inline const GLchar* gSpriteVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec2 in_VertexPosition;
-    layout(location=1) in ivec2 in_UV;
-    layout(location=2) in vec2 in_InstancePosition;
+    layout(location=0) in vec2  ve_VertexPosition;
+    layout(location=1) in ivec2 ve_UV;
+
+    //layout(location=2) in mat3  in_ModelTransform;
+    layout(location=2) in vec2  in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
     layout(location=4) in float in_Opacity;
 
-    uniform ivec2 in_BufferResolution;
-    
+    uniform vec2 u_pixelWorldSize;
+    uniform mat3 u_camera;
+    uniform mat3 u_projection;
+
     out vec2  ex_UV;
     out float ex_Opacity;
 
     void main(void)
     {
-        //// Column major notation, which seems to be the convention in OpenGL
-        //mat4 transform = mat4(
-        //    1.0, 0.0, 0.0, 0.0,
-        //    0.0, 1.0, 0.0, 0.0,
-        //    0.0, 0.0, 0.0, 0.0,
-        //    in_InstancePosition.x, in_InstancePosition.y, 0.0, 1.0
-        //);
-        //gl_Position = clipTransform * (transform * in_VertexPosition);
+        vec3 vertexPosition_local = vec3(ve_VertexPosition * in_TextureArea.zw * u_pixelWorldSize, 1.);
+        //vec3 vertexPosition_world = in_ModelTransform * vertexPosition_local;
+        vec3 vertexPosition_world = vec3(in_InstancePosition, 0.) + vertexPosition_local;
+        vec3 vertexPosition_ndc = u_projection * u_camera * vertexPosition_world;
 
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition * in_TextureArea.zw;
-        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        gl_Position = vec4(vertexPosition_ndc.x, vertexPosition_ndc.y, 0., 1.);
 
-        ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
+        ex_UV = in_TextureArea.xy + ve_UV * in_TextureArea.zw;
         ex_Opacity = in_Opacity;
     }
 )#";

@@ -13,8 +13,10 @@ class Scene
 {
 public:
     Scene(Size2<int> aRenderResolution) :
-        mSpriting{std::move(aRenderResolution)}
+        mSpriting{}
     {
+        mSpriting.setViewportVirtualResolution(aRenderResolution);
+
         constexpr Size2<int> frameDimensions{347-3, 303-3};
 
         // Complete ring animation
@@ -35,7 +37,7 @@ public:
         };
 
         mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
-        mPosition = Position2<GLint>{(aRenderResolution - frameDimensions) / 2}; // centered
+        mPosition = Position2<GLfloat>{-frameDimensions / 2}; // centered
     }
 
     void update(double aTimeSeconds)
@@ -62,7 +64,7 @@ public:
 private:
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
-    Position2<GLint> mPosition{0, 0};
+    Position2<GLfloat> mPosition{0.f, 0.f};
 };
 
 
