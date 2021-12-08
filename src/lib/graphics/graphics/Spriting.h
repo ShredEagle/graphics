@@ -7,6 +7,9 @@
 #include <math/Homogeneous.h>
 
 #include <renderer/Drawing.h>
+
+#include <glad/glad.h>
+
 #include <vector>
 
 
@@ -35,6 +38,22 @@ public:
 
     Spriting(GLfloat aPixelSize = 1.f);
 
+    //
+    // Lower level
+    //
+    template <class T_pixel>
+    void prepareTexture(const arte::Image<T_pixel> & aRasterData);
+
+    template <class T_iterator>
+    void prepareSprites(T_iterator aFirst, T_iterator aLast,
+                        math::Vec<2, int> aTextureOffset,
+                        std::function<void(const LoadedSprite &,
+                                           const typename std::iterator_traits<T_iterator>::value_type &)> aFrameLoadCallback);
+
+
+    //
+    // Higher level
+    //
     /// \brief Take a pair of iterator to SpriteArea instances, and the corresponding raster data.
     /// Invoke a callback for each frame.
     template <class T_iterator, class T_pixel>
@@ -88,15 +107,9 @@ private:
 // Implementation
 //
 
-template <class T_iterator, class T_pixel>
-void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
-                            const arte::Image<T_pixel> & aRasterData,
-                            std::function<void(const LoadedSprite &,
-                                               const typename std::iterator_traits<T_iterator>::value_type &)> aFrameLoadCallback)
+template <class T_pixel>
+void Spriting::prepareTexture(const arte::Image<T_pixel> & aRasterData)
 {
-    static_assert(std::is_convertible_v<decltype(*std::declval<T_iterator>()), SpriteArea>,
-                  "Iterators must point to SpriteArea instances.");
-
     // Only support a single texture at the moment.
     mDrawContext.mTextures.clear();
 
@@ -106,12 +119,37 @@ void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
         mDrawContext.mTextures.push_back(std::move(texture));
         setFiltering(texture, GL_NEAREST);
     }
+}
+
+
+template <class T_iterator>
+void Spriting::prepareSprites(T_iterator aFirst, T_iterator aLast,
+                              math::Vec<2, int> aTextureOffset,
+                              std::function<void(const LoadedSprite &,
+                                                 const typename std::iterator_traits<T_iterator>::value_type &)> aFrameLoadCallback)
+{
+    static_assert(std::is_convertible_v<decltype(*std::declval<T_iterator>()), SpriteArea>,
+                  "Iterators must point to SpriteArea instances.");
 
     for (; aFirst != aLast; ++aFirst)
     {
         // for now, LoadedSprite == SpriteArea
-        aFrameLoadCallback(static_cast<LoadedSprite>(*aFirst), *aFirst);
+        LoadedSprite loaded = *aFirst;
+        loaded.origin() += aTextureOffset;
+        aFrameLoadCallback(loaded, *aFirst);
     }
+
+}
+
+
+template <class T_iterator, class T_pixel>
+void Spriting::loadCallback(T_iterator aFirst, T_iterator aLast,
+                            const arte::Image<T_pixel> & aRasterData,
+                            std::function<void(const LoadedSprite &,
+                                               const typename std::iterator_traits<T_iterator>::value_type &)> aFrameLoadCallback)
+{
+    prepareTexture(aRasterData);
+    prepareSprites(aFirst, aLast, {0, 0}, aFrameLoadCallback);
 }
 
 

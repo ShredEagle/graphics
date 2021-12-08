@@ -19,14 +19,16 @@ LoadedSprite Animation::at(Duration_t aLocalTime) const
 }
 
 
-void Animator::load(const arte::AnimationSpriteSheet & aSpriteSheet, Spriting & aSpriting)
+void Animator::insertAnimationFrames(const arte::AnimationSpriteSheet & aSpriteSheet,
+                                     math::Vec<2, int> aTextureOffset,
+                                     Spriting & aSpriting)
 {
     // Should not load empty sprite sheets.
     assert(aSpriteSheet.cbegin() != aSpriteSheet.cend());
 
     std::vector<Animation::Frame> animationFrames;
     Animation::Duration_t durationAccumulator = 0;
-    aSpriting.loadCallback(aSpriteSheet.cbegin(), aSpriteSheet.cend(), aSpriteSheet.image(),
+    aSpriting.prepareSprites(aSpriteSheet.cbegin(), aSpriteSheet.cend(), aTextureOffset,
         [&](const LoadedSprite & aLoaded, const arte::AnimationSpriteSheet::Frame & aSourceFrame)
         {
             durationAccumulator += aSourceFrame.duration;
@@ -40,6 +42,12 @@ void Animator::load(const arte::AnimationSpriteSheet & aSpriteSheet, Spriting & 
     ); 
     mAnimations.emplace(aSpriteSheet.name(), 
                         Animation{aSpriteSheet.totalDuration(), std::move(animationFrames)});
+}
+
+void Animator::load(const arte::AnimationSpriteSheet & aSpriteSheet, Spriting & aSpriting)
+{
+    aSpriting.prepareTexture(aSpriteSheet.image());
+    insertAnimationFrames(aSpriteSheet, {0, 0}, aSpriting);
 }
 
 

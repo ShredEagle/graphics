@@ -5,6 +5,8 @@
 
 #include <arte/SpriteSheet.h>
 
+#include <math/Color.h>
+
 
 namespace ad {
 namespace graphics {
@@ -63,6 +65,12 @@ public:
     { return get(aAnimationId).at(aAnimationTime); }
 
 private:
+    /// Prepare the frames in `aSpriteSheet` to be renderable from `aSpriting`, but does not
+    /// load any texture (this must be done separately).
+    void insertAnimationFrames(const arte::AnimationSpriteSheet & aSpriteSheet, 
+                               math::Vec<2, int> aTextureOffset,
+                               Spriting & aSpriting);
+
     std::map<std::string, Animation> mAnimations;
 };
 
@@ -71,12 +79,34 @@ private:
 // Implementations
 //
 template <class T_iterator>
-void load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSpriting)
+void Animator::load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSpriting)
 {
-    static_assert(false, "Not implemented.");
+    // compute the required atlas size
+    math::Size<2, int> atlasResolution = math::Size<2, int>::Zero();
+    for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
+    {
+        // TODO that would make a nice factorized function
+        atlasResolution.width() = std::max(atlasResolution.width(), sheetIt->image().dimensions().width());
+        atlasResolution.height() += sheetIt->image().dimensions().height();
+    }
+
+    // assemble the atlas from all sprite sheet
+    // TODO might be optimized by writing directly into a texture of the appropriate dimension.
+    arte::Image<math::sdr::Rgba> spriteAtlas{atlasResolution, math::sdr::gTransparent};
+    math::Vec<2, int> offset{0, 0};
+    for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
+    {
+        spriteAtlas.pasteFrom(sheetIt->image(), offset.as<math::Position>());
+        // Also prepare the animation frames, as they do not require the texture to be loaded already.
+        insertAnimationFrames(*sheetIt, offset, aSpriting);
+        offset.y() += sheetIt->image().dimensions().height();
+    }
+
+    // load the atlas as a texture into spriting renderer
+    aSpriting.prepareTexture(spriteAtlas);
 }
 
 
 } // namespace sprite
-} // namespace graphics
+} // namespace graphics 
 } // namespace ad
