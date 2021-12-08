@@ -284,3 +284,34 @@ SCENARIO("Image files creation, read, write")
         }
     }
 }
+
+
+SCENARIO("Image high level operations")
+{
+    filesystem::path tempFolder = ensureTemporaryImageFolder("ad_graphics_tests_image");
+
+    GIVEN("Source images loaded from disk.")
+    {
+        ImageRgb yacht{resource::pathFor("tests/Images/PPM/Yacht.512.ppm")};
+        ImageRgb phoenix{resource::pathFor("tests/Images/PPM/Phoenix.512.ppm")};
+
+        GIVEN("A destination image twice the size of the sources in each dimension.")
+        {
+            ImageRgb destination{phoenix.dimensions() * 2, math::sdr::gBlack};
+
+            WHEN("The sources are pasted twice in a checkerboard.")
+            {
+                destination.pasteFrom(phoenix, {0, 0});
+                destination.pasteFrom(yacht,   {phoenix.dimensions().width(), 0});
+                destination.pasteFrom(yacht,   {0, phoenix.dimensions().height()});
+                destination.pasteFrom(phoenix, phoenix.dimensions().as<math::Position>());
+
+                THEN("The result can be writen back as PPM file.")
+                {
+                    filesystem::path resultfile = tempFolder/"pasted_checkerboard.ppm";
+                    destination.saveFile(resultfile);
+                }
+            }
+        }
+    }
+}

@@ -227,7 +227,7 @@ public:
     math::Size<2, int> dimensions() const
     { return static_cast<math::Size<2, int>>(mDimensions); }
 
-    /// \The alignment of consecutive rows. This is important for OpenGL, which uses 4 by default.
+    /// \brief The alignment of consecutive rows. This is important for OpenGL, which uses 4 by default.
     /// \note Currently 1 in all the cases for us, even stb_image tightly packs rows.
     std::size_t rowAlignment() const
     { return 1; }
@@ -239,6 +239,9 @@ public:
 
     template <class T_iterator>
     Image prepareArray(T_iterator aFirstPosition, T_iterator aLastPosition, math::Size<2, int> aDimension) const;
+
+    /// \brief Paste a copy of `aSource` image into this, placing it at `aPastePosition`.
+    Image & pasteFrom(const Image & aSource, math::Position<2, int> aPastePosition);
 
 private:
     /// \return Position immediatly after the last writen element.

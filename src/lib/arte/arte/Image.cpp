@@ -202,6 +202,27 @@ T_pixelFormat * Image<T_pixelFormat>::cropTo(T_pixelFormat * aDestination, const
 }
 
 
+template <class T_pixelFormat>
+Image<T_pixelFormat> & Image<T_pixelFormat>::pasteFrom(const Image & aSource, math::Position<2, int> aPastePosition)
+{
+    int sourceWidth = aSource.dimensions().width();
+    if (sourceWidth == dimensions().width())
+    {
+        // Optimal case: no need to copy row by row
+        std::copy(aSource.begin(), aSource.end(), &at(aPastePosition));
+    }
+    else
+    {
+        for (int sourceRow = 0; sourceRow != aSource.dimensions().height(); ++sourceRow)
+        {
+            auto begin = aSource.begin() + sourceRow * sourceWidth;
+            std::copy(begin, begin + sourceWidth, &at(aPastePosition.x(), aPastePosition.y() + sourceRow));
+        }
+    }
+    return *this;
+}
+
+
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 {
     auto destination = std::make_unique<unsigned char[]>(aSource.dimensions().area());
