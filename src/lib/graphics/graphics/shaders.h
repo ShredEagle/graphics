@@ -14,6 +14,7 @@ inline const GLchar* gSpriteVertexShader = R"#(
     layout(location=2) in vec2  in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
     layout(location=4) in float in_Opacity;
+    layout(location=5) in vec2  in_AxisMirroring;
 
     uniform vec2 u_pixelWorldSize;
     uniform mat3 u_camera;
@@ -31,7 +32,12 @@ inline const GLchar* gSpriteVertexShader = R"#(
 
         gl_Position = vec4(vertexPosition_ndc.x, vertexPosition_ndc.y, 0., 1.);
 
-        ex_UV = in_TextureArea.xy + ve_UV * in_TextureArea.zw;
+        // Handle sprite mirroring
+        vec2 uv = ve_UV - vec2(0.5, 0.5);
+        uv *= in_AxisMirroring;
+        uv += vec2(0.5, 0.5);
+
+        ex_UV = in_TextureArea.xy + uv * in_TextureArea.zw;
         ex_Opacity = in_Opacity;
     }
 )#";
