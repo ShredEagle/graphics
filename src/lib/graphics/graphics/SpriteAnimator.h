@@ -2,6 +2,7 @@
 
 
 #include "Sprite.h"
+#include "Spriting.h"
 
 #include <arte/SpriteSheet.h>
 
@@ -10,10 +11,6 @@
 
 namespace ad {
 namespace graphics {
-
-
-// Forward
-class Spriting;
 
 
 namespace sprite{

@@ -2,6 +2,7 @@
 
 #include "commons.h"
 #include "gl_helpers.h"
+#include "MappedGL.h"
 
 #include <arte/Image.h>
 
