@@ -6,6 +6,8 @@
 
 #include <arte/SpriteSheet.h>
 
+#include <handy/StringId.h>
+
 #include <math/Color.h>
 
 
@@ -54,11 +56,11 @@ public:
     void load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSpriting);
 
     /// \brief Retrieves an `Animation` from its identifier. 
-    const Animation & get(const std::string & aAnimationId) const
+    const Animation & get(const handy::StringId & aAnimationId) const
     { return mAnimations.at(aAnimationId); }
 
     /// \brief Retrieve an `Animation` frame directly.
-    LoadedSprite at(const std::string & aAnimationId, Animation::Duration_t aAnimationTime) const
+    LoadedSprite at(const handy::StringId & aAnimationId, Animation::Duration_t aAnimationTime) const
     { return get(aAnimationId).at(aAnimationTime); }
 
 private:
@@ -68,7 +70,8 @@ private:
                                math::Vec<2, int> aTextureOffset,
                                Spriting & aSpriting);
 
-    std::map<std::string, Animation> mAnimations;
+    // Note Ad 2021/12:14: It not obvious wether it would be best to use a unordered_map or plain map here.
+    std::unordered_map<handy::StringId, Animation> mAnimations;
 };
 
 
