@@ -76,7 +76,8 @@ constexpr Crc64 crc64(T_iterator aBegin, T_iterator aEnd)
 }
 
 
-constexpr Crc64 crc64(const std::string & aString)
+// TODO constexpr this after switch to C++20
+inline /*constexpr*/ Crc64 crc64(const std::string & aString)
 {
     return crc64(aString.begin(), aString.end());
 }
