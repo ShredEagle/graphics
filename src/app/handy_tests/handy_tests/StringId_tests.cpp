@@ -2,6 +2,7 @@
 
 
 #include <handy/StringId.h>
+#include <handy/StringId_Interning.h>
 
 #include <string>
 #include <unordered_map>
@@ -62,6 +63,71 @@ SCENARIO("StringId as hash map key.")
                 CHECK(hashMap.find("FirstKey"_sid)->first == "FirstKey"_sid);
                 CHECK_FALSE(hashMap.find("FirstKey"_sid)->first == StringId{secondKey});
                 CHECK(hashMap.find(StringId{secondKey})->first == StringId{secondKey});
+            }
+        }
+    }
+}
+
+
+SCENARIO("StringId reverse lookup.")
+{
+    using namespace literals;
+
+    accessStringIdTable().clear();
+    REQUIRE(accessStringIdTable().size() == 0);
+
+    GIVEN("A string.")
+    {
+        const std::string str{"Text content!"};
+
+        THEN("It cannot be found back from the StringId if it was not interned first.")
+        {
+            REQUIRE_THROWS(revertStringId(StringId{str}));
+        }
+
+        WHEN("It is interned.")
+        {
+            StringId interned = internalizeString(str);
+
+            THEN("The initial string can be found back from the StringId.")
+            {
+                REQUIRE(revertStringId(interned) == str);
+            }
+        }
+
+        WHEN("It is interned twice.")
+        {
+            internalizeString(str);
+            internalizeString(str);
+
+            THEN("There is still only one element in the table.")
+            {
+                REQUIRE(accessStringIdTable().size() == 1);
+            }
+        }
+    }
+
+    GIVEN("Several strings.")
+    {
+        const std::array<std::string, 3> strings{"un", "deux", "trois"};
+
+        WHEN("They are interned with a single mutex lock/unlock.")
+        {
+            {
+                auto tableAccess = accessStringIdTable();
+                for (auto str : strings)
+                {
+                    internalizeString(str, tableAccess);
+                }
+            }
+            REQUIRE(accessStringIdTable().size() == 3);
+
+            THEN("The initial strings can be found back from the StringId.")
+            {
+                for (auto str : strings)
+                {
+                    REQUIRE(revertStringId(StringId{str}) == str);
+                }
             }
         }
     }

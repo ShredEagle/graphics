@@ -5,6 +5,8 @@
 #include <graphics/SpriteAnimator.h>
 #include <graphics/Spriting.h>
 
+#include <handy/StringId.h>
+
 #include <math/Transformations.h>
 #include <math/Interpolation/Interpolation.h>
 
@@ -17,7 +19,8 @@ namespace ad {
 namespace graphics {
 
 
-const std::string gAnimationName = "run";
+const std::string gAnimationName{"run"};
+
 // Animation is given in milliseconds, so natural speeds must be in the order of 10^3
 const double gAnimationSpeed = 500;
 
@@ -39,7 +42,7 @@ public:
 
         mAnimationParameter =
             ParameterAnimation_t{
-                mAnimator.get(gAnimationName).totalDuration,
+                mAnimator.get(handy::StringId{gAnimationName}).totalDuration,
                 gAnimationSpeed
         };
     }
@@ -48,7 +51,7 @@ public:
     {
         Spriting::Instance instance = Spriting::Instance{
             {0.f, 0.f},
-            mAnimator.at(gAnimationName, mAnimationParameter->advance(aDelta)),
+            mAnimator.at(handy::StringId{gAnimationName}, mAnimationParameter->advance(aDelta)),
         };
         mSpriting.updateInstances(std::vector<Spriting::Instance>{instance});
     }

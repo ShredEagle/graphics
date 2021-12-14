@@ -13,9 +13,7 @@ class StringId
     friend std::hash<StringId>;
 
     // Only usefull for Null static instance
-    constexpr StringId() :
-        mUid{0}
-    {}
+    constexpr StringId();
 
 public:
     explicit constexpr StringId(const std::string & aString);
@@ -33,13 +31,6 @@ public:
 private:
     Crc64 mUid;
 };
-
-
-// TODO implement the lookup map
-inline StringId internalizeString(const std::string & aString)
-{
-    return StringId{aString};
-}
 
 
 namespace literals {
@@ -65,9 +56,9 @@ inline constexpr StringId::StringId(const char * aChars, std::size_t aCount) :
 {}
 
 
-//constexpr StringId::StringId() :
-//    mUid{0}
-//{}
+constexpr StringId::StringId() :
+    mUid{0}
+{}
 
 
 inline constexpr bool StringId::operator==(StringId aRhs) const
@@ -96,7 +87,6 @@ inline constexpr bool StringId::operator<(StringId aRhs) const
 //
 namespace std {
 
-
 template<> struct hash<ad::handy::StringId>
 {
     constexpr size_t operator()(const ad::handy::StringId & aStringId) const
@@ -104,6 +94,5 @@ template<> struct hash<ad::handy::StringId>
         return aStringId.mUid;
     }
 };
-
 
 } // namespace std

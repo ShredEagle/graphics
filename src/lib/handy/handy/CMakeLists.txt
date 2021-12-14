@@ -8,6 +8,7 @@ set(${TARGET_NAME}_HEADERS
     Pool.h
     random.h
     StringId.h
+    StringId_Interning.h
     tuple_utils.h
     vector_utils.h
     ZeroOnMove.h
