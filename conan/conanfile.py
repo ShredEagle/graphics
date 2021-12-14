@@ -36,7 +36,7 @@ class GraphicsConan(ConanFile):
         ("math/ead49a29d9@adnn/develop"),
     )
 
-    build_requires = ("cmake/3.20.4",)
+    build_requires = ("cmake/3.22.0",)
 
     build_policy = "missing"
     generators = "cmake_paths", "cmake_find_package", "CMakeToolchain"
