@@ -21,7 +21,7 @@ target_link_libraries(${TARGET_NAME}
         ad::handy)
 
 set_target_properties(${TARGET_NAME} PROPERTIES
-                      VERSION "${${TARGET_NAME}_VERSION}"
+                      VERSION "${${PROJECT_NAME}_VERSION}"
 )
 
 install(TARGETS ${TARGET_NAME})

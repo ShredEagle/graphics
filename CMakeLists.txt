@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Graphics)
+project(Graphics VERSION "${BUILD_VERSION}")
 
 include(cmake/include.cmake)
 
