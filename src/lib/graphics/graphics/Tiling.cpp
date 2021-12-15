@@ -136,7 +136,7 @@ Program makeProgram()
                       });
 
     // Matches GL_TEXTURE1 from Tiling::load()
-    glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), 1);
+    glProgramUniform1i(program, glGetUniformLocation(program, "spriteSampler"), Tiling::gTextureUnit);
 
     return program;
 }
@@ -216,6 +216,8 @@ void Tiling::render(const AppInterface & aAppInterface) const
     //
     // Draw
     //
+    bind_guard scopedTexture{mDrawContext.mTextures.front(), GL_TEXTURE0 + gTextureUnit};
+
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesPerInstance,

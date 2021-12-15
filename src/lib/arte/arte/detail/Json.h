@@ -2,4 +2,4 @@
 
 #include <nlohmann/json.hpp>
 
-using json = nlohmann::json;
+using Json = nlohmann::json;

@@ -2,13 +2,14 @@ namespace ad {
 namespace graphics{
 
 
-template <class T_iterator>
+template <class T_iterator, class T_pixel>
 std::vector<LoadedSprite> Tiling::load(T_iterator aFirst, T_iterator aLast,
-                                       const Image & aRasterData)
+                                       const arte::Image<T_pixel> & aRasterData)
 {
+
     {
         Texture texture{GL_TEXTURE_RECTANGLE};
-        loadSpriteSheet(texture, GL_TEXTURE1, aRasterData, aRasterData.dimension());
+        loadImage(texture, aRasterData);
         mDrawContext.mTextures.push_back(std::move(texture)); 
     }
 

@@ -1,5 +1,4 @@
-string(TOLOWER ${PROJECT_NAME} _lower_project_name)
-set(TARGET_NAME ${_lower_project_name}_tests)
+set(TARGET_NAME handy_tests)
 
 set(${TARGET_NAME}_HEADERS
     catch.hpp
@@ -8,7 +7,8 @@ set(${TARGET_NAME}_HEADERS
 set(${TARGET_NAME}_SOURCES
     main.cpp
 
-    Image_tests.cpp
+    Crc_tests.cpp
+    StringId_tests.cpp
 )
 
 add_executable(${TARGET_NAME}
@@ -18,12 +18,10 @@ add_executable(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE
-        ad::arte
-        ad::platform
-        ad::resource)
+        ad::handy)
 
 set_target_properties(${TARGET_NAME} PROPERTIES
-                      VERSION "${${TARGET_NAME}_VERSION}"
+                      VERSION "${${PROJECT_NAME}_VERSION}"
 )
 
 install(TARGETS ${TARGET_NAME})

@@ -5,8 +5,8 @@
 #include <platform/Filesystem.h>
 
 #include <math/Color.h>
+#include <math/Rectangle.h>
 
-#include <filesystem>
 #include <map>
 #include <memory>
 
@@ -19,12 +19,15 @@ enum class ImageFormat
 {
     Pgm,
     Ppm,
+    Bmp,
+    Jpg,
+    Png,
 };
 
 
 enum class ImageOrientation
 {
-    Default, 
+    Unchanged, 
     InvertVerticalAxis,
 };
 
@@ -39,6 +42,9 @@ struct FormatInfo
 static const std::map<ImageFormat, FormatInfo> gImageFormatMap {
     {ImageFormat::Pgm, {"PGM", ".pgm"}},
     {ImageFormat::Ppm, {"PPM", ".ppm"}},
+    {ImageFormat::Bmp, {"BMP", ".bmp"}},
+    {ImageFormat::Jpg, {"JPG", ".jpg"}},
+    {ImageFormat::Png, {"PNG", ".png"}},
 };
 
 
@@ -68,9 +74,13 @@ inline ImageFormat from_extension(filesystem::path aExtension)
 
 
 
-template <class T_pixelFormat = math::sdr::Rgb>
+template <class T_pixelFormat>
 class Image
 {
+    // > Objects of trivially-copyable types that are not potentially-overlapping subobjects 
+    // > are the only C++ objects that may be safely copied with std::memcpy
+    // > or serialized to/from binary files with std::ofstream::write()/std::ifstream::read().
+    // see: https://en.cppreference.com/w/cpp/types/is_trivially_copyable
     static_assert(std::is_trivially_copyable<T_pixelFormat>::value,
                   "T_pixelFormat must be a trivally copyable pixel type.");
 
@@ -120,27 +130,35 @@ public:
     Image(Image && aRhs) noexcept = default;
     Image & operator=(Image && aRhs) noexcept = default;
 
-    // \brief Low-level constructor, intended for loaders implementation, not general usage
-    // \attention The calling code is responsible for providing a raster of appropriate size
-    Image(math::Size<2, int> aDimensions, std::unique_ptr<char[]> aRaster);
+    /// \brief Low-level constructor, intended for loaders implementation, not general usage
+    /// \attention The calling code is responsible for providing a raster of appropriate size
+    Image(math::Size<2, int> aDimensions, std::unique_ptr<unsigned char[]> aRaster);
 
-    // \brief Creates an image
+    /// \brief Creates an image
     Image(math::Size<2, int> aDimensions, pixel_format_t aBackgroundValue);
+    
+    /// \brief Load an Image from a file on disk.
+    /// \note Similar functionality to LoadFile().
+    explicit Image(const filesystem::path & aImageFile,
+                   ImageOrientation aOrientation = ImageOrientation::Unchanged);
 
     void write(ImageFormat aFormat, std::ostream & aOut,
-               ImageOrientation aOrientation = ImageOrientation::Default) const;
+               ImageOrientation aOrientation = ImageOrientation::Unchanged) const;
     void write(ImageFormat aFormat, std::ostream && aOut,
-               ImageOrientation aOrientation = ImageOrientation::Default) const
+               ImageOrientation aOrientation = ImageOrientation::Unchanged) const
     { return write(aFormat, aOut, aOrientation); };
 
-    static Image Read(ImageFormat aFormat, std::istream & aIn);
-    static Image Read(ImageFormat aFormat, std::istream && aIn)
-    { return Read(aFormat, aIn); }
+    static Image Read(ImageFormat aFormat, std::istream & aIn,
+                      ImageOrientation aOrientation = ImageOrientation::Unchanged);
+    static Image Read(ImageFormat aFormat, std::istream && aIn,
+                      ImageOrientation aOrientation = ImageOrientation::Unchanged)
+    { return Read(aFormat, aIn, aOrientation); }
 
-    static Image LoadFile(const filesystem::path & aImageFile);
+    static Image LoadFile(const filesystem::path & aImageFile,
+                          ImageOrientation aOrientation = ImageOrientation::Unchanged);
 
     void saveFile(const filesystem::path & aDestination,
-                  ImageOrientation aOrientation = ImageOrientation::Default) const;
+                  ImageOrientation aOrientation = ImageOrientation::Unchanged) const;
 
     void clear(T_pixelFormat aClearColor);
 
@@ -169,6 +187,12 @@ public:
 
     const pixel_format_t * data() const
     { return reinterpret_cast<const pixel_format_t *>(mRaster.get()); }
+
+    explicit operator const unsigned char * () const
+    { return mRaster.get(); }
+
+    explicit operator const std::byte * () const
+    { return reinterpret_cast<const std::byte *>(mRaster.get()); }
 
     std::size_t size_bytes() const
     { return dimensions().area() * pixel_size_v; }
@@ -203,16 +227,39 @@ public:
     math::Size<2, int> dimensions() const
     { return static_cast<math::Size<2, int>>(mDimensions); }
 
+    /// \brief The alignment of consecutive rows. This is important for OpenGL, which uses 4 by default.
+    /// \note Currently 1 in all the cases for us, even stb_image tightly packs rows.
+    std::size_t rowAlignment() const
+    { return 1; }
+
+    //
+    // Image edition
+    //
+    Image crop(const math::Rectangle<int> & aZone) const;
+
+    template <class T_iterator>
+    Image prepareArray(T_iterator aFirstPosition, T_iterator aLastPosition, math::Size<2, int> aDimension) const;
+
+    /// \brief Paste a copy of `aSource` image into this, placing it at `aPastePosition`.
+    Image & pasteFrom(const Image & aSource, math::Position<2, int> aPastePosition);
+
 private:
+    /// \return Position immediatly after the last writen element.
+    T_pixelFormat * cropTo(T_pixelFormat * aDestination, const math::Rectangle<int> & aZone) const;
+
     math::Size<2, ZeroOnMove<int>> mDimensions{0, 0};
     // NOTE: it is not possible to allocate an array of non-default constructible objects
     //std::unique_ptr<T_pixelFormat[]> mRaster{nullptr};
     // TODO try with byte
-    std::unique_ptr<char[]> mRaster{nullptr};
+    std::unique_ptr<unsigned char[]> mRaster{nullptr};
 };
 
 
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
+
+
+using ImageRgb = Image<math::sdr::Rgb>;
+using ImageRgba = Image<math::sdr::Rgba>;
 
 
 //
@@ -230,6 +277,28 @@ template <class T_pixelFormat>
 auto Image<T_pixelFormat>::operator[](std::size_t aColumnId) const -> Image::const_Column
 {
     return const_Column{*this, aColumnId};
+}
+
+
+template <class T_pixelFormat>
+template <class T_iterator>
+Image<T_pixelFormat> Image<T_pixelFormat>::prepareArray(T_iterator aFirstPosition,
+                                                        T_iterator aLastPosition,
+                                                        math::Size<2, int> aDimension) const
+{
+    math::Size<2, int> targetDimensions{
+        aDimension.width(),
+        aDimension.height() * (int)std::distance(aFirstPosition, aLastPosition)};
+
+    auto target = std::make_unique<unsigned char[]>(targetDimensions.area() * pixel_size_v);
+
+    T_pixelFormat * destination = reinterpret_cast<T_pixelFormat *>(target.get());
+    for(; aFirstPosition != aLastPosition; ++aFirstPosition)
+    {
+        destination = cropTo(destination, {*aFirstPosition, aDimension});
+    }
+
+    return {targetDimensions, std::move(target)};
 }
 
 

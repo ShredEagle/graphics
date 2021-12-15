@@ -13,8 +13,10 @@ class Scene
 {
 public:
     Scene(Size2<int> aRenderResolution) :
-        mSpriting{std::move(aRenderResolution)}
+        mSpriting{}
     {
+        mSpriting.setViewportVirtualResolution(aRenderResolution);
+
         constexpr Size2<int> frameDimensions{347-3, 303-3};
 
         // Complete ring animation
@@ -29,9 +31,13 @@ public:
             {{2453, 3}, frameDimensions},
         };
 
-        const Image ring(resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+        const arte::ImageRgba ring{
+            resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+            arte::ImageOrientation::InvertVerticalAxis
+        };
+
         mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
-        mPosition = Position2<GLint>{(aRenderResolution - frameDimensions) / 2}; // centered
+        mPosition = Position2<GLfloat>{-frameDimensions / 2}; // centered
     }
 
     void update(double aTimeSeconds)
@@ -41,24 +47,24 @@ public:
         constexpr double twoPi = 3.14159265359;
         const std::size_t frameCount = mSprites.size();
 
-        mSpriteInstances.clear();
-        mSpriteInstances.emplace_back(
+        std::vector<Spriting::Instance> spriteInstances;
+        spriteInstances.emplace_back(
             mPosition, 
             mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount),
             std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
         );
+        mSpriting.updateInstances(spriteInstances);
     }
 
     void render()
     {
-        mSpriting.render(mSpriteInstances);
+        mSpriting.render();
     }
 
 private:
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
-    Position2<GLint> mPosition{0, 0};
-    std::vector<Spriting::Instance> mSpriteInstances;
+    Position2<GLfloat> mPosition{0.f, 0.f};
 };
 
 

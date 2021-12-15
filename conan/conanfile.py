@@ -20,6 +20,7 @@ class GraphicsConan(ConanFile):
         "shared": False,
         "build_tests": False,
         "glad:gl_version": "4.1",
+        # Note: macos only provides GL_ARB_texture_storage and GL_ARB_internalformat_query
         "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage",
     }
 
@@ -32,10 +33,8 @@ class GraphicsConan(ConanFile):
         ("spdlog/1.9.2"),
         ("utfcpp/3.2.1"),
 
-        ("math/b0a941d6c0@adnn/develop"),
+        ("math/5d133d9943@adnn/develop"),
     )
-
-    build_requires = ("cmake/3.20.4",)
 
     build_policy = "missing"
     generators = "cmake_paths", "cmake_find_package", "CMakeToolchain"

@@ -2,3 +2,4 @@
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
 
 @find_package@(Freetype @REQUIRED@)
+@find_package@(nlohmann_json 3.9 @REQUIRED@)

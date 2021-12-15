@@ -7,9 +7,10 @@
 #include <graphics/Spriting.h>
 #include <graphics/Tiling.h>
 #include <graphics/Timer.h>
-#include <graphics/dataformat/tiles.h>
 
 #include <handy/random.h>
+
+#include <math/Transformations.h>
 
 #include <boost/iterator/iterator_adaptor.hpp>
 
@@ -19,8 +20,11 @@
 namespace ad {
 namespace graphics {
 
+// Important: This adaptor is not required anymore since arte::TileSheet::Frame 
+// is implicitly convertible to a const SpriteArea &.
+// Keep the code around as an example regarding iterator_adaptor usage.
 class SpriteArea_const_iter : public boost::iterator_adaptor<SpriteArea_const_iter,
-                                                             std::vector<Sprite>::const_iterator,
+                                                             arte::TileSheet::const_iterator,
                                                              const SpriteArea>
 {
     // Inherit ctor
@@ -30,18 +34,17 @@ private:
     friend class boost::iterator_core_access;
     typename iterator_adaptor::reference dereference() const
     {
-        return base_reference()->mTextureArea;
+        return base_reference()->area;
     }
 };
 
 template <class T>
 std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
 {
-    std::ifstream ifs{aFile};
-    SpriteSheet sheet = dataformat::loadMeta(ifs);
-    return aDrawer.load(SpriteArea_const_iter{sheet.mSprites.cbegin()},
-                        SpriteArea_const_iter{sheet.mSprites.cend()},
-                        sheet.mRasterData);
+    arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aFile);
+    return aDrawer.load(SpriteArea_const_iter{sheet.cbegin()},
+                        SpriteArea_const_iter{sheet.cend()},
+                        sheet.image());
 }
 
 struct Scroller
@@ -129,26 +132,32 @@ struct Tiles
     Tiles(const Tiles &) = delete;
     Tiles & operator=(const Tiles &) = delete;
 
-    Tiles(std::string aSpriteSheet, AppInterface & aAppInterface) :
-             mSpriting(aAppInterface.getWindowSize())
+    Tiles(std::string aSpriteSheet, AppInterface & aAppInterface)
     {
+        mSpriting.setViewportVirtualResolution(aAppInterface.getWindowSize());
+        mSpriting.setCameraTransformation(
+            math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
+
         std::vector<LoadedSprite> frames{loadSheet(mSpriting, aSpriteSheet)};
-        mSpriteInstances.push_back(Spriting::Instance{{20, 10}, frames.front()});
+        std::vector<Spriting::Instance> spriteInstances{
+            Spriting::Instance{{20.f, 10.f}, frames.front()}};
+        mSpriting.updateInstances(spriteInstances);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            mSpriting.setBufferResolution(aNewSize);
+            mSpriting.setViewportVirtualResolution(aNewSize);
+            mSpriting.setCameraTransformation(
+                math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aNewSize) / 2) );
         });
     }
 
     void render() const
     {
-        mSpriting.render(mSpriteInstances);
+        mSpriting.render();
     }
 
 private:
     Spriting mSpriting;
-    std::vector<Spriting::Instance> mSpriteInstances;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
 

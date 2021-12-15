@@ -1,5 +1,6 @@
 {
     "file": "tiles.bmp",
+    "scale": 1,
     "set": {
         "prefix": "terrain_",
         "regularGrid": {

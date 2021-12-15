@@ -3,12 +3,20 @@ set(TARGET_NAME arte)
 set(${TARGET_NAME}_HEADERS
     Freetype.h
     Image.h
+    SpriteSheet.h
 
-    details/ImageFormats/Netpbm.h
+    detail/Json.h
+    detail/3rdparty/stb_image.h
+    detail/3rdparty/stb_image_include.h
+    detail/ImageFormats/Netpbm.h
+    detail/ImageFormats/StbImageFormats.h
 )
 
 set(${TARGET_NAME}_SOURCES
     Image.cpp
+    SpriteSheet.cpp
+
+    detail/3rdparty/stb_image.cpp
 )
 
 add_library(${TARGET_NAME}
@@ -39,6 +47,7 @@ target_link_libraries(${TARGET_NAME}
         ad::math
 
         Freetype::Freetype
+        nlohmann_json::nlohmann_json
 )
 
 ##

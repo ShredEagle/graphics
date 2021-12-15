@@ -2,10 +2,13 @@ set(TARGET_NAME handy)
 
 set(${TARGET_NAME}_HEADERS
     array_utils.h
+    Crc.h
     Guard.h
     Observer.h
     Pool.h
     random.h
+    StringId.h
+    StringId_Interning.h
     tuple_utils.h
     vector_utils.h
     ZeroOnMove.h

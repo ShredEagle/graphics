@@ -47,7 +47,7 @@ SCENARIO("Image type properties")
 {
     GIVEN("A default constructed image")
     {
-        Image<> def;
+        ImageRgb def;
         THEN("It is a \"null\" image")
         {
             REQUIRE(def.width() == 0);
@@ -60,7 +60,7 @@ SCENARIO("Image type properties")
 
     GIVEN("An Image instance")
     {
-        Image<> green{ {32, 64}, Green};
+        ImageRgb green{ {32, 64}, Green};
         REQUIRE(green.width() == 32);
         REQUIRE(green.height() == 64);
         REQUIRE(green.dimensions().area() == 32*64);
@@ -72,13 +72,13 @@ SCENARIO("Image type properties")
 
         THEN("Another image can be copy-constructed from it")
         {
-            Image<> copy{green};
+            ImageRgb copy{green};
             requireImagesEquality(copy, green);
         }
 
         THEN("It can be assigned to another image (e.g. default constructed)")
         {
-            Image<> copy;
+            ImageRgb copy;
             REQUIRE(copy.data() == nullptr);
 
             copy = green;
@@ -87,8 +87,8 @@ SCENARIO("Image type properties")
 
         WHEN("Another image is move-constructed from it")
         {
-            const Image<> copy(green);
-            Image<> moveTo{std::move(green)};
+            const ImageRgb copy(green);
+            ImageRgb moveTo{std::move(green)};
 
             THEN("The destination equals the before-move state")
             {
@@ -96,14 +96,14 @@ SCENARIO("Image type properties")
             }
             THEN("The moved-from image equal the default constructed \"null\" image")
             {
-                requireImagesEquality(green, Image<>{});
+                requireImagesEquality(green, ImageRgb{});
             }
         }
 
         WHEN("Another image is move-assigned from it")
         {
-            const Image<> copy(green);
-            Image<> moveTo{};
+            const ImageRgb copy(green);
+            ImageRgb moveTo{};
             REQUIRE(moveTo.data() == nullptr);
             moveTo = std::move(green);
 
@@ -113,7 +113,7 @@ SCENARIO("Image type properties")
             }
             THEN("The moved-from image equal the default constructed \"null\" image")
             {
-                requireImagesEquality(green, Image<>{});
+                requireImagesEquality(green, ImageRgb{});
             }
         }
     }
@@ -125,7 +125,7 @@ SCENARIO("Image manipulations")
     GIVEN("An image alternating red, green, and blue pixels")
     {
         // 5*3 pixels on each dimension
-        Image<> alternate( {15, 15}, Red);
+        ImageRgb alternate( {15, 15}, Red);
         for(auto currentId = 1;
             currentId < alternate.dimensions().area();
             currentId += 3)
@@ -163,7 +163,7 @@ SCENARIO("Image manipulations")
 
         WHEN("The Image is accessed through constant reference")
         {
-            const Image<> & constAlternate = alternate;
+            const ImageRgb & constAlternate = alternate;
             THEN("Pixels can be accessed via subscript operator")
             {
                 REQUIRE(constAlternate[0][0] == Red);
@@ -203,7 +203,7 @@ SCENARIO("Image files creation, read, write")
 
     GIVEN("An image with uniform background color")
     {
-        Image<> red{ {512, 512}, math::sdr::gRed };
+        ImageRgb red{ {512, 512}, math::sdr::gRed };
         THEN("It can be writen to a file")
         {
             auto redfile = tempFolder/"red.ppm";
@@ -221,7 +221,7 @@ SCENARIO("Image files creation, read, write")
 
         THEN("It can be read to an Image")
         {
-            Image<> yacht{Image<>::Read(ImageFormat::Ppm, ppmInput)};
+            ImageRgb yacht{ImageRgb::Read(ImageFormat::Ppm, ppmInput)};
 
             THEN("Colors can be swapped then it can be written back to a file")
             {
@@ -246,6 +246,71 @@ SCENARIO("Image files creation, read, write")
                 filesystem::path resultfile = tempFolder/"grayscale_yacht.pgm";
                 toGrayscale(yacht).saveFile(resultfile);
                 REQUIRE(exists(resultfile));
+            }
+
+            THEN("It can be cropped and writtent to a file")
+            {
+                filesystem::path resultfile = tempFolder/"cropped_yacht.ppm";
+                yacht.crop({ {127, 127}, {256, 256} }).saveFile(resultfile);
+                REQUIRE(exists(resultfile));
+            }
+
+            THEN("It can be prepared as an array")
+            {
+                filesystem::path resultfile = tempFolder/"array_yacht.ppm";
+                std::initializer_list<math::Position<2, int>> positions{
+                    {0, 0}, {0, 240}, {256, 0}, {256, 240}
+                };
+
+                yacht.prepareArray(positions.begin(), positions.end(), {256, 240}).saveFile(resultfile);
+                REQUIRE(exists(resultfile));
+            }
+        }
+    }
+
+    GIVEN("A Jpeg image file.")
+    {
+        filesystem::path jpegPath{resource::pathFor("tests/Images/JPEG/Lion_Afrique.jpg").string()};
+
+        WHEN("It is loaded as an Rgb image with an inverted vertical axis")
+        {
+            ImageRgb image{jpegPath, ImageOrientation::InvertVerticalAxis};
+
+            THEN("It can be writen back as PPM file.")
+            {
+                filesystem::path resultfile = tempFolder/"inverted_vertical_lion.ppm";
+                image.saveFile(resultfile);
+            }
+        }
+    }
+}
+
+
+SCENARIO("Image high level operations")
+{
+    filesystem::path tempFolder = ensureTemporaryImageFolder("ad_graphics_tests_image");
+
+    GIVEN("Source images loaded from disk.")
+    {
+        ImageRgb yacht{resource::pathFor("tests/Images/PPM/Yacht.512.ppm")};
+        ImageRgb phoenix{resource::pathFor("tests/Images/PPM/Phoenix.512.ppm")};
+
+        GIVEN("A destination image twice the size of the sources in each dimension.")
+        {
+            ImageRgb destination{phoenix.dimensions() * 2, math::sdr::gBlack};
+
+            WHEN("The sources are pasted twice in a checkerboard.")
+            {
+                destination.pasteFrom(phoenix, {0, 0});
+                destination.pasteFrom(yacht,   {phoenix.dimensions().width(), 0});
+                destination.pasteFrom(yacht,   {0, phoenix.dimensions().height()});
+                destination.pasteFrom(phoenix, phoenix.dimensions().as<math::Position>());
+
+                THEN("The result can be writen back as PPM file.")
+                {
+                    filesystem::path resultfile = tempFolder/"pasted_checkerboard.ppm";
+                    destination.saveFile(resultfile);
+                }
             }
         }
     }

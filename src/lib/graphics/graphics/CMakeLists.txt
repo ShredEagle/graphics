@@ -9,17 +9,17 @@ set(${TARGET_NAME}_HEADERS
     commons.h
     shaders.h
     Sprite.h
+    SpriteAnimator.h
     Spriting.h
     Texting.h
     Tiling.h
+    Tiling-impl.h
     Timer.h
     TrivialLineStrip.h
     TrivialPolygon.h
     TrivialShaping.h
     DrawLine.h
     Vertex.h
-
-    dataformat/tiles.h
 
     detail/Logging.h
     detail/UnitQuad.h
@@ -32,6 +32,7 @@ set(${TARGET_NAME}_HEADERS
 set(${TARGET_NAME}_SOURCES
     Curving.cpp
     AppInterface.cpp
+    SpriteAnimator.cpp
     Spriting.cpp
     Texting.cpp
     Tiling.cpp
@@ -39,8 +40,6 @@ set(${TARGET_NAME}_SOURCES
     TrivialPolygon.cpp
     TrivialShaping.cpp
     DrawLine.cpp
-
-    dataformat/tiles.cpp
 
     detail/Logging.cpp
     detail/UnitQuad.cpp
@@ -83,7 +82,6 @@ target_link_libraries(${TARGET_NAME}
         ad::handy
         ad::resource
 
-        nlohmann_json::nlohmann_json
         spdlog::libspdlog
 )
 

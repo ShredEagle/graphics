@@ -7,7 +7,6 @@ set(${TARGET_NAME}_HEADERS
     FrameBuffer.h
     gl_helpers.h
     GL_Loader.h
-    Image.h
     MappedGL.h
     Range.h
     Shading.h
@@ -48,10 +47,13 @@ cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
 target_link_libraries(${TARGET_NAME}
     PUBLIC
-        gsl::gsl
+        ad::arte
         ad::handy
         ad::math
-        glad::glad)
+
+        gsl::gsl
+        glad::glad
+)
 
 
 ##

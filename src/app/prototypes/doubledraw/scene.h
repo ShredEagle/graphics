@@ -2,8 +2,9 @@
 
 #include "shaders.h"
 
+#include <arte/Image.h>
+
 #include <renderer/Drawing.h>
-#include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
@@ -114,7 +115,9 @@ typedef std::vector<Entity> Scene;
 
 DrawContext staticEggman()
 {
-    static const Image eggman(resource::pathFor("ec1ccd86c2ddb52.png").string());
+    static const arte::ImageRgba eggman{
+        resource::pathFor("ec1ccd86c2ddb52.png").string(),
+        arte::ImageOrientation::InvertVerticalAxis};
     DrawContext drawing = [&](){
         VertexSpecification specification;
 
@@ -151,7 +154,9 @@ DrawContext staticEggman()
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D};
-        loadSprite(texture, GL_TEXTURE1, eggman);
+        loadImage(texture, eggman);
+        // Should be done just before drawing, but more convenient here
+        bind(texture, GL_TEXTURE0 + 1);
 
         drawing.mTextures.push_back(std::move(texture));
     }
@@ -159,54 +164,8 @@ DrawContext staticEggman()
     return drawing;
 }
 
-DrawContext staticRing(const Image &aImage, const math::Size<2, int> aFrame)
-{
-    DrawContext drawing = [&](){
-        VertexSpecification specification;
 
-        specification.mVertexBuffers.emplace_back(
-                loadVertexBuffer(
-                    specification.mVertexArray,
-                    {
-                        {0, 4, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
-                        {1, 2, offsetof(Vertex, mUV),       MappedGL<GLfloat>::enumerator},
-                    },
-                    sizeof(Vertex),
-                    sizeof(gVerticesRing),
-                    gVerticesRing
-                ));
-
-        //
-        // Program
-        //
-        Program program = makeLinkedProgram({
-                                  {GL_VERTEX_SHADER, gVertexShader},
-                                  {GL_FRAGMENT_SHADER, gFragmentShader},
-                              });
-        glUseProgram(program);
-
-        glUniform1i(glGetUniformLocation(program, "spriteSampler"), 1);
-
-        return DrawContext{std::move(specification), std::move(program)};
-    }();
-
-    //
-    // Texture
-    //
-    {
-        // First-sprite
-        // Found by measuring in the image raster
-        Image firstRing = aImage.crop({{3, 3}, aFrame});
-        Texture texture{GL_TEXTURE_2D};
-        loadSprite(texture, GL_TEXTURE1, firstRing);
-
-        drawing.mTextures.push_back(std::move(texture));
-    }
-
-    return drawing;
-}
-
-DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
+DrawContext animatedRing(const arte::ImageRgba &aImage, const math::Size<2, int> aFrame)
 {
     DrawContext drawing = [&](){
         VertexSpecification specification;
@@ -252,12 +211,14 @@ DrawContext animatedRing(const Image &aImage, const math::Size<2, int> aFrame)
                 {2103, 3},
                 {2453, 3},
         };
-        Image animationArray = aImage.prepareArray(framePositions, aFrame);
+        arte::ImageRgba animationArray = aImage.prepareArray(framePositions.begin(), framePositions.end(), aFrame);
 
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimationAsArray(texture, GL_TEXTURE2, animationArray, aFrame, framePositions.size());
+        loadAnimationAsArray(texture, GL_TEXTURE0 + 2, animationArray, aFrame, framePositions.size());
+        // Should be done just before drawing, but more convenient here
+        bind(texture, GL_TEXTURE0 + 2);
 
         drawing.mTextures.push_back(std::move(texture));
     }
@@ -284,8 +245,9 @@ void noop(const Entity &)
 Scene setupScene()
 {
 
-    static const Image ring(
-        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+    static const arte::ImageRgba ring{
+        resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+        arte::ImageOrientation::InvertVerticalAxis};
 
     //
     // Sub-parts

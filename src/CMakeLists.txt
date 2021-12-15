@@ -9,7 +9,8 @@ add_subdirectory(lib/graphics/graphics)
 
 option(BUILD_tests "Build the demo applications" ON)
 if(BUILD_tests)
-    add_subdirectory(app/tests/tests)
+    add_subdirectory(app/graphics_tests/graphics_tests)
+    add_subdirectory(app/handy_tests/handy_tests)
 
     # In order of implementation
     add_subdirectory(app/prototypes/demo)
@@ -27,6 +28,7 @@ if(BUILD_tests)
     add_subdirectory(app/samples/trivial_linestrip/trivial_linestrip)
     add_subdirectory(app/samples/trivial_shaping/trivial_shaping)
     add_subdirectory(app/samples/spriting/spriting)
+    add_subdirectory(app/samples/sprite-animation/sprite-animation)
     add_subdirectory(app/samples/curving/curving)
     add_subdirectory(app/samples/gaussianblur-spriting/gaussianblur-spriting)
     add_subdirectory(app/samples/texting/texting)

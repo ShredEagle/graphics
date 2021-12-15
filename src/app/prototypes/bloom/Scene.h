@@ -3,6 +3,8 @@
 #include "shaders.h"
 #include "vertices.h"
 
+#include <arte/Image.h>
+
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
@@ -122,7 +124,9 @@ Scene::Scene(const char * argv[], const AppInterface * aAppInterface) :
 
     // Texture
     {
-        loadSprite(mNeonTexture, GL_TEXTURE0, Image(resource::pathFor("st_outline.png").string()));
+        loadImage(mNeonTexture,
+                  arte::ImageRgba{resource::pathFor("st_outline.png").string(),
+                                  arte::ImageOrientation::InvertVerticalAxis});
     }
 }
 

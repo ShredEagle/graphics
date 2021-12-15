@@ -24,12 +24,13 @@ class Scene
 {
 public:
     Scene(Size2<int> aRenderResolution, std::shared_ptr<AppInterface> aAppInterface) :
-        mFrameBuffers{aRenderResolution},
-        mSpriting{aRenderResolution}
+        mFrameBuffers{aAppInterface->getFramebufferSize()},
+        mSpriting{}
     {
         using namespace std::placeholders;
 
-        initializeSprite(aRenderResolution);
+        mSpriting.setViewportVirtualResolution(aRenderResolution);
+        initializeSprite();
         aAppInterface->registerKeyCallback(std::bind(&Scene::onKey, this, _1, _2, _3, _4));
     }
 
@@ -43,11 +44,12 @@ public:
             mRotationFraction += aDeltaSeconds* rotationsPerSec;
         }
 
-        mSpriteInstances.clear();
-        mSpriteInstances.emplace_back(
+        std::vector<Spriting::Instance> spriteInstances;
+        spriteInstances.emplace_back(
             mPosition, 
             mSprites.at(static_cast<std::size_t>(mRotationFraction * frameCount) % frameCount)
         );
+        mSpriting.updateInstances(spriteInstances);
     }
 
     void render()
@@ -57,7 +59,7 @@ public:
             auto renderTexture = mFrameBuffers.bindTargetFrameBuffer();
             auto viewport = mFrameBuffers.scopeViewport();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            mSpriting.render(mSpriteInstances);
+            mSpriting.render();
             mFrameBuffers.swap();
         }
         if (mBlurring)
@@ -72,7 +74,7 @@ public:
     }
 
 private:
-    void initializeSprite(Size2<int> aRenderResolution)
+    void initializeSprite()
     {
         constexpr Size2<int> frameDimensions{347-3, 303-3};
 
@@ -88,9 +90,14 @@ private:
             {{2453, 3}, frameDimensions},
         };
 
-        const Image ring(resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string());
+        const arte::ImageRgba ring{
+            resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+            arte::ImageOrientation::InvertVerticalAxis
+        };
+
         mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
-        mPosition = Position2<GLint>{(aRenderResolution - frameDimensions) / 2}; // centered
+        // Aligns the frame center to the viewport center, which is (0, 0).
+        mPosition = Position2<GLfloat>{-frameDimensions / 2}; // centered
     }
 
     void onKey(int key, int scancode, int action, int mods)
@@ -113,8 +120,7 @@ private:
     GaussianBlur mBlur;
     Spriting mSpriting;
     std::vector<LoadedSprite> mSprites;
-    Position2<GLint> mPosition{0, 0};
-    std::vector<Spriting::Instance> mSpriteInstances;
+    Position2<GLfloat> mPosition{0.f, 0.f};
 
     // Controls
     bool mBlurring{true};

@@ -3,11 +3,12 @@
 #include "Ring.h"
 #include "shaders.h"
 
+#include <arte/Image.h>
+
 #include <handy/vector_utils.h>
 
 #include <renderer/commons.h>
 #include <renderer/Drawing.h>
-#include <renderer/Image.h>
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
@@ -91,8 +92,9 @@ DrawContext animatedRing()
     // Texture
     //
     {
-        static const Image
-            ring{resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string()};
+        static const arte::ImageRgba
+            ring{resource::pathFor("sonic_big_ring_1991_sprite_sheet_by_augustohirakodias_dc3iwce.png").string(),
+                 arte::ImageOrientation::InvertVerticalAxis};
 
         const Size2<int> frame {
             347-3,
@@ -110,12 +112,12 @@ DrawContext animatedRing()
                 {2103, 3},
                 {2453, 3},
         };
-        Image animationArray = ring.prepareArray(framePositions, frame);
+        arte::ImageRgba animationArray = ring.prepareArray(framePositions.begin(), framePositions.end(), frame);
 
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimationAsArray(texture, GL_TEXTURE2, animationArray, frame, framePositions.size());
+        loadAnimationAsArray(texture, GL_TEXTURE0 + 2, animationArray, frame, framePositions.size());
 
         drawing.mTextures.push_back(std::move(texture));
     }
@@ -205,6 +207,7 @@ void updateScene(Scene &aScene, double aTimeSeconds)
 void renderScene(Scene &aScene)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    bind(aScene.mDrawContext.mTextures.front(), GL_TEXTURE0 + 2);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesCount,
