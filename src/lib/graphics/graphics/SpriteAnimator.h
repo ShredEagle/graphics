@@ -10,6 +10,8 @@
 
 #include <math/Color.h>
 
+#include <unordered_map>
+
 
 namespace ad {
 namespace graphics {
