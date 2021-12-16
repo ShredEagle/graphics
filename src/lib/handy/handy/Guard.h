@@ -29,7 +29,7 @@ public:
 
     Guard & operator=(Guard && aOther)
     {
-        this->~Guard(); //explicitly call the destructor for this, to ensure the current releaser is called.
+        mReleaser(); // Call current releaser before taking the releaser from aOther.
         mReleaser = std::move(aOther.mReleaser);
         aOther.mReleaser = &Guard::turnOff;
         return *this;
