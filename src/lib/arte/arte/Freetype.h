@@ -113,8 +113,8 @@ public:
         //FT_Glyph_Get_CBox(*this, FT_GLYPH_BBOX_TRUNCATE, &bbox);
         FT_Glyph_Get_CBox(*this, FT_GLYPH_BBOX_PIXELS, &bbox);
         return {
-            bbox.xMax - bbox.xMin,
-            bbox.yMax - bbox.yMin
+            static_cast<int>(bbox.xMax - bbox.xMin),
+            static_cast<int>(bbox.yMax - bbox.yMin)
         };
     }
 
