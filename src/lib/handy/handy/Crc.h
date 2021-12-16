@@ -59,7 +59,7 @@ namespace detail {
 template <class T_iterator>
 constexpr Crc64 crc64(T_iterator aBegin, T_iterator aEnd)
 {
-    // Sadly, this seems not to be allowed by Cpp 
+    // Sadly, this seems not to be allowed by Cpp
     // see: https://www.reddit.com/r/cpp/comments/b04smy/static_variable_not_permitted_in_a_constexpr/
     // Yet, it is content if the static constexpr lives outside the function.
     //static constexpr Crc64Table table{detail::makeTable()};
@@ -68,7 +68,7 @@ constexpr Crc64 crc64(T_iterator aBegin, T_iterator aEnd)
     for(; aBegin != aEnd; ++aBegin)
     {
         std::byte data = static_cast<std::byte>(*aBegin);
-        std::size_t index = (Crc64)data ^ crc & 0xFF;
+        std::size_t index = ((Crc64)data ^ crc) & 0xFF;
         crc >>= 8;
         crc ^= detail::gTable[index];
     }
