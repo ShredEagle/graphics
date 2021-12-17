@@ -6,7 +6,7 @@ configure_file(build_config.h.in build_config.h @ONLY)
 
 set(${TARGET_NAME}_HEADERS
     PathProvider.h
-    ResourceManager.h
+    ResourceLocator.h
     #${CMAKE_CURRENT_BINARY_DIR}/build_config.h
 )
 

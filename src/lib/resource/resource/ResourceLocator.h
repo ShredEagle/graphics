@@ -11,17 +11,12 @@ namespace ad {
 namespace resource {
 
 /// \brief Singleton class that can be initialized, then is implicitly accessed by pathFor()
-class ResourceManager
+class ResourceLocator
 {
 public:
-    ResourceManager(const filesystem::path aRoot) :
+    ResourceLocator(const filesystem::path aRoot) :
         mRoot{std::move(aRoot)}
     {}
-
-    // Not copyable
-    ResourceManager(const ResourceManager &) = delete;
-    ResourceManager & operator=(const ResourceManager &) = delete;
-    // TODO make movable
 
     filesystem::path pathFor(const filesystem::path &aAsset) const;
 
@@ -30,7 +25,7 @@ private:
 };
 
 
-inline filesystem::path ResourceManager::pathFor(const filesystem::path &aAsset) const
+inline filesystem::path ResourceLocator::pathFor(const filesystem::path &aAsset) const
 {
     auto result = mRoot / aAsset;
     if (!exists(result))
