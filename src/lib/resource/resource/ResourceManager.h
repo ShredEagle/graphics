@@ -61,7 +61,7 @@ const T_resource & ResourceManager<T_resource, F_loader>::load(filesystem::path 
 template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
 void ResourceManager<T_resource, F_loader>::remove(filesystem::path aAssetPath)
 {
-    mResourceTable.erase(StringId{aAssetPath});
+    mResourceTable.erase(handy::StringId{aAssetPath});
 }
 
 
