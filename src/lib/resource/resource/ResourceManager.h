@@ -1,43 +1,67 @@
 #pragma once
 
-
 #include <platform/Filesystem.h>
 
-#include <stdexcept>
-#include <string>
+#include <handy/StringId.h>
+
+#include <unordered_map>
 
 
 namespace ad {
 namespace resource {
 
-/// \brief Singleton class that can be initialized, then is implicitly accessed by pathFor()
+
+// TODO Make this class safer to use (currently it is very easy to get dangling references).
+/// \attention The resources are currently hosted directly by the ResourceManager, not 
+/// inside any sharing mecanism.
+/// It implies that the resource handles are only valid while the ResourceManager is alive,
+/// and while it contains them. This is currently left as the user responsibility.
+template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
 class ResourceManager
 {
 public:
-    ResourceManager(const filesystem::path aRoot) :
-        mRoot{std::move(aRoot)}
-    {}
+    ResourceManager() = default;
 
-    // Not copyable
-    ResourceManager(const ResourceManager &) = delete;
-    ResourceManager & operator=(const ResourceManager &) = delete;
-    // TODO make movable
+    // Not copyable because it returns pointers/references to resources it owns
+    ResourceManager(const ResourceLocator &) = delete;
+    ResourceManager & operator=(const ResourceLocator &) = delete;
+    ResourceManager(ResourceLocator &&) = delete;
+    ResourceManager & operator=(ResourceLocator &&) = delete;
 
-    filesystem::path pathFor(const filesystem::path &aAsset) const;
+    const T_resource & load(filesystem::path aAssetPath, const ResourceLocator & aLocator);
+    /// \attention Invalidates all references to the removed resource.
+    void remove(filesystem::path aAssetPath);
 
 private:
-    filesystem::path mRoot;
+    std::unordered_map<handy::StringId, T_resource> mResourceTable;
 };
 
 
-inline filesystem::path ResourceManager::pathFor(const filesystem::path &aAsset) const
+//
+// Implementations
+//
+template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
+const T_resource & ResourceManager<T_resource, F_loader>::load(filesystem::path aAssetPath, const ResourceLocator & aLocator)
 {
-    auto result = mRoot / aAsset;
-    if (!exists(result))
+    handy::StringId resourceId{aAssetPath.string()};
+
+    if (auto foundIt = mResourceTable.find(resourceId);
+        foundIt == mResourceTable.end())
     {
-        throw std::runtime_error{result.string() + " does not exist."};
+        // The resource is not present in the table, it has to be loaded
+        return mResourceTable.emplace(resourceId, F_loader(aLocator.pathFor(aAssetPath))).first->second;
     }
-    return result;
+    else
+    {
+        return foundIt->second;
+    }
+}
+
+
+template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
+void ResourceManager<T_resource, F_loader>::remove(filesystem::path aAssetPath)
+{
+    mResourceTable.erase(StringId{aAssetPath});
 }
 
 
