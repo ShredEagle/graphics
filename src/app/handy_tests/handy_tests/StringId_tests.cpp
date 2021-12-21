@@ -132,3 +132,19 @@ SCENARIO("StringId reverse lookup.")
         }
     }
 }
+
+
+SCENARIO("StringId constexpr-ness")
+{
+    // It is more a "ensure it compiles" test.
+    THEN("Constexpr StringId can be a literal.")
+    {
+        using namespace literals;
+        constexpr StringId sid = "This is a StringId literal"_sid;
+    }
+
+    THEN("Constexpr StringId can be constructed from a string literal.")
+    {
+        constexpr StringId sid{"This is a plain string literal"};
+    }
+}

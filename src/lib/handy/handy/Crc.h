@@ -53,9 +53,6 @@ namespace detail {
 } // namespace detail
 
 
-// Only since C++20
-//constexpr Crc64 crc64(std::span<std::byte> aInput)
-
 template <class T_iterator>
 constexpr Crc64 crc64(T_iterator aBegin, T_iterator aEnd)
 {
@@ -76,10 +73,9 @@ constexpr Crc64 crc64(T_iterator aBegin, T_iterator aEnd)
 }
 
 
-// TODO constexpr this after switch to C++20
-inline /*constexpr*/ Crc64 crc64(const std::string & aString)
+inline constexpr Crc64 crc64(std::string_view aStringView)
 {
-    return crc64(aString.begin(), aString.end());
+    return crc64(aStringView.begin(), aStringView.end());
 }
 
 
