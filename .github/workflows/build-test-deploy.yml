@@ -21,7 +21,10 @@ jobs:
     name: Build, test, deploy
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-11]
+        # Disable macos while spdlog crashes its compiler
+        # see: https://github.com/conan-io/conan-center-index/issues/8480
+        #os: [ubuntu-latest, windows-latest, macos-11]
+        os: [ubuntu-latest, windows-latest]
         cppstd: [20]
         include:
           - os: ubuntu-latest
