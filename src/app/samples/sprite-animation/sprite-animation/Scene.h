@@ -19,7 +19,8 @@ namespace ad {
 namespace graphics {
 
 
-const std::string gAnimationName{"run"};
+const std::string gAnimationName = "run";
+const handy::StringId gAnimationId{gAnimationName};
 
 // Animation is given in milliseconds, so natural speeds must be in the order of 10^3
 const double gAnimationSpeed = 500;
@@ -42,7 +43,7 @@ public:
 
         mAnimationParameter =
             ParameterAnimation_t{
-                mAnimator.get(handy::StringId{gAnimationName}).totalDuration,
+                mAnimator.get(gAnimationId).totalDuration,
                 gAnimationSpeed
         };
     }
@@ -51,7 +52,7 @@ public:
     {
         Spriting::Instance instance = Spriting::Instance{
             {0.f, 0.f},
-            mAnimator.at(handy::StringId{gAnimationName}, mAnimationParameter->advance(aDelta)),
+            mAnimator.at(gAnimationId, mAnimationParameter->advance(aDelta)),
         };
         mSpriting.updateInstances(std::vector<Spriting::Instance>{instance});
     }

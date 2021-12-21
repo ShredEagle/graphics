@@ -16,8 +16,7 @@ class StringId
     constexpr StringId();
 
 public:
-    // TODO constexpr this after switch to C++20
-    explicit /*constexpr*/ StringId(const std::string & aString);
+    explicit constexpr StringId(std::string_view aStringView);
     explicit constexpr StringId(const char * aChars, std::size_t aCount);
 
     constexpr bool operator==(StringId aRhs) const;
@@ -47,8 +46,8 @@ namespace literals {
 //
 // Implementations
 //
-inline /*constexpr*/ StringId::StringId(const std::string & aString) :
-    mUid{crc64(aString)}
+inline constexpr StringId::StringId(std::string_view aStringView) :
+    mUid{crc64(aStringView)}
 {}
 
 

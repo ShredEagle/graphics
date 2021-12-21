@@ -87,9 +87,11 @@ void Animator::load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSp
     math::Size<2, int> atlasResolution = math::Size<2, int>::Zero();
     for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
     {
+        // The iterator might not point directly to an AnimationSpriteSheet (e.g. to a reference_wrapper).
+        const arte::AnimationSpriteSheet & spriteSheet = *sheetIt;
         // TODO that would make a nice factorized function
-        atlasResolution.width() = std::max(atlasResolution.width(), sheetIt->image().dimensions().width());
-        atlasResolution.height() += sheetIt->image().dimensions().height();
+        atlasResolution.width() = std::max(atlasResolution.width(), spriteSheet.image().dimensions().width());
+        atlasResolution.height() += spriteSheet.image().dimensions().height();
     }
 
     // assemble the atlas from all sprite sheet
@@ -98,10 +100,11 @@ void Animator::load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSp
     math::Vec<2, int> offset{0, 0};
     for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
     {
-        spriteAtlas.pasteFrom(sheetIt->image(), offset.as<math::Position>());
+        const arte::AnimationSpriteSheet & spriteSheet = *sheetIt;
+        spriteAtlas.pasteFrom(spriteSheet.image(), offset.as<math::Position>());
         // Also prepare the animation frames, as they do not require the texture to be loaded already.
-        insertAnimationFrames(*sheetIt, offset, aSpriting);
-        offset.y() += sheetIt->image().dimensions().height();
+        insertAnimationFrames(spriteSheet, offset, aSpriting);
+        offset.y() += spriteSheet.image().dimensions().height();
     }
 
     // load the atlas as a texture into spriting renderer
