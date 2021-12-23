@@ -50,11 +50,19 @@ public:
 
     void update(double aDelta)
     {
-        Spriting::Instance instance = Spriting::Instance{
-            {0.f, 0.f},
-            mAnimator.at(gAnimationId, mAnimationParameter->advance(aDelta)),
+        double parameterValue = mAnimationParameter->advance(aDelta);
+
+        std::vector<Spriting::Instance> instances{
+            Spriting::Instance{
+                {0.f, 0.f},
+                mAnimator.at(gAnimationId, parameterValue),
+            },
+            Spriting::Instance{
+                {100.f, 0.f},
+                mAnimator.at(gAnimationId, parameterValue),
+            },
         };
-        mSpriting.updateInstances(std::vector<Spriting::Instance>{instance});
+        mSpriting.updateInstances(instances);
     }
 
     void render()

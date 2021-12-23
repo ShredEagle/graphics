@@ -64,7 +64,7 @@ VertexSpecification makeQuad()
 
     // Per-instance attributes
     specification.mVertexBuffers.push_back(
-        loadVertexBuffer(
+        initVertexBuffer<Spriting::Instance>(
             specification.mVertexArray,
             {
                 // Sprite position
@@ -74,9 +74,6 @@ VertexSpecification makeQuad()
                 { 4,                               1, offsetof(Spriting::Instance, mOpacity),       MappedGL<GLfloat>::enumerator},
                 { 5,                               2, offsetof(Spriting::Instance, mAxisMirroring), MappedGL<GLint>::enumerator},
             },
-            0,
-            0,
-            nullptr,
             1
         ));
 
