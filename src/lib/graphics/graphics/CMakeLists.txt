@@ -82,7 +82,7 @@ target_link_libraries(${TARGET_NAME}
         ad::handy
         ad::resource
 
-        spdlog::libspdlog
+        spdlog::spdlog
 )
 
 
