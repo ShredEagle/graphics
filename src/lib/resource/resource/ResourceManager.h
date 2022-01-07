@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ResourceLocator.h"
+
 #include <platform/Filesystem.h>
 
 #include <handy/StringId.h>
@@ -10,13 +12,12 @@
 namespace ad {
 namespace resource {
 
-
 // TODO Make this class safer to use (currently it is very easy to get dangling references).
 /// \attention The resources are currently hosted directly by the ResourceManager, not 
 /// inside any sharing mecanism.
 /// It implies that the resource handles are only valid while the ResourceManager is alive,
 /// and while it contains them. This is currently left as the user responsibility.
-template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
+template <class T_resource, auto F_loader>
 class ResourceManager
 {
 public:
@@ -28,7 +29,8 @@ public:
     ResourceManager(ResourceLocator &&) = delete;
     ResourceManager & operator=(ResourceLocator &&) = delete;
 
-    const T_resource & load(filesystem::path aAssetPath, const ResourceLocator & aLocator);
+    template <class ...VT_loaderParams>
+    const T_resource & load(filesystem::path aAssetPath, const ResourceLocator & aLocator, VT_loaderParams &&...);
     /// \attention Invalidates all references to the removed resource.
     void remove(filesystem::path aAssetPath);
 
@@ -40,8 +42,9 @@ private:
 //
 // Implementations
 //
-template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
-const T_resource & ResourceManager<T_resource, F_loader>::load(filesystem::path aAssetPath, const ResourceLocator & aLocator)
+template <class T_resource, auto F_loader>
+template <class ...VT_loaderParams>
+const T_resource & ResourceManager<T_resource, F_loader>::load(filesystem::path aAssetPath, const ResourceLocator & aLocator, VT_loaderParams &&... aLoaderParams)
 {
     handy::StringId resourceId{aAssetPath.string()};
 
@@ -49,7 +52,7 @@ const T_resource & ResourceManager<T_resource, F_loader>::load(filesystem::path 
         foundIt == mResourceTable.end())
     {
         // The resource is not present in the table, it has to be loaded
-        return mResourceTable.emplace(resourceId, F_loader(aLocator.pathFor(aAssetPath))).first->second;
+        return mResourceTable.emplace(resourceId, F_loader(aLocator.pathFor(aAssetPath), std::forward<VT_loaderParams>(aLoaderParams)...)).first->second;
     }
     else
     {
@@ -58,7 +61,7 @@ const T_resource & ResourceManager<T_resource, F_loader>::load(filesystem::path 
 }
 
 
-template <class T_resource, T_resource(* F_loader)(const filesystem::path &)>
+template <class T_resource, auto F_loader>
 void ResourceManager<T_resource, F_loader>::remove(filesystem::path aAssetPath)
 {
     mResourceTable.erase(handy::StringId{aAssetPath.string()});
