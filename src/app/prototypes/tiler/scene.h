@@ -4,6 +4,7 @@
 #include <resource/PathProvider.h>
 
 #include <graphics/AppInterface.h>
+#include <graphics/SpriteLoading.h>
 #include <graphics/Spriting.h>
 #include <graphics/Tiling.h>
 #include <graphics/Timer.h>
@@ -40,6 +41,14 @@ private:
 
 template <class T>
 std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
+{
+    auto [atlas, sprites] = sprites::loadMetaFile(aFile);
+    aDrawer.load(atlas);
+    return sprites;
+}
+
+// TODO remove when Spriting load interface is updated
+std::vector<LoadedSprite> loadSheet(Spriting & aDrawer, const std::string & aFile)
 {
     arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aFile);
     return aDrawer.load(SpriteArea_const_iter{sheet.cbegin()},
@@ -88,9 +97,9 @@ struct Scroller
         }
     }
 
-    void render(const AppInterface & aAppInterface) const
+    void render() const
     {
-        mTiling.render(aAppInterface);
+        mTiling.render();
     }
 
 private:
@@ -197,7 +206,7 @@ inline void updateScene(Scene & aScene, AppInterface & aAppInterface, const Time
 inline void renderScene(const Scene & aScene, AppInterface & aAppInterface)
 {
     aAppInterface.clear();
-    aScene.mBackground.render(aAppInterface);
+    aScene.mBackground.render();
     aScene.mTiles.render();
 }
 

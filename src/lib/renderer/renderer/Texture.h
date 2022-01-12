@@ -41,6 +41,7 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
     GLenum mTarget;
 };
 
+/// \brief Bind the texture to the currently active texture unit.
 inline void bind(const Texture & aTexture)
 {
     glBindTexture(aTexture.mTarget, aTexture);

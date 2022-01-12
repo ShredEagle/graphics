@@ -27,19 +27,14 @@ public:
 
     void resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
-    /// \brief Takes a pair of iterator to SpriteArea instances, and the corresponding raster data
-    template <class T_iterator, class T_pixel>
-    std::vector<LoadedSprite> load(T_iterator aFirst, T_iterator aLast,
-                                   const arte::Image<T_pixel> & aRasterData);
+    void load(const sprites::LoadedAtlas & aAtlas);
 
     iterator begin();
     iterator end();
 
     void setBufferResolution(Size2<int> aNewResolution);
 
-    /// \note Does it make sense to forward appInterface here?
-    ///       What is the real meaning of the AppInterface class
-    void render(const AppInterface & aAppInterface) const;
+    void render() const;
 
     Position2<position_t> getPosition() const;
     void setPosition(Position2<position_t> aPosition);
@@ -49,10 +44,12 @@ public:
     Size2<GLint> getTileSize() const;
     Size2<GLint> getGridDefinition() const;
 
-    static constexpr GLint gTextureUnit{1};
+    static constexpr GLint gTextureUnit{2};
 
 private:
-    DrawContext mDrawContext;
+    VertexSpecification mVertexSpecification;
+    Program mProgram;
+    std::shared_ptr<Texture> mAtlasTexture;
     //instance_data mColors;
     instance_data mTiles;
 
@@ -90,6 +87,3 @@ inline Size2<GLint> Tiling::getGridDefinition() const
 
 } // namespace graphics
 } // namespace ad
-
-
-#include "Tiling-impl.h"
