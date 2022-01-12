@@ -19,9 +19,43 @@ void setViewedRectangle(T_engine2D & aEngine, math::Rectangle<GLfloat> aViewedRe
 {
     aEngine.setCameraTransformation(math::trans2d::translate(- aViewedRectangle.center().as<math::Vec>()));
     aEngine.setProjectionTransformation(
-        math::trans2d::orthographicProjection<GLfloat>({
-            -(aViewedRectangle.dimension() / 2.).as<math::Position>(),
-            aViewedRectangle.dimension() }));
+        math::trans2d::orthographicProjection<GLfloat>(math::Rectangle<GLfloat>{
+            math::Position<2, GLfloat>::Zero(),
+            aViewedRectangle.dimension()
+        }.centered()));
+}
+
+
+enum class ViewOrigin
+{
+    Unchanged,
+    LowerLeft
+};
+
+/// \brief Set the size of the viewport in sprite pixels (assuming the default pixel world size of 1).
+///
+/// This is a helper around `setProjectionTransformation()`: it is setting the world size of the viewport. 
+/// It makes it convenient to work with the virtual pixels as world unit.
+///
+/// \important the viewport will be [-width/2, -height/2] x [width/2, height/2], unless aOrigin is LowerLeft,
+/// then the viewport will be [0, 0] x [width, height].
+template <class T_engine2D>
+void setViewportVirtualResolution(T_engine2D & aEngine,
+                                  math::Size<2, int> aViewportPixelSize,
+                                  ViewOrigin aOrigin = ViewOrigin::Unchanged)
+{
+    math::Rectangle<GLfloat> viewportArea{
+        math::Position<2, GLfloat>::Zero(),
+        static_cast<math::Size<2, GLfloat>>(aViewportPixelSize)
+    };
+
+    aEngine.setProjectionTransformation(
+        math::trans2d::orthographicProjection<GLfloat>(viewportArea.centered()));
+
+    if (aOrigin == ViewOrigin::LowerLeft)
+    {
+        aEngine.setCameraTransformation(math::trans2d::translate(-viewportArea.center().as<math::Vec>()));
+    }
 }
 
 

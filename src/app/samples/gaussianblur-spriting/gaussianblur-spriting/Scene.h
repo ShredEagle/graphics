@@ -7,6 +7,8 @@
 
 #include <resource/PathProvider.h>
 
+#include <graphics/CameraUtilities.h>
+
 // Dirty include, to get the GLFW input definitions
 #include <GLFW/glfw3.h>
 
@@ -29,7 +31,7 @@ public:
     {
         using namespace std::placeholders;
 
-        mSpriting.setViewportVirtualResolution(aRenderResolution);
+        setViewportVirtualResolution(mSpriting, aRenderResolution);
         initializeSprite();
         aAppInterface->registerKeyCallback(std::bind(&Scene::onKey, this, _1, _2, _3, _4));
     }

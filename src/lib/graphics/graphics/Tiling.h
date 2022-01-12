@@ -4,6 +4,8 @@
 
 #include "Sprite.h"
 
+#include <math/Homogeneous.h>
+
 #include <renderer/Drawing.h>
 
 
@@ -20,17 +22,21 @@ public:
     using Instance = LoadedSprite;
     using Position_t = GLfloat;
 
-    Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution);
+    Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
+    /// \brief Reset the geometry tile grid to be rendered.
     void resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
+    /// \brief Associate the atlas to be used when rendering.
     void load(const sprites::LoadedAtlas & aAtlas);
 
     void updateInstances(gsl::span<const Instance> aInstances);
 
-    void setBufferResolution(Size2<int> aNewResolution);
-
+    /// \brief Render all instances, using the associated atlas.
     void render() const;
+
+    void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
 
     Position2<Position_t> getPosition() const;
     void setPosition(Position2<Position_t> aPosition);

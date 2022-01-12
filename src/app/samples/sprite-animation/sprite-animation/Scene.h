@@ -2,6 +2,7 @@
 
 #include <arte/SpriteSheet.h>
 
+#include <graphics/CameraUtilities.h>
 #include <graphics/SpriteAnimator.h>
 #include <graphics/Spriting.h>
 
@@ -32,7 +33,7 @@ public:
     Scene(Size2<int> aRenderResolution) :
         mSpriting{}
     {
-        mSpriting.setViewportVirtualResolution(aRenderResolution);
+        setViewportVirtualResolution(mSpriting, aRenderResolution);
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aRenderResolution) / 2) );
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <graphics/CameraUtilities.h>
 #include <graphics/SpriteLoading.h>
 #include <graphics/Tiling.h>
 
@@ -18,8 +19,10 @@ class Scene
 {
 public:
     Scene(Size2<int> aRenderResolution) :
-        mTiling{gCellSize, gGrid, aRenderResolution}
+        mTiling{gCellSize, gGrid}
     {
+        setViewportVirtualResolution(mTiling, aRenderResolution, ViewOrigin::LowerLeft);
+
         sprites::LoadedAtlas atlas;
         std::tie(atlas, mLoadedTiles) = 
             sprites::load(arte::Image<math::sdr::Rgba>{

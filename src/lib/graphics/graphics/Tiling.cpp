@@ -7,6 +7,7 @@
 #include <handy/vector_utils.h>
 
 #include <math/Range.h>
+#include <math/Transformations.h>
 
 #include <renderer/Uniforms.h>
 
@@ -23,18 +24,19 @@ const GLchar* gTilingVertexShader = R"#(
     layout(location=2) in vec2  in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
 
-    uniform ivec2 in_BufferResolution;
-    uniform ivec2 in_GridPosition;
+    uniform ivec2 u_GridPosition;
+    uniform mat3 u_camera;
+    uniform mat3 u_projection;
 
     out vec2 ex_UV;
 
     void main(void)
     {
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy + in_GridPosition;
-        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        vec3 worldPosition = vec3(in_InstancePosition + in_VertexPosition.xy + u_GridPosition, 1.);
+        vec3 transformed = u_projection * u_camera * worldPosition;
+        gl_Position = vec4(transformed.x, transformed.y, 0., 1.);
 
-        ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
+        ex_UV = in_TextureArea.xy + (in_UV * in_TextureArea.zw);
     }
 )#";
 
@@ -140,7 +142,7 @@ Program makeProgram()
 }
 
 
-Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution) :
+Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition) :
     mVertexSpecification{makeVertexGrid(aCellSize, aGridDefinition)},
     mProgram{makeProgram()},
     mTileSize{aCellSize},
@@ -148,7 +150,8 @@ Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRen
     mGridRectangleScreen{{0.f, 0.f},
                           static_cast<Size2<Tiling::Position_t>>(aCellSize.cwMul(aGridDefinition))}
 {
-    setBufferResolution(aRenderResolution);
+    setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
+    setProjectionTransformation(math::AffineMatrix<3, GLfloat>::Identity());
 }
 
 
@@ -170,16 +173,16 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
 }
 
 
-void Tiling::setBufferResolution(Size2<int> aNewResolution)
-{
-    setUniform(mProgram, "in_BufferResolution", aNewResolution);
-}
+//void Tiling::setBufferResolution(Size2<int> aNewResolution)
+//{
+//    setUniform(mProgram, "in_BufferResolution", aNewResolution);
+//}
 
 
 void Tiling::setPosition(Position2<Position_t> aPosition)
 {
     mGridRectangleScreen.mPosition = aPosition;
-    setUniform(mProgram, "in_GridPosition", static_cast<Position2<GLint>>(aPosition));
+    setUniform(mProgram, "u_GridPosition", static_cast<Position2<GLint>>(aPosition));
 }
 
 
@@ -214,6 +217,19 @@ void Tiling::render() const
                           gVerticesPerInstance,
                           mInstanceCount);
 }
+
+
+void Tiling::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mProgram, "u_camera", aTransformation); 
+}
+
+
+void Tiling::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mProgram, "u_projection", aTransformation); 
+}
+
 
 } // namespace graphics
 } // namespace ad

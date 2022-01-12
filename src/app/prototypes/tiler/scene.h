@@ -4,6 +4,7 @@
 #include <resource/PathProvider.h>
 
 #include <graphics/AppInterface.h>
+#include <graphics/CameraUtilities.h>
 #include <graphics/SpriteLoading.h>
 #include <graphics/Spriting.h>
 #include <graphics/Tiling.h>
@@ -63,19 +64,20 @@ struct Scroller
     Scroller & operator=(const Scroller &) = delete;
 
     Scroller(const Size2<int> aTileSize, std::string aTilesheet, AppInterface & aAppInterface) :
-            mTiling(aTileSize,
-                    aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2},
-                    aAppInterface.getWindowSize()),
-            mLoadedTiles(loadSheet(mTiling, aTilesheet)),
+            mTiling{aTileSize,
+                    aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2}},
+            mLoadedTiles{loadSheet(mTiling, aTilesheet)},
             mPlacedTiles{mTiling.getTileCount(), Tiling::gEmptyInstance},
-            mRandomIndex(0, static_cast<int>(mLoadedTiles.size()-1))
+            mRandomIndex{0, static_cast<int>(mLoadedTiles.size()-1)}
     {
+        setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
+
         fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
         mTiling.updateInstances(mPlacedTiles);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            mTiling.setBufferResolution(aNewSize);
+            setViewportVirtualResolution(mTiling, aNewSize, ViewOrigin::LowerLeft);
             // +2 tiles on each dimension:
             // * 1 to compensate for the integral division module
             // * 1 to make sure there is at least the size of a complete tile in excess
@@ -148,7 +150,7 @@ struct Tiles
 
     Tiles(std::string aSpriteSheet, AppInterface & aAppInterface)
     {
-        mSpriting.setViewportVirtualResolution(aAppInterface.getWindowSize());
+        setViewportVirtualResolution(mSpriting, aAppInterface.getWindowSize());
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
 
@@ -159,7 +161,7 @@ struct Tiles
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            mSpriting.setViewportVirtualResolution(aNewSize);
+            setViewportVirtualResolution(mSpriting, aNewSize);
             mSpriting.setCameraTransformation(
                 math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aNewSize) / 2) );
         });

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <graphics/CameraUtilities.h>
 #include <graphics/Spriting.h>
 
 #include <resource/PathProvider.h>
@@ -15,7 +16,7 @@ public:
     Scene(Size2<int> aRenderResolution) :
         mSpriting{}
     {
-        mSpriting.setViewportVirtualResolution(aRenderResolution);
+        setViewportVirtualResolution(mSpriting, aRenderResolution);
 
         constexpr Size2<int> frameDimensions{347-3, 303-3};
 
