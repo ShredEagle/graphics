@@ -25,7 +25,22 @@ std::pair<LoadedAtlas, std::vector<LoadedSprite>>
 load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterData);
 
 
-std::pair<LoadedAtlas, std::vector<LoadedSprite>> loadMetaFile(const filesystem::path & aPath);
+/// \brief Overload accepting a range.
+template <std::ranges::range T_range, class T_pixel>
+std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+load(T_range aRange, const arte::Image<T_pixel> & aRasterData);
+
+
+/// \brief Load all sprites defined in the meta (tilesheet) file.
+std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+loadMetaFile(const filesystem::path & aPath);
+
+
+/// \brief Load the entire image as a single sprite.
+template <class T_pixel>
+std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+load(const arte::Image<T_pixel> & aRasterData);
+
 
 //
 // Implementations
@@ -44,6 +59,23 @@ load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterDa
     std::vector<LoadedSprite> loadedSprites;
     std::copy(aFirst, aLast, std::back_inserter(loadedSprites));
     return {atlas, loadedSprites};
+}
+
+
+template <std::ranges::range T_range, class T_pixel>
+std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+load(T_range aRange, const arte::Image<T_pixel> & aRasterData)
+{
+    return load(std::begin(aRange), std::end(aRange), aRasterData);
+}
+
+
+template <class T_pixel>
+std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+load(const arte::Image<T_pixel> & aRasterData)
+{
+    std::array<SpriteArea, 1> fullSize{ SpriteArea{{0, 0}, aRasterData.dimensions()} };
+    return load(fullSize, aRasterData);
 }
 
 

@@ -96,7 +96,7 @@ public:
     /// It makes it convenient to work with the virtual pixels as world unit.
     ///
     /// \important the viewport will be [-width/2, -height/2] x [width/2, height/2].
-    /// Additionally set a camera transformation if lower-left should be at [0, 0] instead.
+    /// Additionally, user should set a camera transformation if lower-left should be at [0, 0] instead.
     void setViewportVirtualResolution(math::Size<2, int> aViewportPixelSize);
 
     /// \brief Define the size of a pixel in world units.
