@@ -109,24 +109,18 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     specification.mVertexBuffers.push_back(
         loadVertexBuffer(specification.mVertexArray,
                          { {2, 2, 0, MappedGL<GLint>::enumerator} },
-                         gsl::make_span(positions)));
-
-    glVertexAttribDivisor(2, 1);
+                         gsl::make_span(positions),
+                         1));
 
     // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
     /// \todo separate buffer specification and filling
     specification.mVertexBuffers.push_back(
-        loadVertexBuffer(specification.mVertexArray,
-                         {
-                         
-                             //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
-                             { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
-                         },
-                         sizeof(Tiling::tile_type),
-                         0,
-                         nullptr));
-
-    glVertexAttribDivisor(3, 1);
+        initVertexBuffer<Tiling::Instance>(
+            specification.mVertexArray,
+            {
+                { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
+            },
+            1));
 
     return specification;
 }
@@ -149,11 +143,10 @@ Program makeProgram()
 Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution) :
     mVertexSpecification{makeVertexGrid(aCellSize, aGridDefinition)},
     mProgram{makeProgram()},
-    mTiles{aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}}},
     mTileSize{aCellSize},
     mGridDefinition{aGridDefinition},
     mGridRectangleScreen{{0.f, 0.f},
-                          static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition))}
+                          static_cast<Size2<Tiling::Position_t>>(aCellSize.cwMul(aGridDefinition))}
 {
     setBufferResolution(aRenderResolution);
 }
@@ -170,23 +163,10 @@ void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     respecifyBuffer(mVertexSpecification.mVertexBuffers.at(1), gsl::make_span(positions));
 
-    mTiles.resize(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}});
     mTileSize = aCellSize;
     mGridDefinition = aGridDefinition;
     mGridRectangleScreen.mDimension
-        = static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition));
-}
-
-
-Tiling::iterator Tiling::begin()
-{
-    return mTiles.begin();
-}
-
-
-Tiling::iterator Tiling::end()
-{
-    return mTiles.end();
+        = static_cast<Size2<Tiling::Position_t>>(aCellSize.cwMul(aGridDefinition));
 }
 
 
@@ -196,7 +176,7 @@ void Tiling::setBufferResolution(Size2<int> aNewResolution)
 }
 
 
-void Tiling::setPosition(Position2<position_t> aPosition)
+void Tiling::setPosition(Position2<Position_t> aPosition)
 {
     mGridRectangleScreen.mPosition = aPosition;
     setUniform(mProgram, "in_GridPosition", static_cast<Position2<GLint>>(aPosition));
@@ -209,18 +189,20 @@ void Tiling::load(const sprites::LoadedAtlas & aAtlas)
 }
 
 
-void Tiling::render() const
+void Tiling::updateInstances(gsl::span<const Instance> aInstances)
 {
-    activate(mVertexSpecification, mProgram);
-
     //
     // Stream vertex attributes
     //
-
-    // The last buffer, i.e. the sprite corresponding to each tile
     respecifyBuffer(mVertexSpecification.mVertexBuffers.back(),
-                    mTiles.data(),
-                    static_cast<GLsizei>(getStoredSize(mTiles)));
+                    aInstances);
+    mInstanceCount = static_cast<GLsizei>(aInstances.size());
+}
+
+
+void Tiling::render() const
+{
+    activate(mVertexSpecification, mProgram);
 
     //
     // Draw
@@ -230,7 +212,7 @@ void Tiling::render() const
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesPerInstance,
-                          static_cast<GLsizei>(mTiles.size()));
+                          mInstanceCount);
 }
 
 } // namespace graphics

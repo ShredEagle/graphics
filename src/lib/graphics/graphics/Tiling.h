@@ -6,6 +6,7 @@
 
 #include <renderer/Drawing.h>
 
+
 namespace ad {
 namespace graphics{
 
@@ -15,13 +16,9 @@ class AppInterface;
 
 class Tiling
 {
-    /// \todo Would be better with a container of const size
-    typedef std::vector<LoadedSprite> instance_data;
-
 public:
-    typedef instance_data::value_type tile_type;
-    typedef instance_data::iterator iterator;
-    typedef GLfloat position_t;
+    using Instance = LoadedSprite;
+    using Position_t = GLfloat;
 
     Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution);
 
@@ -29,33 +26,35 @@ public:
 
     void load(const sprites::LoadedAtlas & aAtlas);
 
-    iterator begin();
-    iterator end();
+    void updateInstances(gsl::span<const Instance> aInstances);
 
     void setBufferResolution(Size2<int> aNewResolution);
 
     void render() const;
 
-    Position2<position_t> getPosition() const;
-    void setPosition(Position2<position_t> aPosition);
+    Position2<Position_t> getPosition() const;
+    void setPosition(Position2<Position_t> aPosition);
 
-    Rectangle<position_t> getGridRectangle() const;
+    Rectangle<Position_t> getGridRectangle() const;
 
+    std::size_t getTileCount() const;
     Size2<GLint> getTileSize() const;
     Size2<GLint> getGridDefinition() const;
 
     static constexpr GLint gTextureUnit{2};
+    /// \brief Notably usefull to initialize collection of instances.
+    static inline const Instance gEmptyInstance{ {0, 0}, {0, 0} };
 
 private:
     VertexSpecification mVertexSpecification;
     Program mProgram;
     std::shared_ptr<Texture> mAtlasTexture;
-    //instance_data mColors;
-    instance_data mTiles;
 
     Size2<GLint> mTileSize;
     Size2<GLint> mGridDefinition;
-    Rectangle<position_t> mGridRectangleScreen;
+    Rectangle<Position_t> mGridRectangleScreen;
+
+    GLsizei mInstanceCount{0};
 
     static constexpr GLsizei gVerticesPerInstance{4};
 };
@@ -64,14 +63,19 @@ private:
 /*
  * Implementations
  */
-inline Position2<Tiling::position_t> Tiling::getPosition() const
+inline Position2<Tiling::Position_t> Tiling::getPosition() const
 {
     return mGridRectangleScreen.mPosition;
 }
 
-inline Rectangle<Tiling::position_t> Tiling::getGridRectangle() const
+inline Rectangle<Tiling::Position_t> Tiling::getGridRectangle() const
 {
     return mGridRectangleScreen;
+}
+
+inline::std::size_t Tiling::getTileCount() const
+{
+    return mGridDefinition.area();
 }
 
 inline Size2<GLint> Tiling::getTileSize() const

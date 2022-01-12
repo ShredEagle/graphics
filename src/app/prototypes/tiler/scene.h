@@ -47,7 +47,7 @@ std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
     return sprites;
 }
 
-// TODO remove when Spriting load interface is updated
+// TODO remove when Spriting load interface is updated, also boost iterator_adapt
 std::vector<LoadedSprite> loadSheet(Spriting & aDrawer, const std::string & aFile)
 {
     arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aFile);
@@ -66,10 +66,12 @@ struct Scroller
             mTiling(aTileSize,
                     aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2},
                     aAppInterface.getWindowSize()),
-            mTiles(loadSheet(mTiling, aTilesheet)),
-            mRandomIndex(0, static_cast<int>(mTiles.size()-1))
+            mLoadedTiles(loadSheet(mTiling, aTilesheet)),
+            mPlacedTiles{mTiling.getTileCount(), Tiling::gEmptyInstance},
+            mRandomIndex(0, static_cast<int>(mLoadedTiles.size()-1))
     {
-        fillRandom(mTiling.begin(), mTiling.end());
+        fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
+        mTiling.updateInstances(mPlacedTiles);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
@@ -79,7 +81,8 @@ struct Scroller
             // * 1 to make sure there is at least the size of a complete tile in excess
             Size2<int> gridDefinition = aNewSize.cwDiv(mTiling.getTileSize()) + Size2<int>{2, 2};
             mTiling.resetTiling(mTiling.getTileSize(), gridDefinition);
-            fillRandom(mTiling.begin(), mTiling.end());
+            mPlacedTiles.resize(mTiling.getTileCount(), Tiling::gEmptyInstance);
+            fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
         });
     }
 
@@ -103,12 +106,12 @@ struct Scroller
     }
 
 private:
-    void fillRandom(Tiling::iterator aFirst, Tiling::iterator aLast)
+    void fillRandom(auto aFirst, auto aLast)
     {
         std::generate(aFirst,
                       aLast,
                       [this](){
-                          return mTiles.at(mRandomIndex());
+                          return mLoadedTiles.at(mRandomIndex());
                       });
     }
 
@@ -118,17 +121,19 @@ private:
                             + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().cwMul({1, 0})));
 
         // Copy the tiles still appearing
-        std::copy(mTiling.begin()+mTiling.getGridDefinition().height(),
-                  mTiling.end(),
-                  mTiling.begin());
+        std::copy(mPlacedTiles.begin() + mTiling.getGridDefinition().height(),
+                  mPlacedTiles.end(),
+                  mPlacedTiles.begin());
 
         // Complete new tiles
-        fillRandom(mTiling.end()-mTiling.getGridDefinition().height(), mTiling.end());
+        fillRandom(mPlacedTiles.end() - mTiling.getGridDefinition().height(), mPlacedTiles.end());
+        mTiling.updateInstances(mPlacedTiles);
     }
 
 private:
     Tiling mTiling;
-    std::vector<LoadedSprite> mTiles; // The list of available tiles
+    std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
+    std::vector<Tiling::Instance> mPlacedTiles;
     Randomizer<> mRandomIndex;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
