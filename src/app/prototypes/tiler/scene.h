@@ -64,16 +64,17 @@ struct Scroller
     Scroller & operator=(const Scroller &) = delete;
 
     Scroller(const Size2<int> aTileSize, std::string aTilesheet, AppInterface & aAppInterface) :
-            mTiling{aTileSize,
+            mTiling{},
+            mTileSet{aTileSize,
                     aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2}},
             mLoadedTiles{loadSheet(mTiling, aTilesheet)},
-            mPlacedTiles{mTiling.getTileCount(), Tiling::gEmptyInstance},
+            mPlacedTiles{mTileSet.getTileCount(), TileSet::gEmptyInstance},
             mRandomIndex{0, static_cast<int>(mLoadedTiles.size()-1)}
     {
         setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
 
         fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
-        mTiling.updateInstances(mPlacedTiles);
+        mTileSet.updateInstances(mPlacedTiles);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
@@ -81,18 +82,18 @@ struct Scroller
             // +2 tiles on each dimension:
             // * 1 to compensate for the integral division module
             // * 1 to make sure there is at least the size of a complete tile in excess
-            Size2<int> gridDefinition = aNewSize.cwDiv(mTiling.getTileSize()) + Size2<int>{2, 2};
-            mTiling.resetTiling(mTiling.getTileSize(), gridDefinition);
-            mPlacedTiles.resize(mTiling.getTileCount(), Tiling::gEmptyInstance);
+            Size2<int> gridDefinition = aNewSize.cwDiv(mTileSet.getTileSize()) + Size2<int>{2, 2};
+            mTileSet.resetTiling(mTileSet.getTileSize(), gridDefinition);
+            mPlacedTiles.resize(mTileSet.getTileCount(), TileSet::gEmptyInstance);
             fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
         });
     }
 
     void scroll(Vec2<GLfloat> aDisplacement, const AppInterface & aAppInterface)
     {
-        mTiling.setPosition(mTiling.getPosition() + aDisplacement);
+        mTiling.setPosition(mTileSet, mTileSet.getPosition() + aDisplacement);
 
-        Rectangle<GLfloat> grid(mTiling.getGridRectangle());
+        Rectangle<GLfloat> grid(mTileSet.getGridRectangle());
         GLint xDiff = static_cast<GLint>(grid.topRight().x())
                       - aAppInterface.getWindowSize().width();
 
@@ -104,7 +105,7 @@ struct Scroller
 
     void render() const
     {
-        mTiling.render();
+        mTiling.render(mTileSet);
     }
 
 private:
@@ -119,23 +120,26 @@ private:
 
     void reposition()
     {
-        mTiling.setPosition(mTiling.getPosition()
-                            + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().cwMul({1, 0})));
+        mTiling.setPosition(
+            mTileSet,
+            mTileSet.getPosition()
+                + static_cast<Vec2<GLfloat>>(mTileSet.getTileSize().cwMul({1, 0})));
 
         // Copy the tiles still appearing
-        std::copy(mPlacedTiles.begin() + mTiling.getGridDefinition().height(),
+        std::copy(mPlacedTiles.begin() + mTileSet.getGridDefinition().height(),
                   mPlacedTiles.end(),
                   mPlacedTiles.begin());
 
         // Complete new tiles
-        fillRandom(mPlacedTiles.end() - mTiling.getGridDefinition().height(), mPlacedTiles.end());
-        mTiling.updateInstances(mPlacedTiles);
+        fillRandom(mPlacedTiles.end() - mTileSet.getGridDefinition().height(), mPlacedTiles.end());
+        mTileSet.updateInstances(mPlacedTiles);
     }
 
 private:
     Tiling mTiling;
+    TileSet mTileSet;
     std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
-    std::vector<Tiling::Instance> mPlacedTiles;
+    std::vector<TileSet::Instance> mPlacedTiles;
     Randomizer<> mRandomIndex;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };

@@ -22,7 +22,8 @@ public:
         // * 1 for rounding up the division (the last tile, partially shown)
         // * 1 excess tile, i.e. initially completely "out of viewport"
         mGridSize{(gCellSize.width() / aRenderResolution.width()) + 2, 1},
-        mTiling{gCellSize, mGridSize}
+        mTiling{},
+        mTileSet{gCellSize, mGridSize}
     {
         setViewportVirtualResolution(mTiling, aRenderResolution, ViewOrigin::LowerLeft);
 
@@ -34,7 +35,7 @@ public:
         mTiling.load(atlas);
 
         std::ranges::fill(mPlacedTiles, mLoadedTiles.at(0));
-        mTiling.updateInstances(mPlacedTiles);
+        mTileSet.updateInstances(mPlacedTiles);
     }
 
     void update(double aTimePointSeconds)
@@ -44,19 +45,20 @@ public:
             0.f
         };
 
-        mTiling.setPosition(gridPosition);
+        mTiling.setPosition(mTileSet, gridPosition);
     }
 
     void render()
     {
-        mTiling.render();
+        mTiling.render(mTileSet);
     }
 
 private:
     Size2<int> mGridSize;
     Tiling mTiling;
+    TileSet mTileSet;
     std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
-    std::vector<Tiling::Instance> mPlacedTiles{mGridSize.area(), Tiling::gEmptyInstance};
+    std::vector<TileSet::Instance> mPlacedTiles{mGridSize.area(), TileSet::gEmptyInstance};
 };
 
 
