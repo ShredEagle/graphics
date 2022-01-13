@@ -12,14 +12,17 @@ namespace graphics {
 
 
 constexpr Size2<int> gCellSize{320, 180}; // The images resolution
-constexpr Size2<int> gGrid{2, 1};
-constexpr double gScrollSpeed = 50.;
+constexpr double gScrollSpeed = 150.;
 
 class Scene
 {
 public:
     Scene(Size2<int> aRenderResolution) :
-        mTiling{gCellSize, gGrid}
+        // +2 : 
+        // * 1 for rounding up the division (the last tile, partially shown)
+        // * 1 excess tile, i.e. initially completely "out of viewport"
+        mGridSize{(gCellSize.width() / aRenderResolution.width()) + 2, 1},
+        mTiling{gCellSize, mGridSize}
     {
         setViewportVirtualResolution(mTiling, aRenderResolution, ViewOrigin::LowerLeft);
 
@@ -36,7 +39,12 @@ public:
 
     void update(double aTimePointSeconds)
     {
-        mTiling.setPosition({(float)(-aTimePointSeconds * gScrollSpeed), 0.f});
+        Position2<GLfloat> gridPosition{
+            (float)std::fmod(-aTimePointSeconds * gScrollSpeed, gCellSize.width()),
+            0.f
+        };
+
+        mTiling.setPosition(gridPosition);
     }
 
     void render()
@@ -45,9 +53,10 @@ public:
     }
 
 private:
+    Size2<int> mGridSize;
     Tiling mTiling;
     std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
-    std::vector<Tiling::Instance> mPlacedTiles{gGrid.area(), Tiling::gEmptyInstance};
+    std::vector<Tiling::Instance> mPlacedTiles{mGridSize.area(), Tiling::gEmptyInstance};
 };
 
 

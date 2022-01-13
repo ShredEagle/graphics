@@ -29,7 +29,7 @@ void setViewedRectangle(T_engine2D & aEngine, math::Rectangle<GLfloat> aViewedRe
 enum class ViewOrigin
 {
     Unchanged,
-    LowerLeft
+    LowerLeft // The window's lower left corner is aligned with world's origin (0, 0)
 };
 
 /// \brief Set the size of the viewport in sprite pixels (assuming the default pixel world size of 1).
