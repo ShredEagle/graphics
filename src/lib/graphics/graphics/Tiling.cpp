@@ -193,15 +193,12 @@ void Tiling::load(const sprites::LoadedAtlas & aAtlas)
 }
 
 
-void Tiling::setPosition(TileSet & aTileSet, Position2<TileSet::Position_t> aPosition)
-{
-    aTileSet.mGridRectangleScreen.mPosition = aPosition;
-    setUniform(mProgram, "u_GridPosition", static_cast<Position2<GLint>>(aPosition));
-}
-
-
 void Tiling::render(const TileSet & aTileSet) const
 {
+    // The reason program data member is mutable...
+    setUniform(mProgram, "u_GridPosition",
+               static_cast<Position2<GLint>>(aTileSet.getPosition()));
+
     activate(aTileSet.mVertexSpecification, mProgram);
 
     //

@@ -32,6 +32,7 @@ public:
     void resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
     Position2<TileSet::Position_t> getPosition() const;
+    void setPosition(Position2<TileSet::Position_t> aPosition);
 
     Rectangle<Position_t> getGridRectangle() const;
 
@@ -64,17 +65,15 @@ public:
     /// \brief Render all instances, using the associated atlas.
     void render(const TileSet & aTileSet) const;
 
-    // TODO Ad 2022/01/13: I do not like it being here, but this has to change a uniform
-    // in the program (and that cannot happen in render() because it is const).
-    void setPosition(TileSet & aTileSet, Position2<TileSet::Position_t> aPosition);
-
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
 
     static constexpr GLint gTextureUnit{2};
 
 private:
-    Program mProgram;
+    // TODO Ad 2022/01/13: This has a very strong smell, but the position of the grid is set as a uniform
+    // in the program (and that cannot render() member functions are intended to be const).
+    mutable Program mProgram;
     std::shared_ptr<Texture> mAtlasTexture;
 };
 
@@ -86,6 +85,13 @@ inline Position2<TileSet::Position_t> TileSet::getPosition() const
 {
     return mGridRectangleScreen.mPosition;
 }
+
+
+inline void TileSet::setPosition(Position2<TileSet::Position_t> aPosition)
+{
+    mGridRectangleScreen.mPosition = aPosition;
+}
+
 
 inline Rectangle<TileSet::Position_t> TileSet::getGridRectangle() const
 {

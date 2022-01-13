@@ -91,7 +91,7 @@ struct Scroller
 
     void scroll(Vec2<GLfloat> aDisplacement, const AppInterface & aAppInterface)
     {
-        mTiling.setPosition(mTileSet, mTileSet.getPosition() + aDisplacement);
+        mTileSet.setPosition(mTileSet.getPosition() + aDisplacement);
 
         Rectangle<GLfloat> grid(mTileSet.getGridRectangle());
         GLint xDiff = static_cast<GLint>(grid.topRight().x())
@@ -120,8 +120,7 @@ private:
 
     void reposition()
     {
-        mTiling.setPosition(
-            mTileSet,
+        mTileSet.setPosition(
             mTileSet.getPosition()
                 + static_cast<Vec2<GLfloat>>(mTileSet.getTileSize().cwMul({1, 0})));
 
