@@ -194,12 +194,12 @@ void Tiling::load(const sprites::LoadedAtlas & aAtlas)
 
 void Tiling::updateInstances(gsl::span<const Instance> aInstances)
 {
+    assert(aInstances.size() == getTileCount());
     //
     // Stream vertex attributes
     //
     respecifyBuffer(mVertexSpecification.mVertexBuffers.back(),
                     aInstances);
-    mInstanceCount = static_cast<GLsizei>(aInstances.size());
 }
 
 
@@ -215,7 +215,7 @@ void Tiling::render() const
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           gVerticesPerInstance,
-                          mInstanceCount);
+                          getTileCount());
 }
 
 

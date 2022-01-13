@@ -60,8 +60,6 @@ private:
     Size2<GLint> mGridDefinition;
     Rectangle<Position_t> mGridRectangleScreen;
 
-    GLsizei mInstanceCount{0};
-
     static constexpr GLsizei gVerticesPerInstance{4};
 };
 
