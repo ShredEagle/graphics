@@ -187,13 +187,7 @@ Tiling::Tiling() :
 }
 
 
-void Tiling::load(const sprites::LoadedAtlas & aAtlas)
-{
-    mAtlasTexture = aAtlas.texture;
-}
-
-
-void Tiling::render(const TileSet & aTileSet) const
+void Tiling::render(const sprites::LoadedAtlas & aAtlas, const TileSet & aTileSet) const
 {
     // The reason program data member is mutable...
     setUniform(mProgram, "u_GridPosition",
@@ -204,7 +198,7 @@ void Tiling::render(const TileSet & aTileSet) const
     //
     // Draw
     //
-    bind_guard scopedTexture{*mAtlasTexture, GL_TEXTURE0 + gTextureUnit};
+    bind_guard scopedTexture{*aAtlas.texture, GL_TEXTURE0 + gTextureUnit};
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,

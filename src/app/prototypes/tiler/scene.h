@@ -40,13 +40,6 @@ private:
     }
 };
 
-template <class T>
-std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
-{
-    auto [atlas, sprites] = sprites::loadMetaFile(aFile);
-    aDrawer.load(atlas);
-    return sprites;
-}
 
 // TODO remove when Spriting load interface is updated, also boost iterator_adapt
 std::vector<LoadedSprite> loadSheet(Spriting & aDrawer, const std::string & aFile)
@@ -56,6 +49,7 @@ std::vector<LoadedSprite> loadSheet(Spriting & aDrawer, const std::string & aFil
                         SpriteArea_const_iter{sheet.cend()},
                         sheet.image());
 }
+
 
 struct Scroller
 {
@@ -67,11 +61,14 @@ struct Scroller
             mTiling{},
             mTileSet{aTileSize,
                     aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2}},
-            mLoadedTiles{loadSheet(mTiling, aTilesheet)},
             mPlacedTiles{mTileSet.getTileCount(), TileSet::gEmptyInstance},
-            mRandomIndex{0, static_cast<int>(mLoadedTiles.size()-1)}
+            // Cannot be properly initialized before the size of mLoadedTiles is known.
+            mRandomIndex{0, 0} 
     {
         setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
+
+        std::tie(mAtlas, mLoadedTiles) = sprites::loadMetaFile(aTilesheet);
+        mRandomIndex = {0, static_cast<int>(mLoadedTiles.size()-1)};
 
         fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
         mTileSet.updateInstances(mPlacedTiles);
@@ -105,7 +102,7 @@ struct Scroller
 
     void render() const
     {
-        mTiling.render(mTileSet);
+        mTiling.render(mAtlas, mTileSet);
     }
 
 private:
@@ -138,6 +135,7 @@ private:
     Tiling mTiling;
     TileSet mTileSet;
     std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
+    sprites::LoadedAtlas mAtlas;
     std::vector<TileSet::Instance> mPlacedTiles;
     Randomizer<> mRandomIndex;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;

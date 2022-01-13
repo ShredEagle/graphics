@@ -102,8 +102,7 @@ void ParallaxScroller::render() //const
 {
     for (const auto & layer : mLayers)
     {
-        mTiling.load(layer.atlas);
-        mTiling.render(layer.tileSet);
+        mTiling.render(layer.atlas, layer.tileSet);
     }
 }
 

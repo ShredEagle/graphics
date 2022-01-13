@@ -59,11 +59,8 @@ class Tiling
 public:
     Tiling();
 
-    /// \brief Associate the atlas to be used when rendering.
-    void load(const sprites::LoadedAtlas & aAtlas);
-
     /// \brief Render all instances, using the associated atlas.
-    void render(const TileSet & aTileSet) const;
+    void render(const sprites::LoadedAtlas & aAtlas, const TileSet & aTileSet) const;
 
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
@@ -74,7 +71,6 @@ private:
     // TODO Ad 2022/01/13: This has a very strong smell, but the position of the grid is set as a uniform
     // in the program (and that cannot render() member functions are intended to be const).
     mutable Program mProgram;
-    std::shared_ptr<Texture> mAtlasTexture;
 };
 
 
