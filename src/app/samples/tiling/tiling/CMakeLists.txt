@@ -1,7 +1,8 @@
 set(TARGET_NAME tiling)
 
 set(${TARGET_NAME}_HEADERS
-    Scene.h
+    SceneParallax.h
+    SceneSimple.h
 )
 
 set(${TARGET_NAME}_SOURCES

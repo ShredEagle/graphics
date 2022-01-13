@@ -14,21 +14,21 @@ namespace graphics {
 constexpr Size2<int> gCellSize{320, 180}; // The images resolution
 constexpr double gScrollSpeed = 150.;
 
-class Scene
+class SceneSimple
 {
 public:
-    Scene(Size2<int> aRenderResolution) :
-        // +2 : 
+    SceneSimple(Size2<int> aVirtualResolution) :
+        // +2 :
         // * 1 for rounding up the division (the last tile, partially shown)
         // * 1 excess tile, i.e. initially completely "out of viewport"
-        mGridSize{(gCellSize.width() / aRenderResolution.width()) + 2, 1},
+        mGridSize{(gCellSize.width() / aVirtualResolution.width()) + 2, 1},
         mTiling{},
         mTileSet{gCellSize, mGridSize}
     {
-        setViewportVirtualResolution(mTiling, aRenderResolution, ViewOrigin::LowerLeft);
+        setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
 
         sprites::LoadedAtlas atlas;
-        std::tie(atlas, mLoadedTiles) = 
+        std::tie(atlas, mLoadedTiles) =
             sprites::load(arte::Image<math::sdr::Rgba>{
                     resource::pathFor("parallax/darkforest/DarkForest_Foreground.png"),
                     arte::ImageOrientation::InvertVerticalAxis});
@@ -45,7 +45,7 @@ public:
             0.f
         };
 
-        mTiling.setPosition(mTileSet, gridPosition);
+        mTileSet.setPosition(gridPosition);
     }
 
     void render()

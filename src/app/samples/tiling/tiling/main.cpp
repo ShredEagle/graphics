@@ -1,4 +1,5 @@
-#include "Scene.h"
+#include "SceneParallax.h"
+#include "SceneSimple.h"
 
 #include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
@@ -10,6 +11,8 @@
 using namespace ad;
 using namespace ad::graphics;
 
+/// Usage:
+/// Press spacebar to toggle between scenes Simple and Parallax.
 int main(int argc, const char * argv[])
 {
     try
@@ -20,15 +23,34 @@ int main(int argc, const char * argv[])
         Timer timer{glfwGetTime(), 0.};
 
         // Show exactly one tile in height.
-        Scene scene{ math::makeSizeFromHeight(gCellSize.height(),
-                                              getRatio<float>(gWindowSize)) };
+        auto virtualResolution = math::makeSizeFromHeight(gCellSize.height(),
+                                                          getRatio<float>(gWindowSize));
+        SceneSimple simple{virtualResolution};
+        SceneParallax parallax{virtualResolution};
+
+        bool simpleScene = false;
+        application.getAppInterface()->registerKeyCallback([&simpleScene](int key, int, int action, int)
+            {
+                if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+                {
+                    simpleScene = !simpleScene;
+                }
+            });
 
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
             timer.mark(glfwGetTime());
-            scene.update(timer.time());
-            scene.render();
+            if (simpleScene)
+            {
+                simple.update(timer.time());
+                simple.render();
+            }
+            else
+            {
+                parallax.update(timer.time());
+                parallax.render();
+            }
         }
     }
     catch(const std::exception & e)
