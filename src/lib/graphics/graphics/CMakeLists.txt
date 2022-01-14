@@ -10,16 +10,18 @@ set(${TARGET_NAME}_HEADERS
     shaders.h
     Sprite.h
     SpriteAnimator.h
+    SpriteLoading.h
     Spriting.h
     Texting.h
     Tiling.h
-    Tiling-impl.h
     Timer.h
     TrivialLineStrip.h
     TrivialPolygon.h
     TrivialShaping.h
     DrawLine.h
     Vertex.h
+
+    adapters/ParallaxScroller.h
 
     detail/Logging.h
     detail/UnitQuad.h
@@ -33,6 +35,7 @@ set(${TARGET_NAME}_SOURCES
     Curving.cpp
     AppInterface.cpp
     SpriteAnimator.cpp
+    SpriteLoading.cpp
     Spriting.cpp
     Texting.cpp
     Tiling.cpp
@@ -40,6 +43,8 @@ set(${TARGET_NAME}_SOURCES
     TrivialPolygon.cpp
     TrivialShaping.cpp
     DrawLine.cpp
+
+    adapters/ParallaxScroller.cpp
 
     detail/Logging.cpp
     detail/UnitQuad.cpp

@@ -4,6 +4,8 @@
 #include <resource/PathProvider.h>
 
 #include <graphics/AppInterface.h>
+#include <graphics/CameraUtilities.h>
+#include <graphics/SpriteLoading.h>
 #include <graphics/Spriting.h>
 #include <graphics/Tiling.h>
 #include <graphics/Timer.h>
@@ -38,14 +40,16 @@ private:
     }
 };
 
-template <class T>
-std::vector<LoadedSprite> loadSheet(T & aDrawer, const std::string & aFile)
+
+// TODO remove when Spriting load interface is updated, also boost iterator_adapt
+std::vector<LoadedSprite> loadSheet(Spriting & aDrawer, const std::string & aFile)
 {
     arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aFile);
     return aDrawer.load(SpriteArea_const_iter{sheet.cbegin()},
                         SpriteArea_const_iter{sheet.cend()},
                         sheet.image());
 }
+
 
 struct Scroller
 {
@@ -54,31 +58,39 @@ struct Scroller
     Scroller & operator=(const Scroller &) = delete;
 
     Scroller(const Size2<int> aTileSize, std::string aTilesheet, AppInterface & aAppInterface) :
-            mTiling(aTileSize,
-                    aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2},
-                    aAppInterface.getWindowSize()),
-            mTiles(loadSheet(mTiling, aTilesheet)),
-            mRandomIndex(0, static_cast<int>(mTiles.size()-1))
+            mTiling{},
+            mTileSet{aTileSize,
+                    aAppInterface.getWindowSize().cwDiv(aTileSize) + Size2<int>{2, 2}},
+            mPlacedTiles{mTileSet.getTileCount(), TileSet::gEmptyInstance},
+            // Cannot be properly initialized before the size of mLoadedTiles is known.
+            mRandomIndex{0, 0} 
     {
-        fillRandom(mTiling.begin(), mTiling.end());
+        setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
+
+        std::tie(mAtlas, mLoadedTiles) = sprites::loadMetaFile(aTilesheet);
+        mRandomIndex = {0, static_cast<int>(mLoadedTiles.size()-1)};
+
+        fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
+        mTileSet.updateInstances(mPlacedTiles);
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            mTiling.setBufferResolution(aNewSize);
+            setViewportVirtualResolution(mTiling, aNewSize, ViewOrigin::LowerLeft);
             // +2 tiles on each dimension:
             // * 1 to compensate for the integral division module
             // * 1 to make sure there is at least the size of a complete tile in excess
-            Size2<int> gridDefinition = aNewSize.cwDiv(mTiling.getTileSize()) + Size2<int>{2, 2};
-            mTiling.resetTiling(mTiling.getTileSize(), gridDefinition);
-            fillRandom(mTiling.begin(), mTiling.end());
+            Size2<int> gridDefinition = aNewSize.cwDiv(mTileSet.getTileSize()) + Size2<int>{2, 2};
+            mTileSet.resetTiling(mTileSet.getTileSize(), gridDefinition);
+            mPlacedTiles.resize(mTileSet.getTileCount(), TileSet::gEmptyInstance);
+            fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
         });
     }
 
     void scroll(Vec2<GLfloat> aDisplacement, const AppInterface & aAppInterface)
     {
-        mTiling.setPosition(mTiling.getPosition() + aDisplacement);
+        mTileSet.setPosition(mTileSet.getPosition() + aDisplacement);
 
-        Rectangle<GLfloat> grid(mTiling.getGridRectangle());
+        Rectangle<GLfloat> grid(mTileSet.getGridRectangle());
         GLint xDiff = static_cast<GLint>(grid.topRight().x())
                       - aAppInterface.getWindowSize().width();
 
@@ -88,38 +100,43 @@ struct Scroller
         }
     }
 
-    void render(const AppInterface & aAppInterface) const
+    void render() const
     {
-        mTiling.render(aAppInterface);
+        mTiling.render(mAtlas, mTileSet);
     }
 
 private:
-    void fillRandom(Tiling::iterator aFirst, Tiling::iterator aLast)
+    void fillRandom(auto aFirst, auto aLast)
     {
         std::generate(aFirst,
                       aLast,
                       [this](){
-                          return mTiles.at(mRandomIndex());
+                          return mLoadedTiles.at(mRandomIndex());
                       });
     }
 
     void reposition()
     {
-        mTiling.setPosition(mTiling.getPosition()
-                            + static_cast<Vec2<GLfloat>>(mTiling.getTileSize().cwMul({1, 0})));
+        mTileSet.setPosition(
+            mTileSet.getPosition()
+                + static_cast<Vec2<GLfloat>>(mTileSet.getTileSize().cwMul({1, 0})));
 
         // Copy the tiles still appearing
-        std::copy(mTiling.begin()+mTiling.getGridDefinition().height(),
-                  mTiling.end(),
-                  mTiling.begin());
+        std::copy(mPlacedTiles.begin() + mTileSet.getGridDefinition().height(),
+                  mPlacedTiles.end(),
+                  mPlacedTiles.begin());
 
         // Complete new tiles
-        fillRandom(mTiling.end()-mTiling.getGridDefinition().height(), mTiling.end());
+        fillRandom(mPlacedTiles.end() - mTileSet.getGridDefinition().height(), mPlacedTiles.end());
+        mTileSet.updateInstances(mPlacedTiles);
     }
 
 private:
     Tiling mTiling;
-    std::vector<LoadedSprite> mTiles; // The list of available tiles
+    TileSet mTileSet;
+    std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
+    sprites::LoadedAtlas mAtlas;
+    std::vector<TileSet::Instance> mPlacedTiles;
     Randomizer<> mRandomIndex;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
@@ -134,7 +151,7 @@ struct Tiles
 
     Tiles(std::string aSpriteSheet, AppInterface & aAppInterface)
     {
-        mSpriting.setViewportVirtualResolution(aAppInterface.getWindowSize());
+        setViewportVirtualResolution(mSpriting, aAppInterface.getWindowSize());
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
 
@@ -145,7 +162,7 @@ struct Tiles
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            mSpriting.setViewportVirtualResolution(aNewSize);
+            setViewportVirtualResolution(mSpriting, aNewSize);
             mSpriting.setCameraTransformation(
                 math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aNewSize) / 2) );
         });
@@ -197,7 +214,7 @@ inline void updateScene(Scene & aScene, AppInterface & aAppInterface, const Time
 inline void renderScene(const Scene & aScene, AppInterface & aAppInterface)
 {
     aAppInterface.clear();
-    aScene.mBackground.render(aAppInterface);
+    aScene.mBackground.render();
     aScene.mTiles.render();
 }
 

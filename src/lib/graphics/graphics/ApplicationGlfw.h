@@ -26,11 +26,19 @@ public:
 
     using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
 
-    ApplicationGlfw(const std::string aName,
-                int aWidth, int aHeight,
-                Flags aFlags = None,
-                int aGLVersionMajor=4, int aGLVersionMinor=1,
-                WindowHints aCustomWindowHints = {}) :
+    ApplicationGlfw(const std::string & aName,
+                    math::Size<2, int> aSize,
+                    Flags aFlags = None,
+                    int aGLVersionMajor=4, int aGLVersionMinor=1,
+                    WindowHints aCustomWindowHints = {}) :
+        ApplicationGlfw{aName, aSize.width(), aSize.height(), aFlags, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints}
+    {}
+
+    ApplicationGlfw(const std::string & aName,
+                    int aWidth, int aHeight,
+                    Flags aFlags = None,
+                    int aGLVersionMajor=4, int aGLVersionMinor=1,
+                    WindowHints aCustomWindowHints = {}) :
         mGlfwInitialization(initializeGlfw()),
         mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints))
     {

@@ -1,11 +1,16 @@
 #include "Tiling.h"
 
 #include "AppInterface.h"
+#include "SpriteLoading.h"
 #include "Vertex.h"
 
 #include <handy/vector_utils.h>
 
 #include <math/Range.h>
+#include <math/Transformations.h>
+
+#include <renderer/Uniforms.h>
+
 
 namespace ad {
 namespace graphics {
@@ -19,18 +24,19 @@ const GLchar* gTilingVertexShader = R"#(
     layout(location=2) in vec2  in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
 
-    uniform ivec2 in_BufferResolution;
-    uniform ivec2 in_GridPosition;
+    uniform ivec2 u_GridPosition;
+    uniform mat3 u_camera;
+    uniform mat3 u_projection;
 
     out vec2 ex_UV;
 
     void main(void)
     {
-        vec2 bufferSpacePosition = in_InstancePosition + in_VertexPosition.xy + in_GridPosition;
-        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        vec3 worldPosition = vec3(in_InstancePosition + in_VertexPosition.xy + u_GridPosition, 1.);
+        vec3 transformed = u_projection * u_camera * worldPosition;
+        gl_Position = vec4(transformed.x, transformed.y, 0., 1.);
 
-        ex_UV = in_TextureArea.xy + in_UV*in_TextureArea.zw;
+        ex_UV = in_TextureArea.xy + (in_UV * in_TextureArea.zw);
     }
 )#";
 
@@ -105,24 +111,18 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     specification.mVertexBuffers.push_back(
         loadVertexBuffer(specification.mVertexArray,
                          { {2, 2, 0, MappedGL<GLint>::enumerator} },
-                         gsl::make_span(positions)));
-
-    glVertexAttribDivisor(2, 1);
+                         gsl::make_span(positions),
+                         1));
 
     // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
     /// \todo separate buffer specification and filling
     specification.mVertexBuffers.push_back(
-        loadVertexBuffer(specification.mVertexArray,
-                         {
-                         
-                             //{3, 3, 0, MappedGL<Gubyt>::enumerator, ShaderAccess::Float, true}
-                             { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
-                         },
-                         sizeof(Tiling::tile_type),
-                         0,
-                         nullptr));
-
-    glVertexAttribDivisor(3, 1);
+        initVertexBuffer<TileSet::Instance>(
+            specification.mVertexArray,
+            {
+                { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
+            },
+            1));
 
     return specification;
 }
@@ -141,88 +141,83 @@ Program makeProgram()
     return program;
 }
 
-
-Tiling::Tiling(Size2<int> aCellSize, Size2<int> aGridDefinition, Size2<int> aRenderResolution) :
-    mDrawContext(makeVertexGrid(aCellSize, aGridDefinition), makeProgram()),
-    mTiles(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}}),
-    mTileSize(aCellSize),
-    mGridDefinition(aGridDefinition),
+TileSet::TileSet(Size2<int> aCellSize, Size2<int> aGridDefinition) :
+    mVertexSpecification{makeVertexGrid(aCellSize, aGridDefinition)},
+    mTileSize{aCellSize},
+    mGridDefinition{aGridDefinition},
     mGridRectangleScreen{{0.f, 0.f},
-                          static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition))}
-{
-    setBufferResolution(aRenderResolution);
-}
+                          static_cast<Size2<TileSet::Position_t>>(aCellSize.cwMul(aGridDefinition))}
+{}
 
 
-void Tiling::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
+void TileSet::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
 {
-    bindVertexArray(mDrawContext);
+    bindVertexArray(mVertexSpecification);
 
     std::vector<Vertex> quad = makeQuad(aCellSize);
-    respecifyBuffer(buffers(mDrawContext).at(0), gsl::make_span(quad));
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(0), gsl::make_span(quad));
 
     Vec2<int> cellOffset(aCellSize);
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
-    respecifyBuffer(buffers(mDrawContext).at(1), gsl::make_span(positions));
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(1), gsl::make_span(positions));
 
-    mTiles.resize(aGridDefinition.area(), LoadedSprite{{0, 0}, {0, 0}});
     mTileSize = aCellSize;
     mGridDefinition = aGridDefinition;
     mGridRectangleScreen.mDimension
-        = static_cast<Size2<Tiling::position_t>>(aCellSize.cwMul(aGridDefinition));
+        = static_cast<Size2<TileSet::Position_t>>(aCellSize.cwMul(aGridDefinition));
 }
 
 
-Tiling::iterator Tiling::begin()
+void TileSet::updateInstances(gsl::span<const Instance> aInstances)
 {
-    return mTiles.begin();
-}
-
-
-Tiling::iterator Tiling::end()
-{
-    return mTiles.end();
-}
-
-
-void Tiling::setBufferResolution(Size2<int> aNewResolution)
-{
-    GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
-    glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());
-}
-
-
-void Tiling::setPosition(Position2<position_t> aPosition)
-{
-    mGridRectangleScreen.mPosition = aPosition;
-    GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_GridPosition");
-    glProgramUniform2iv(mDrawContext.mProgram, location, 1,
-                        static_cast<Position2<GLint>>(mGridRectangleScreen.mPosition).data());
-}
-
-void Tiling::render(const AppInterface & aAppInterface) const
-{
-    activate(mDrawContext);
-
+    assert(aInstances.size() == getTileCount());
     //
     // Stream vertex attributes
     //
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.back(),
+                    aInstances);
+}
 
-    // The last buffer, i.e. the sprite corresponding to each tile
-    respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    mTiles.data(),
-                    static_cast<GLsizei>(getStoredSize(mTiles)));
+
+Tiling::Tiling() :
+    mProgram{makeProgram()}
+{
+    setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
+    setProjectionTransformation(math::AffineMatrix<3, GLfloat>::Identity());
+}
+
+
+void Tiling::render(const sprites::LoadedAtlas & aAtlas, const TileSet & aTileSet) const
+{
+    // The reason program data member is mutable...
+    setUniform(mProgram, "u_GridPosition",
+               static_cast<Position2<GLint>>(aTileSet.getPosition()));
+
+    activate(aTileSet.mVertexSpecification, mProgram);
 
     //
     // Draw
     //
-    bind_guard scopedTexture{mDrawContext.mTextures.front(), GL_TEXTURE0 + gTextureUnit};
+    bind_guard scopedTexture{*aAtlas.texture, GL_TEXTURE0 + gTextureUnit};
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
-                          gVerticesPerInstance,
-                          static_cast<GLsizei>(mTiles.size()));
+                          TileSet::gVerticesPerInstance,
+                          aTileSet.getTileCount());
 }
+
+
+void Tiling::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mProgram, "u_camera", aTransformation); 
+}
+
+
+void Tiling::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+{
+    setUniform(mProgram, "u_projection", aTransformation); 
+}
+
 
 } // namespace graphics
 } // namespace ad

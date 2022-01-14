@@ -90,15 +90,6 @@ public:
 
     void render() const;
 
-    /// \brief Set the size of the viewport in sprite pixels (assuming the default pixel world size of 1).
-    ///
-    /// This is a helper around `setProjectionTransformation()`: it is setting the world size of the viewport. 
-    /// It makes it convenient to work with the virtual pixels as world unit.
-    ///
-    /// \important the viewport will be [-width/2, -height/2] x [width/2, height/2].
-    /// Additionally set a camera transformation if lower-left should be at [0, 0] instead.
-    void setViewportVirtualResolution(math::Size<2, int> aViewportPixelSize);
-
     /// \brief Define the size of a pixel in world units.
     /// 
     /// When rendering pixel art, it is likely that one sprite pixel should always be the same world size,

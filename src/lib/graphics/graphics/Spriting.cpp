@@ -149,15 +149,5 @@ void Spriting::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> 
 }
 
 
-void Spriting::setViewportVirtualResolution(math::Size<2, int> aViewportPixelSize)
-{
-    setProjectionTransformation(
-        math::trans2d::orthographicProjection<GLfloat>(math::Rectangle<GLfloat>{
-            math::Position<2, GLfloat>::Zero(),
-            static_cast<math::Size<2, GLfloat>>(aViewportPixelSize)
-        }.centered()));
-}
-
-
 } // namespace graphics
 } // namespace ad

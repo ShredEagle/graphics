@@ -27,10 +27,18 @@ inline DrawContext makeBareContext()
     return DrawContext{VertexSpecification{}, Program{}};
 }
 
+
+inline void bindVertexArray(const VertexSpecification & aVertexSpecification)
+{
+    glBindVertexArray(aVertexSpecification.mVertexArray);
+}
+
+
 inline void bindVertexArray(const DrawContext & aDrawContext)
 {
-    glBindVertexArray(aDrawContext.mVertexSpecification.mVertexArray);
+    bindVertexArray(aDrawContext.mVertexSpecification);
 }
+
 
 inline void useProgram(const DrawContext & aDrawContext)
 {
