@@ -21,7 +21,7 @@ public:
         // +2 :
         // * 1 for rounding up the division (the last tile, partially shown)
         // * 1 excess tile, i.e. initially completely "out of viewport"
-        mGridSize{(gCellSize.width() / aVirtualResolution.width()) + 2, 1},
+        mGridSize{(aVirtualResolution.width() / gCellSize.width()) + 2, 1},
         mTiling{},
         mTileSet{gCellSize, mGridSize}
     {
