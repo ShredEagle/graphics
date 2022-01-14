@@ -50,8 +50,8 @@ Position2<TileSet::Position_t>
 ParallaxScroller::Layer::getModulus(Position2<TileSet::Position_t> aPosition)
 {
     return {
-        (TileSet::Position_t)std::fmod(aPosition.x(), tileSet.getTileSize().width()),
-        (TileSet::Position_t)std::fmod(aPosition.y(), tileSet.getTileSize().height())
+        (TileSet::Position_t)std::fmod(aPosition.x(), tileSet.getTileSize().width()) - tileSet.getTileSize().width(),
+        (TileSet::Position_t)std::fmod(aPosition.y(), tileSet.getTileSize().height()) - tileSet.getTileSize().height()
     };
 }
 
@@ -79,8 +79,6 @@ void ParallaxScroller::addLayer(sprites::LoadedAtlas aAtlas,
 
 void ParallaxScroller::positionCamera(Position2<GLfloat> aPosition)
 {
-    //mTiling.setCameraTransformation(math::trans2d::translate(-aPosition.as<math::Vec>()));
-
     for (auto & layer : mLayers)
     {
         auto newLayerPosition = -aPosition * layer.scrollFactor;
@@ -91,10 +89,11 @@ void ParallaxScroller::positionCamera(Position2<GLfloat> aPosition)
 
 Size2<int> ParallaxScroller::computeTightGrid(Size2<int> aCellSize) const
 {
-    // +2 : 
+    // +3 : 
     // * 1 for rounding up the division (the last tile, partially shown)
     // * 1 excess tile, i.e. initially completely "out of viewport"
-    return mViewportWorldSize.cwDiv(aCellSize) + Size2<GLint>{2, 2};
+    // * 1 for the offset applied to fmod
+    return mViewportWorldSize.cwDiv(aCellSize) + Size2<GLint>{3, 3};
 }
 
 

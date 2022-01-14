@@ -43,6 +43,10 @@ public:
             0.f
         };
 
+        if (gridPosition.x() > 0)
+        {
+            gridPosition.x() -= gCellSize.width();
+        }
         mTileSet.setPosition(gridPosition);
     }
 

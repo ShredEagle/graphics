@@ -12,6 +12,7 @@ using namespace ad;
 using namespace ad::graphics;
 
 /// Usage:
+/// Press enter to reverse scroll direction.
 /// Press spacebar to toggle between scenes Simple and Parallax.
 int main(int argc, const char * argv[])
 {
@@ -29,26 +30,34 @@ int main(int argc, const char * argv[])
         SceneParallax parallax{virtualResolution};
 
         bool simpleScene = false;
-        application.getAppInterface()->registerKeyCallback([&simpleScene](int key, int, int action, int)
+        bool reverseScroll = false;
+        application.getAppInterface()->registerKeyCallback([&reverseScroll, &simpleScene](int key, int, int action, int)
             {
+                if (key == GLFW_KEY_ENTER && action == GLFW_PRESS)
+                {
+                    reverseScroll = !reverseScroll;
+                }
                 if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
                 {
                     simpleScene = !simpleScene;
                 }
             });
 
+        double localTime = 0.;
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
             timer.mark(glfwGetTime());
+            localTime += reverseScroll ? -timer.delta() : timer.delta();
+
             if (simpleScene)
             {
-                simple.update(timer.time());
+                simple.update(localTime);
                 simple.render();
             }
             else
             {
-                parallax.update(timer.time());
+                parallax.update(localTime);
                 parallax.render();
             }
         }
