@@ -97,7 +97,7 @@ Size2<int> ParallaxScroller::computeTightGrid(Size2<int> aCellSize) const
 }
 
 
-void ParallaxScroller::render() //const
+void ParallaxScroller::render() const
 {
     for (const auto & layer : mLayers)
     {

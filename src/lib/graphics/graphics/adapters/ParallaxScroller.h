@@ -14,6 +14,11 @@ namespace ad {
 namespace graphics {
 
 
+// !!!
+// ATTENTION 
+// TODO Ad 2022/01/13: Call fill callback in response to camera position changes.
+// !!!
+
 class ParallaxScroller
 {
     struct Layer
@@ -47,8 +52,7 @@ public:
 
     void positionCamera(Position2<GLfloat> aPosition);
 
-    // TODO const up
-    void render() ;
+    void render() const;
 
 private:
     Size2<int> computeTightGrid(Size2<int> aCellSize) const;
