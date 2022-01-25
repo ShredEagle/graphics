@@ -25,7 +25,7 @@ class ParallaxScroller
     {
         using FillCallback = std::function<LoadedSprite(Position2<int> /*aTileIndex*/)>;
 
-        Layer(sprites::LoadedAtlas aAtlas,
+        Layer(sprite::LoadedAtlas aAtlas,
               Size2<int> aCellSize, Size2<int> aGridDefinition,
               FillCallback aFillCallback,
               float aScrollFactor);
@@ -35,7 +35,7 @@ class ParallaxScroller
 
         Position2<TileSet::Position_t> getModulus(Position2<TileSet::Position_t> aPosition);
 
-        sprites::LoadedAtlas atlas;
+        sprite::LoadedAtlas atlas;
         TileSet tileSet;
         FillCallback fillCallback;
         std::vector<TileSet::Instance> placedTiles;
@@ -45,7 +45,7 @@ class ParallaxScroller
 public:
     ParallaxScroller(Size2<int> aVirtualResolution);
 
-    void addLayer(sprites::LoadedAtlas aAtlas, 
+    void addLayer(sprite::LoadedAtlas aAtlas, 
                   Size2<int> aCellSize,
                   Layer::FillCallback aFillCallback,
                   float aScrollFactor = 1.f);

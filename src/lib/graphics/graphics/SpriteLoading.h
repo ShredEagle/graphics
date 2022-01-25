@@ -8,11 +8,11 @@
 
 namespace ad {
 namespace graphics {
-namespace sprites {
+namespace sprite {
 
 
 /// Currently only the texture, but might be extended to contain the buffer of sprite rectangles
-/// (so renderer could exped an index into the buffer, instead of complete sprite areas)
+/// (so renderer could expect an index into the buffer, instead of complete sprite areas with 4 values)
 struct LoadedAtlas
 {
     std::shared_ptr<Texture> texture;
@@ -79,6 +79,6 @@ load(const arte::Image<T_pixel> & aRasterData)
 }
 
 
-} // namespace sprites
+} // namespace sprite
 } // namespace graphics
 } // namespace ad

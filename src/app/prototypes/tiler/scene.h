@@ -67,7 +67,7 @@ struct Scroller
     {
         setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
 
-        std::tie(mAtlas, mLoadedTiles) = sprites::loadMetaFile(aTilesheet);
+        std::tie(mAtlas, mLoadedTiles) = sprite::loadMetaFile(aTilesheet);
         mRandomIndex = {0, static_cast<int>(mLoadedTiles.size()-1)};
 
         fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
@@ -135,7 +135,7 @@ private:
     Tiling mTiling;
     TileSet mTileSet;
     std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
-    sprites::LoadedAtlas mAtlas;
+    sprite::LoadedAtlas mAtlas;
     std::vector<TileSet::Instance> mPlacedTiles;
     Randomizer<> mRandomIndex;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;

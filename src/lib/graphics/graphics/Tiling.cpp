@@ -187,7 +187,7 @@ Tiling::Tiling() :
 }
 
 
-void Tiling::render(const sprites::LoadedAtlas & aAtlas, const TileSet & aTileSet) const
+void Tiling::render(const sprite::LoadedAtlas & aAtlas, const TileSet & aTileSet) const
 {
     // The reason program data member is mutable...
     setUniform(mProgram, "u_GridPosition",
