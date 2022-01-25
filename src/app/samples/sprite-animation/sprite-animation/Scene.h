@@ -40,7 +40,7 @@ public:
         arte::AnimationSpriteSheet sheet = 
             arte::AnimationSpriteSheet::LoadAseFile(resource::pathFor("animations/" + gAnimationName + ".json"));
 
-        mAnimator.load(sheet, mSpriting);
+        mAtlas = mAnimator.load(sheet);
 
         mAnimationParameter =
             ParameterAnimation_t{
@@ -68,7 +68,7 @@ public:
 
     void render()
     {
-        mSpriting.render();
+        mSpriting.render(mAtlas);
     }
 
 private:
@@ -83,6 +83,7 @@ private:
         //math::ParameterAnimation<double, math::FullRange, math::None, math::ease::SmoothStep>;
 
     Spriting mSpriting;
+    sprite::LoadedAtlas mAtlas;
     sprite::Animator mAnimator;
     std::optional<ParameterAnimation_t> mAnimationParameter;
 };

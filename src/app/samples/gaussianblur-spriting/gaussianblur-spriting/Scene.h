@@ -2,6 +2,7 @@
 
 
 #include <graphics/AppInterface.h>
+#include <graphics/SpriteLoading.h>
 #include <graphics/Spriting.h>
 #include <graphics/effects/GaussianBlur.h>
 
@@ -61,7 +62,7 @@ public:
             auto renderTexture = mFrameBuffers.bindTargetFrameBuffer();
             auto viewport = mFrameBuffers.scopeViewport();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            mSpriting.render();
+            mSpriting.render(mAtlas);
             mFrameBuffers.swap();
         }
         if (mBlurring)
@@ -97,7 +98,7 @@ private:
             arte::ImageOrientation::InvertVerticalAxis
         };
 
-        mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
+        std::tie(mAtlas, mSprites) = sprite::load(frames.begin(), frames.end(), ring);
         // Aligns the frame center to the viewport center, which is (0, 0).
         mPosition = Position2<GLfloat>{-frameDimensions / 2}; // centered
     }
@@ -121,6 +122,7 @@ private:
     PingPongFrameBuffers mFrameBuffers;
     GaussianBlur mBlur;
     Spriting mSpriting;
+    sprite::LoadedAtlas mAtlas;
     std::vector<LoadedSprite> mSprites;
     Position2<GLfloat> mPosition{0.f, 0.f};
 
