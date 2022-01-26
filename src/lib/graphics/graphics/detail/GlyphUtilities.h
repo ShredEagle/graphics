@@ -128,13 +128,7 @@ struct DynamicGlyphCache
     DynamicGlyphCache() = default;
 
     // The empty cache
-    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p, math::Vec<2, GLint> aMargins, GLenum aTextureFiltering) :
-        textureFiltering{aTextureFiltering},
-        ribonDimension{aRibonDimension_p},
-        margins{std::move(aMargins)}
-    {
-        growAtlas();
-    }
+    DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p, math::Vec<2, GLint> aMargins, GLenum aTextureFiltering);
 
     void growAtlas()
     {
