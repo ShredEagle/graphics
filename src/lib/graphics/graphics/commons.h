@@ -8,9 +8,9 @@ namespace ad {
 namespace graphics {
 
 
-namespace sprites {
+namespace sprite {
     struct LoadedAtlas;
-} // namespace sprites
+} // namespace sprite
 
 // TODO It is unclear to me if it would be incorrect to use sdr::Rgb (i.e. Rgb_base<std::uint8_t>) 
 // instead of GLubyte (which matches exactly to GL_UNSIGNED_BYTE).

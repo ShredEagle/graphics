@@ -1,6 +1,7 @@
 #include "Spriting.h"
 
 #include "shaders.h"
+#include "SpriteLoading.h"
 #include "Vertex.h"
 
 #include <renderer/Texture.h>
@@ -98,7 +99,8 @@ Program makeProgram()
 
 
 Spriting::Spriting(GLfloat aPixelSize) :
-        mDrawContext{makeQuad(), makeProgram()}
+        mVertexSpecification{makeQuad()},
+        mProgram{makeProgram()}
 {
     setPixelWorldSize(aPixelSize);
 
@@ -112,17 +114,17 @@ void Spriting::updateInstances(gsl::span<const Instance> aInstances)
     //
     // Stream vertex attributes
     //
-    respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.back(),
                     aInstances);
     mInstanceCount = static_cast<GLsizei>(aInstances.size());
 }
 
 
-void Spriting::render() const
+void Spriting::render(const sprite::LoadedAtlas & aAtlas) const
 {
-    activate(mDrawContext);
+    activate(mVertexSpecification, mProgram);
 
-    bind_guard scopedTexture{mDrawContext.mTextures.front(), GL_TEXTURE0 + gTextureUnit};
+    bind_guard scopedTexture{*aAtlas.texture, GL_TEXTURE0 + gTextureUnit};
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
@@ -133,19 +135,19 @@ void Spriting::render() const
 
 void Spriting::setPixelWorldSize(GLfloat aPixelSize)
 {
-    setUniform(mDrawContext.mProgram, "u_pixelWorldSize", math::Vec<2, GLfloat>{aPixelSize, aPixelSize}); 
+    setUniform(mProgram, "u_pixelWorldSize", math::Vec<2, GLfloat>{aPixelSize, aPixelSize}); 
 }
 
 
 void Spriting::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
-    setUniform(mDrawContext.mProgram, "u_camera", aTransformation); 
+    setUniform(mProgram, "u_camera", aTransformation); 
 }
 
 
 void Spriting::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
 {
-    setUniform(mDrawContext.mProgram, "u_projection", aTransformation); 
+    setUniform(mProgram, "u_projection", aTransformation); 
 }
 
 

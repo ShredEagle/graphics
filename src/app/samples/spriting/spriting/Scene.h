@@ -1,6 +1,7 @@
 #pragma once
 
 #include <graphics/CameraUtilities.h>
+#include <graphics/SpriteLoading.h>
 #include <graphics/Spriting.h>
 
 #include <resource/PathProvider.h>
@@ -37,7 +38,7 @@ public:
             arte::ImageOrientation::InvertVerticalAxis
         };
 
-        mSprites = mSpriting.load(frames.begin(), frames.end(), ring);
+        std::tie(mAtlas, mSprites) = sprite::load(frames.begin(), frames.end(), ring);
         mPosition = Position2<GLfloat>{-frameDimensions / 2}; // centered
     }
 
@@ -59,11 +60,12 @@ public:
 
     void render()
     {
-        mSpriting.render();
+        mSpriting.render(mAtlas);
     }
 
 private:
     Spriting mSpriting;
+    sprite::LoadedAtlas mAtlas;
     std::vector<LoadedSprite> mSprites;
     Position2<GLfloat> mPosition{0.f, 0.f};
 };

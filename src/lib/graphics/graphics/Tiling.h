@@ -60,7 +60,7 @@ public:
     Tiling();
 
     /// \brief Render all instances, using the associated atlas.
-    void render(const sprites::LoadedAtlas & aAtlas, const TileSet & aTileSet) const;
+    void render(const sprite::LoadedAtlas & aAtlas, const TileSet & aTileSet) const;
 
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);

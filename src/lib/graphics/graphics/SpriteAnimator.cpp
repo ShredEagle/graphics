@@ -20,23 +20,25 @@ LoadedSprite Animation::at(Duration_t aLocalTime) const
 
 
 void Animator::insertAnimationFrames(const arte::AnimationSpriteSheet & aSpriteSheet,
-                                     math::Vec<2, int> aTextureOffset,
-                                     Spriting & aSpriting)
+                                     math::Vec<2, int> aTextureOffset)
 {
     // Should not load empty sprite sheets.
     assert(aSpriteSheet.cbegin() != aSpriteSheet.cend());
 
     std::vector<Animation::Frame> animationFrames;
     Animation::Duration_t durationAccumulator = 0;
-    aSpriting.prepareSprites(aSpriteSheet.cbegin(), aSpriteSheet.cend(), aTextureOffset,
-        [&](const LoadedSprite & aLoaded, const arte::AnimationSpriteSheet::Frame & aSourceFrame)
+    std::for_each(aSpriteSheet.cbegin(), aSpriteSheet.cend(),
+        [&](const arte::AnimationSpriteSheet::Frame & aSourceFrame)
         {
+            LoadedSprite loaded = aSourceFrame;
+            loaded.origin() += aTextureOffset;
+
             durationAccumulator += aSourceFrame.duration;
             animationFrames.push_back(Animation::Frame{
                 // Frame name is not saved at the moment
                 //aSourceFrame.name,
                 durationAccumulator,
-                aLoaded
+                loaded
             });
         }
     ); 
@@ -44,10 +46,11 @@ void Animator::insertAnimationFrames(const arte::AnimationSpriteSheet & aSpriteS
                         Animation{aSpriteSheet.totalDuration(), std::move(animationFrames)});
 }
 
-void Animator::load(const arte::AnimationSpriteSheet & aSpriteSheet, Spriting & aSpriting)
+
+LoadedAtlas Animator::load(const arte::AnimationSpriteSheet & aSpriteSheet)
 {
-    aSpriting.prepareTexture(aSpriteSheet.image());
-    insertAnimationFrames(aSpriteSheet, {0, 0}, aSpriting);
+    insertAnimationFrames(aSpriteSheet, {0, 0});
+    return loadAtlas(aSpriteSheet.image());
 }
 
 

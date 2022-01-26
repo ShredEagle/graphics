@@ -22,34 +22,6 @@
 namespace ad {
 namespace graphics {
 
-// Important: This adaptor is not required anymore since arte::TileSheet::Frame 
-// is implicitly convertible to a const SpriteArea &.
-// Keep the code around as an example regarding iterator_adaptor usage.
-class SpriteArea_const_iter : public boost::iterator_adaptor<SpriteArea_const_iter,
-                                                             arte::TileSheet::const_iterator,
-                                                             const SpriteArea>
-{
-    // Inherit ctor
-    using iterator_adaptor_::iterator_adaptor;
-
-private:
-    friend class boost::iterator_core_access;
-    typename iterator_adaptor::reference dereference() const
-    {
-        return base_reference()->area;
-    }
-};
-
-
-// TODO remove when Spriting load interface is updated, also boost iterator_adapt
-std::vector<LoadedSprite> loadSheet(Spriting & aDrawer, const std::string & aFile)
-{
-    arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aFile);
-    return aDrawer.load(SpriteArea_const_iter{sheet.cbegin()},
-                        SpriteArea_const_iter{sheet.cend()},
-                        sheet.image());
-}
-
 
 struct Scroller
 {
@@ -67,7 +39,7 @@ struct Scroller
     {
         setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
 
-        std::tie(mAtlas, mLoadedTiles) = sprites::loadMetaFile(aTilesheet);
+        std::tie(mAtlas, mLoadedTiles) = sprite::loadMetaFile(aTilesheet);
         mRandomIndex = {0, static_cast<int>(mLoadedTiles.size()-1)};
 
         fillRandom(mPlacedTiles.begin(), mPlacedTiles.end());
@@ -135,7 +107,7 @@ private:
     Tiling mTiling;
     TileSet mTileSet;
     std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
-    sprites::LoadedAtlas mAtlas;
+    sprite::LoadedAtlas mAtlas;
     std::vector<TileSet::Instance> mPlacedTiles;
     Randomizer<> mRandomIndex;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
@@ -155,7 +127,9 @@ struct Tiles
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
 
-        std::vector<LoadedSprite> frames{loadSheet(mSpriting, aSpriteSheet)};
+        std::vector<LoadedSprite> frames;
+        std::tie(mAtlas, frames) = sprite::loadMetaFile(aSpriteSheet);
+
         std::vector<Spriting::Instance> spriteInstances{
             Spriting::Instance{{20.f, 10.f}, frames.front()}};
         mSpriting.updateInstances(spriteInstances);
@@ -170,11 +144,12 @@ struct Tiles
 
     void render() const
     {
-        mSpriting.render();
+        mSpriting.render(mAtlas);
     }
 
 private:
     Spriting mSpriting;
+    sprite::LoadedAtlas mAtlas;
     std::shared_ptr<AppInterface::SizeListener> mSizeListener;
 };
 

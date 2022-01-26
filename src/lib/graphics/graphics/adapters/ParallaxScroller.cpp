@@ -12,7 +12,7 @@ namespace graphics {
 // ParallaxScroller::Layer
 //
 
-ParallaxScroller::Layer::Layer(sprites::LoadedAtlas aAtlas,
+ParallaxScroller::Layer::Layer(sprite::LoadedAtlas aAtlas,
                                Size2<int> aCellSize, Size2<int> aGridDefinition,
                                FillCallback aFillCallback,
                                float aScrollFactor) :
@@ -66,7 +66,7 @@ ParallaxScroller::ParallaxScroller(Size2<int> aVirtualResolution) :
 }
 
 
-void ParallaxScroller::addLayer(sprites::LoadedAtlas aAtlas, 
+void ParallaxScroller::addLayer(sprite::LoadedAtlas aAtlas, 
                                 Size2<int> aCellSize,
                                 Layer::FillCallback aFillCallback,
                                 float aScrollFactor)

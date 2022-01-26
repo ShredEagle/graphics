@@ -5,7 +5,7 @@
 
 namespace ad {
 namespace graphics {
-namespace sprites {
+namespace sprite {
 
 
 std::pair<LoadedAtlas, std::vector<LoadedSprite>> loadMetaFile(const filesystem::path & aPath)
@@ -15,6 +15,6 @@ std::pair<LoadedAtlas, std::vector<LoadedSprite>> loadMetaFile(const filesystem:
 }
 
 
-} // namespace sprites
+} // namespace sprite
 } // namespace graphics
 } // namespace ad

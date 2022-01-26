@@ -2,6 +2,7 @@
 
 
 #include "Sprite.h"
+#include "SpriteLoading.h"
 #include "Spriting.h"
 
 #include <arte/SpriteSheet.h>
@@ -49,13 +50,13 @@ struct Animation
 class Animator
 {
 public:
-    /// \brief Load a sprite sheet into a `Spriting` renderer.
-    /// This means the renderer can later draw frames for this animation.
-    void load(const arte::AnimationSpriteSheet & aSpriteSheet, Spriting & aSpriting);
+    /// \brief Load a sprite sheet into the animator.
+    /// This means a Spriting renderer can later draw frames for this animation.
+    LoadedAtlas load(const arte::AnimationSpriteSheet & aSpriteSheet);
 
-    /// \brief Overload loading several sprite sheets into the `Spriting` renderer.
+    /// \brief Load several sprite sheets, assembling them into a consolidated atlas.
     template <class T_iterator>
-    void load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSpriting);
+    LoadedAtlas load(T_iterator aSheetBegin, T_iterator aSheetEnd);
 
     /// \brief Retrieves an `Animation` from its identifier. 
     const Animation & get(const handy::StringId & aAnimationId) const
@@ -69,8 +70,7 @@ private:
     /// Prepare the frames in `aSpriteSheet` to be renderable from `aSpriting`, but does not
     /// load any texture (this must be done separately).
     void insertAnimationFrames(const arte::AnimationSpriteSheet & aSpriteSheet, 
-                               math::Vec<2, int> aTextureOffset,
-                               Spriting & aSpriting);
+                               math::Vec<2, int> aTextureOffset);
 
     // Note Ad 2021/12:14: It not obvious wether it would be best to use a unordered_map or plain map here.
     std::unordered_map<handy::StringId, Animation> mAnimations;
@@ -81,34 +81,26 @@ private:
 // Implementations
 //
 template <class T_iterator>
-void Animator::load(T_iterator aSheetBegin, T_iterator aSheetEnd, Spriting & aSpriting)
+LoadedAtlas Animator::load(T_iterator aSheetBegin, T_iterator aSheetEnd)
 {
-    // compute the required atlas size
-    math::Size<2, int> atlasResolution = math::Size<2, int>::Zero();
-    for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
-    {
-        // The iterator might not point directly to an AnimationSpriteSheet (e.g. to a reference_wrapper).
-        const arte::AnimationSpriteSheet & spriteSheet = *sheetIt;
-        // TODO that would make a nice factorized function
-        atlasResolution.width() = std::max(atlasResolution.width(), spriteSheet.image().dimensions().width());
-        atlasResolution.height() += spriteSheet.image().dimensions().height();
-    }
+    arte::Image<math::sdr::Rgba> spriteAtlas = arte::stackVertical<math::sdr::Rgba>(
+        aSheetBegin, aSheetEnd, 
+        [](const arte::AnimationSpriteSheet & aSpriteSheet)
+        {
+            return aSpriteSheet.image();
+        });
 
-    // assemble the atlas from all sprite sheet
-    // TODO might be optimized by writing directly into a texture of the appropriate dimension.
-    arte::Image<math::sdr::Rgba> spriteAtlas{atlasResolution, math::sdr::gTransparent};
     math::Vec<2, int> offset{0, 0};
     for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
     {
+        insertAnimationFrames(*sheetIt, offset);
+        // The iterator might not point directly to an AnimationSpriteSheet (e.g. to a reference_wrapper).
         const arte::AnimationSpriteSheet & spriteSheet = *sheetIt;
-        spriteAtlas.pasteFrom(spriteSheet.image(), offset.as<math::Position>());
-        // Also prepare the animation frames, as they do not require the texture to be loaded already.
-        insertAnimationFrames(spriteSheet, offset, aSpriting);
         offset.y() += spriteSheet.image().dimensions().height();
     }
 
-    // load the atlas as a texture into spriting renderer
-    aSpriting.prepareTexture(spriteAtlas);
+    // return the loaded atlas
+    return loadAtlas(spriteAtlas);
 }
 
 
