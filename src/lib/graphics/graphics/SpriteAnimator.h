@@ -83,28 +83,19 @@ private:
 template <class T_iterator>
 LoadedAtlas Animator::load(T_iterator aSheetBegin, T_iterator aSheetEnd)
 {
-    // compute the required atlas size
-    math::Size<2, int> atlasResolution = math::Size<2, int>::Zero();
-    for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
-    {
-        // The iterator might not point directly to an AnimationSpriteSheet (e.g. to a reference_wrapper).
-        const arte::AnimationSpriteSheet & spriteSheet = *sheetIt;
-        // TODO that would make a nice factorized function
-        atlasResolution.width() = std::max(atlasResolution.width(), spriteSheet.image().dimensions().width());
-        atlasResolution.height() += spriteSheet.image().dimensions().height();
-    }
+    arte::Image<math::sdr::Rgba> spriteAtlas = arte::stackVertical<math::sdr::Rgba>(
+        aSheetBegin, aSheetEnd, 
+        [](const arte::AnimationSpriteSheet & aSpriteSheet)
+        {
+            return aSpriteSheet.image();
+        });
 
-    // assemble the atlas from all sprite sheet
-    // TODO might be optimized by writing directly into a texture of the appropriate dimension.
-    arte::Image<math::sdr::Rgba> spriteAtlas{atlasResolution, math::sdr::gTransparent};
     math::Vec<2, int> offset{0, 0};
     for (T_iterator sheetIt = aSheetBegin; sheetIt != aSheetEnd; ++sheetIt)
     {
+        insertAnimationFrames(*sheetIt, offset);
+        // The iterator might not point directly to an AnimationSpriteSheet (e.g. to a reference_wrapper).
         const arte::AnimationSpriteSheet & spriteSheet = *sheetIt;
-        spriteAtlas.pasteFrom(spriteSheet.image(), offset.as<math::Position>());
-        // Also prepare the animation frames, as they do not require the texture to be loaded already.
-        insertAnimationFrames(spriteSheet, offset);
-
         offset.y() += spriteSheet.image().dimensions().height();
     }
 

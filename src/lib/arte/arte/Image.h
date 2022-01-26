@@ -258,6 +258,12 @@ private:
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
 
 
+template <class T_pixelFormat, std::forward_iterator T_iterator, class T_proj = std::identity>
+Image<T_pixelFormat> stackVertical(T_iterator aFirst, T_iterator aLast, T_proj proj = {});
+
+template <class T_pixelFormat, std::ranges::input_range T_range, class T_proj = std::identity>
+Image<T_pixelFormat> stackVertical(T_range && aRange, T_proj proj = {});
+
 using ImageRgb = Image<math::sdr::Rgb>;
 using ImageRgba = Image<math::sdr::Rgba>;
 
@@ -299,6 +305,44 @@ Image<T_pixelFormat> Image<T_pixelFormat>::prepareArray(T_iterator aFirstPositio
     }
 
     return {targetDimensions, std::move(target)};
+}
+
+
+template <class T_pixelFormat, std::forward_iterator T_iterator, class T_proj>
+Image<T_pixelFormat> stackVertical(T_iterator aFirst, T_iterator aLast, T_proj proj)
+{
+    math::Size<2, int> atlasResolution = math::Size<2, int>::Zero();
+    std::ranges::for_each(
+        aFirst, aLast,
+        [&](const Image<T_pixelFormat> & aImage)
+        {
+            // TODO that would make a nice factorized function
+            atlasResolution.width() = std::max(atlasResolution.width(), aImage.dimensions().width());
+            atlasResolution.height() += aImage.dimensions().height();
+        },
+        proj);
+
+    // TODO When used to assemble texture aliases,
+    // this loop could be optimized by writing directly into a texture of the appropriate dimension.
+    arte::Image<math::sdr::Rgba> result{atlasResolution, math::sdr::gTransparent};
+    math::Vec<2, int> offset{0, 0};
+    std::ranges::for_each(
+        aFirst, aLast,
+        [&](const Image<T_pixelFormat> & aImage)
+        {
+            result.pasteFrom(aImage, offset.as<math::Position>());
+            offset.y() += aImage.dimensions().height();
+        },
+        proj);
+
+    return result;
+}
+
+
+template <class T_pixelFormat, std::ranges::input_range T_range, class T_proj>
+Image<T_pixelFormat> stackVertical(T_range && aRange, T_proj proj)
+{
+    return stackVertical<T_pixelFormat>(std::begin(aRange), std::end(aRange), std::move(proj));
 }
 
 
