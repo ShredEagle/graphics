@@ -27,12 +27,13 @@ public:
     {
         setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
 
-        std::tie(mAtlas, mLoadedTiles) =
+        auto [atlas, loadedTile] =
             sprite::load(arte::Image<math::sdr::Rgba>{
                     resource::pathFor("parallax/darkforest/DarkForest_Foreground.png"),
                     arte::ImageOrientation::InvertVerticalAxis});
+        mAtlas = std::move(atlas);
 
-        std::ranges::fill(mPlacedTiles, mLoadedTiles.at(0));
+        std::ranges::fill(mPlacedTiles, loadedTile);
         mTileSet.updateInstances(mPlacedTiles);
     }
 
@@ -60,7 +61,6 @@ private:
     Tiling mTiling;
     TileSet mTileSet;
     sprite::LoadedAtlas mAtlas;
-    std::vector<LoadedSprite> mLoadedTiles; // The list of available tiles
     std::vector<TileSet::Instance> mPlacedTiles{mGridSize.area(), TileSet::gEmptyInstance};
 };
 

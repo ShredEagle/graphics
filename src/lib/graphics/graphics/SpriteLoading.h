@@ -43,7 +43,7 @@ loadMetaFile(const filesystem::path & aPath);
 
 /// \brief Load the entire image as a single sprite.
 template <class T_pixel>
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+std::pair<LoadedAtlas, LoadedSprite>
 load(const arte::Image<T_pixel> & aRasterData);
 
 
@@ -82,11 +82,14 @@ load(T_range aRange, const arte::Image<T_pixel> & aRasterData)
 
 
 template <class T_pixel>
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
+std::pair<LoadedAtlas, LoadedSprite>
 load(const arte::Image<T_pixel> & aRasterData)
 {
     std::array<SpriteArea, 1> fullSize{ SpriteArea{{0, 0}, aRasterData.dimensions()} };
-    return load(fullSize, aRasterData);
+    LoadedAtlas atlas;
+    std::vector<LoadedSprite> sprites;
+    std::tie(atlas, sprites) = load(fullSize, aRasterData);
+    return {atlas, sprites.front()};
 }
 
 

@@ -55,7 +55,7 @@ private:
 
 void addLayer(ParallaxScroller & aScroller, filesystem::path aImage, float aScrollFactor)
 {
-    auto [atlas, loadedTiles] = 
+    auto [atlas, tile] = 
         sprite::load(arte::Image<math::sdr::Rgba>{
                 aImage,
                 arte::ImageOrientation::InvertVerticalAxis});
@@ -63,7 +63,7 @@ void addLayer(ParallaxScroller & aScroller, filesystem::path aImage, float aScro
     aScroller.addLayer(
         atlas, 
         SceneParallax::gCellSize,
-        [tiles = std::move(loadedTiles)](Position2<int>){return tiles.at(0);},
+        [tile = std::move(tile)](Position2<int>){return tile;},
         aScrollFactor);
 }
 
