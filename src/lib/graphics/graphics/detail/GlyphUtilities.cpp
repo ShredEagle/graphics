@@ -2,6 +2,8 @@
 
 #include "Logging.h"
 
+#include <renderer/Query.h>
+
 #include <utf8.h> // utfcpp lib
 
 
@@ -28,6 +30,30 @@ RenderedGlyph StaticGlyphCache::at(arte::CharCode aCharCode) const
     {
         return glyphMap.at(placeholder);
     }
+}
+
+
+DynamicGlyphCache::DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p,
+                                     math::Vec<2, GLint> aMargins,
+                                     GLenum aTextureFiltering) :
+    textureFiltering{aTextureFiltering},
+    ribonDimension{[&]() -> math::Size<2, GLint>
+        {
+            if(aRibonDimension_p.height() > getMaxTextureSize())
+            {
+                throw std::invalid_argument{"Texture ribon too tall."};
+            }
+            else if(aRibonDimension_p.width() > getMaxTextureSize())
+            {
+                LOG(graphics, warn)("Requested ribon dimension ({}, {}) exceeds maximum texture dimension {}. Clamping the width.",
+                    aRibonDimension_p.width(), aRibonDimension_p.height(), getMaxTextureSize());
+                return {getMaxTextureSize(), aRibonDimension_p.height()};
+            }
+            return aRibonDimension_p;
+        }()},
+    margins{std::move(aMargins)}
+{
+    growAtlas();
 }
 
 
