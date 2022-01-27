@@ -36,8 +36,23 @@ void AppInterface::requestCloseApplication()
 }
 
 
+void AppInterface::callbackWindowMinimize(bool aMinimized)
+{
+    if (aMinimized)
+    {
+        LOG(graphics, info)("The window has be minimized.");
+    }
+    else
+    {
+        LOG(graphics, info)("The window has be restored.");
+    }
+    mWindowIsMinimized = aMinimized;
+}
+
+
 void AppInterface::callbackWindowSize(int width, int height)
 {
+    LOG(graphics, debug)("The window has been resized to ({}, {}).", width, height);
     //glViewport(0, 0, width, height);
     mWindowSize.width() = width;
     mWindowSize.height() = height;
@@ -50,10 +65,14 @@ void AppInterface::callbackWindowSize(int width, int height)
 
 void AppInterface::callbackFramebufferSize(int width, int height)
 {
+    LOG(graphics, debug)("The framebuffer has been resized to ({}, {}).", width, height);
     glViewport(0, 0, width, height);
     mFramebufferSize.width() = width;
     mFramebufferSize.height() = height;
-    mFramebufferSizeSubject.dispatch(Size2<int>{width, height});
+    if (!mWindowIsMinimized)
+    {
+        mFramebufferSizeSubject.dispatch(mFramebufferSize);
+    }
 }
 
 void AppInterface::clear()
