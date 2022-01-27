@@ -57,10 +57,8 @@ void AppInterface::callbackWindowSize(int width, int height)
     mWindowSize.width() = width;
     mWindowSize.height() = height;
 
-    //for (auto & listener : mSizeCallbacks)
-    //{
-    //    listener({width, height});
-    //}
+    // NOTE Ad 2022/01/07: It is not possible to listen to the windows resize event for the moment
+    // So there are no notifications to send.
 }
 
 void AppInterface::callbackFramebufferSize(int width, int height)
