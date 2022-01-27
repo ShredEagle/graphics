@@ -39,6 +39,9 @@ public:
     template <class T_cursorPositionCallback>
     void registerCursorPositionCallback(T_cursorPositionCallback && mCallback);
 
+    /// \brief To be called by the application when the Window is minimized (iconified).
+    void callbackWindowMinimize(bool aMinimized);
+
     /// \brief To be called by the application when the Window is resized
     void callbackWindowSize(int width, int height);
     /// \brief To be called by the application when the Framebuffer is resized
@@ -62,6 +65,7 @@ public:
                                                 const void* userParam);
 
 private:
+    bool mWindowIsMinimized{false};
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
     Subject<SizeListener> mFramebufferSizeSubject;

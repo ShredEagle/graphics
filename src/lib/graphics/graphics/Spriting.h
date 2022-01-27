@@ -54,6 +54,9 @@ public:
 
     void updateInstances(gsl::span<const Instance> aInstances);
 
+    // TODO Externalize the VertexSpecification in a dedicated struct, and take it as an argument.
+    // It would be more flexible, and remove some constness issues (seen Grapito Render system).
+    // The dedicated struct type maintains static format safety.
     void render(const sprite::LoadedAtlas & aAtlas) const;
 
     /// \brief Define the size of a pixel in world units.

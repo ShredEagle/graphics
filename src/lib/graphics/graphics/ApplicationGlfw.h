@@ -60,13 +60,14 @@ public:
             // (yet not invoking the size callback)
             int width, height;
             glfwGetWindowSize(mWindow, &width, &height);
-            windowsSize_callback(mWindow, width, height);
+            windowSize_callback(mWindow, width, height);
 
             glfwGetFramebufferSize(mWindow, &width, &height);
             framebufferSize_callback(mWindow, width, height);
         }
 
-        glfwSetWindowSizeCallback(mWindow, windowsSize_callback);
+        glfwSetWindowIconifyCallback(mWindow, windowMinimize_callback);
+        glfwSetWindowSizeCallback(mWindow, windowSize_callback);
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
         using namespace std::placeholders;
@@ -190,7 +191,13 @@ private:
         appInterface->callbackCursorPosition(xpos, ypos);
     }
 
-    static void windowsSize_callback(GLFWwindow * window, int width, int height)
+    static void windowMinimize_callback(GLFWwindow * window, int iconified)
+    {
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        appInterface->callbackWindowMinimize(iconified);
+    }
+
+    static void windowSize_callback(GLFWwindow * window, int width, int height)
     {
         AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
         appInterface->callbackWindowSize(width, height);
