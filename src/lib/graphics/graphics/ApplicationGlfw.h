@@ -96,6 +96,16 @@ public:
 
         glfwShowWindow(mWindow);
 
+        // TODO Ad 2022/01/27: Going fullscreen after showing is not optimal, since we can see the window for a few frames
+        // Yet, currently if it is made fullscreen before showing, it does not have focus...
+        // Note that the problem of focus is not present if the windows is directly made fullscreen in glfwCreateWindow().
+        if ((aFlags & ApplicationFlag::Fullscreen) != ApplicationFlag::None)
+        {
+            GLFWmonitor * monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode * mode = glfwGetVideoMode(monitor);
+            glfwSetWindowMonitor(mWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        }
+
         // VSync
         glfwSwapInterval(1);
 
@@ -257,6 +267,7 @@ private:
         auto window = guard(glfwCreateWindow(aWidth,
                                              aHeight,
                                              aName.c_str(),
+                                             //glfwGetPrimaryMonitor(),
                                              NULL,
                                              NULL),
                             glfwDestroyWindow);

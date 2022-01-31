@@ -28,7 +28,7 @@ class GraphicsConan(ConanFile):
         ("boost/1.77.0"),
         ("freetype/2.11.0"),
         ("glad/0.1.34"),
-        ("glfw/3.3.4"),
+        ("glfw/3.3.6"),
         ("nlohmann_json/3.9.1"),
         ("spdlog/1.9.2"),
         ("utfcpp/3.2.1"),
