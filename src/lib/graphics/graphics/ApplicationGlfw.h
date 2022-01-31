@@ -54,7 +54,11 @@ public:
                     int aGLVersionMajor=4, int aGLVersionMinor=1,
                     WindowHints aCustomWindowHints = {}) :
         mGlfwInitialization(initializeGlfw()),
-        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints))
+        mWindow(initializeWindow(aName, 
+                                 test(aFlags, ApplicationFlag::Fullscreen),
+                                 aWidth, aHeight, 
+                                 aGLVersionMajor, aGLVersionMinor,
+                                 aCustomWindowHints))
     {
         if ((aFlags & ApplicationFlag::Window_Keep_Ratio) != ApplicationFlag::None)
         {
@@ -95,16 +99,6 @@ public:
         glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
 
         glfwShowWindow(mWindow);
-
-        // TODO Ad 2022/01/27: Going fullscreen after showing is not optimal, since we can see the window for a few frames
-        // Yet, currently if it is made fullscreen before showing, it does not have focus...
-        // Note that the problem of focus is not present if the windows is directly made fullscreen in glfwCreateWindow().
-        if ((aFlags & ApplicationFlag::Fullscreen) != ApplicationFlag::None)
-        {
-            GLFWmonitor * monitor = glfwGetPrimaryMonitor();
-            const GLFWvidmode * mode = glfwGetVideoMode(monitor);
-            glfwSetWindowMonitor(mWindow, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-        }
 
         // VSync
         glfwSwapInterval(1);
@@ -243,7 +237,10 @@ private:
         return Guard{glfwTerminate};
     }
 
+    /// \important Fullscreen will use the primary monitor at its current resolution,
+    /// ignoring `aWidth` and `aHeight`.
     ResourceGuard<GLFWwindow*> initializeWindow(const std::string & aName,
+                                                bool aFullscreen,
                                                 int aWidth, int aHeight,
                                                 int aGLVersionMajor, int aGLVersionMinor,
                                                 WindowHints aCustomWindowHints)
@@ -264,13 +261,40 @@ private:
             glfwWindowHint(hint.first, hint.second);
         }
 
-        auto window = guard(glfwCreateWindow(aWidth,
-                                             aHeight,
-                                             aName.c_str(),
-                                             //glfwGetPrimaryMonitor(),
-                                             NULL,
-                                             NULL),
-                            glfwDestroyWindow);
+        auto window = [&]()
+        {
+            if (aFullscreen)
+            {
+                GLFWmonitor * monitor = glfwGetPrimaryMonitor();
+                const GLFWvidmode * mode = glfwGetVideoMode(monitor);
+
+                // Avoid changing the video-mode
+                // see: https://www.glfw.org/docs/3.3/window_guide.html#window_windowed_full_screen
+                // NOTE Ad 31/01/2022: I do not see a difference when those hints are not given, there
+                // is still a black screen "flashing" at window creation.
+                glfwWindowHint(GLFW_RED_BITS,   mode->redBits);
+                glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+                glfwWindowHint(GLFW_BLUE_BITS,  mode->blueBits);
+                glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+                return guard(glfwCreateWindow(mode->width,
+                                              mode->height,
+                                              aName.c_str(),
+                                              monitor,
+                                              NULL),
+                             glfwDestroyWindow);
+            }
+            else
+            {
+                return guard(glfwCreateWindow(aWidth,
+                                              aHeight,
+                                              aName.c_str(),
+                                              NULL,
+                                              NULL),
+                             glfwDestroyWindow);
+            }
+        }();
+
         if (!window)
         {
             throw std::runtime_error("Unable to initialize window or context");

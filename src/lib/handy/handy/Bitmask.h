@@ -37,4 +37,12 @@ T_enumClass operator&(T_enumClass aLhs, T_enumClass aRhs)
 }
 
 
+template <class T_enumClass>
+requires is_bitmask_v<T_enumClass>
+bool test(T_enumClass aFlags, T_enumClass aTested)
+{
+    return (aFlags & aTested) == aTested;
+}
+
+
 } // namespace ad
