@@ -5,30 +5,44 @@
 #include <renderer/Error.h>
 #include <renderer/GL_Loader.h>
 
+#include <handy/Bitmask.h>
 #include <handy/Guard.h>
 
 #include <GLFW/glfw3.h>
 
 #include <memory>
 
+
 namespace ad {
 namespace graphics {
 
 
+enum class ApplicationFlag
+{
+    None = 0,
+    Window_Keep_Ratio = (1 << 1),
+    Fullscreen = (1 << 2),
+};
+
+
+} // namespace graphics
+
+
+template <>
+struct is_bitmask<graphics::ApplicationFlag> : public std::true_type
+{};
+
+
+namespace graphics {
+
 class ApplicationGlfw
 {
 public:
-    enum Flags
-    {
-        None = 0,
-        Window_Keep_Ratio = (1 << 1),
-    };
-
     using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
 
     ApplicationGlfw(const std::string & aName,
                     math::Size<2, int> aSize,
-                    Flags aFlags = None,
+                    ApplicationFlag aFlags = ApplicationFlag::None,
                     int aGLVersionMajor=4, int aGLVersionMinor=1,
                     WindowHints aCustomWindowHints = {}) :
         ApplicationGlfw{aName, aSize.width(), aSize.height(), aFlags, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints}
@@ -36,13 +50,17 @@ public:
 
     ApplicationGlfw(const std::string & aName,
                     int aWidth, int aHeight,
-                    Flags aFlags = None,
+                    ApplicationFlag aFlags = ApplicationFlag::None,
                     int aGLVersionMajor=4, int aGLVersionMinor=1,
                     WindowHints aCustomWindowHints = {}) :
         mGlfwInitialization(initializeGlfw()),
-        mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints))
+        mWindow(initializeWindow(aName, 
+                                 test(aFlags, ApplicationFlag::Fullscreen),
+                                 aWidth, aHeight, 
+                                 aGLVersionMajor, aGLVersionMinor,
+                                 aCustomWindowHints))
     {
-        if (aFlags & Window_Keep_Ratio)
+        if ((aFlags & ApplicationFlag::Window_Keep_Ratio) != ApplicationFlag::None)
         {
             glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
         }
@@ -219,7 +237,10 @@ private:
         return Guard{glfwTerminate};
     }
 
+    /// \important Fullscreen will use the primary monitor at its current resolution,
+    /// ignoring `aWidth` and `aHeight`.
     ResourceGuard<GLFWwindow*> initializeWindow(const std::string & aName,
+                                                bool aFullscreen,
                                                 int aWidth, int aHeight,
                                                 int aGLVersionMajor, int aGLVersionMinor,
                                                 WindowHints aCustomWindowHints)
@@ -240,12 +261,40 @@ private:
             glfwWindowHint(hint.first, hint.second);
         }
 
-        auto window = guard(glfwCreateWindow(aWidth,
-                                             aHeight,
-                                             aName.c_str(),
-                                             NULL,
-                                             NULL),
-                            glfwDestroyWindow);
+        auto window = [&]()
+        {
+            if (aFullscreen)
+            {
+                GLFWmonitor * monitor = glfwGetPrimaryMonitor();
+                const GLFWvidmode * mode = glfwGetVideoMode(monitor);
+
+                // Avoid changing the video-mode
+                // see: https://www.glfw.org/docs/3.3/window_guide.html#window_windowed_full_screen
+                // NOTE Ad 31/01/2022: I do not see a difference when those hints are not given, there
+                // is still a black screen "flashing" at window creation.
+                glfwWindowHint(GLFW_RED_BITS,   mode->redBits);
+                glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
+                glfwWindowHint(GLFW_BLUE_BITS,  mode->blueBits);
+                glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
+
+                return guard(glfwCreateWindow(mode->width,
+                                              mode->height,
+                                              aName.c_str(),
+                                              monitor,
+                                              NULL),
+                             glfwDestroyWindow);
+            }
+            else
+            {
+                return guard(glfwCreateWindow(aWidth,
+                                              aHeight,
+                                              aName.c_str(),
+                                              NULL,
+                                              NULL),
+                             glfwDestroyWindow);
+            }
+        }();
+
         if (!window)
         {
             throw std::runtime_error("Unable to initialize window or context");

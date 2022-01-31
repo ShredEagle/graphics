@@ -2,6 +2,7 @@ set(TARGET_NAME handy)
 
 set(${TARGET_NAME}_HEADERS
     array_utils.h
+    Bitmask.h
     Crc.h
     Guard.h
     Observer.h
