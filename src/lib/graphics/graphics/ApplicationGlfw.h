@@ -5,30 +5,44 @@
 #include <renderer/Error.h>
 #include <renderer/GL_Loader.h>
 
+#include <handy/Bitmask.h>
 #include <handy/Guard.h>
 
 #include <GLFW/glfw3.h>
 
 #include <memory>
 
+
 namespace ad {
 namespace graphics {
 
 
+enum class ApplicationFlag
+{
+    None = 0,
+    Window_Keep_Ratio = (1 << 1),
+    Fullscreen = (1 << 2),
+};
+
+
+} // namespace graphics
+
+
+template <>
+struct is_bitmask<graphics::ApplicationFlag> : public std::true_type
+{};
+
+
+namespace graphics {
+
 class ApplicationGlfw
 {
 public:
-    enum Flags
-    {
-        None = 0,
-        Window_Keep_Ratio = (1 << 1),
-    };
-
     using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
 
     ApplicationGlfw(const std::string & aName,
                     math::Size<2, int> aSize,
-                    Flags aFlags = None,
+                    ApplicationFlag aFlags = ApplicationFlag::None,
                     int aGLVersionMajor=4, int aGLVersionMinor=1,
                     WindowHints aCustomWindowHints = {}) :
         ApplicationGlfw{aName, aSize.width(), aSize.height(), aFlags, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints}
@@ -36,13 +50,13 @@ public:
 
     ApplicationGlfw(const std::string & aName,
                     int aWidth, int aHeight,
-                    Flags aFlags = None,
+                    ApplicationFlag aFlags = ApplicationFlag::None,
                     int aGLVersionMajor=4, int aGLVersionMinor=1,
                     WindowHints aCustomWindowHints = {}) :
         mGlfwInitialization(initializeGlfw()),
         mWindow(initializeWindow(aName, aWidth, aHeight, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints))
     {
-        if (aFlags & Window_Keep_Ratio)
+        if ((aFlags & ApplicationFlag::Window_Keep_Ratio) != ApplicationFlag::None)
         {
             glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
         }
