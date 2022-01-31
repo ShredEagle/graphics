@@ -19,9 +19,9 @@ int main(int argc, const char * argv[])
     try
     {
         ApplicationGlfw application("Curving", 1600, 1000,
-                                 ApplicationGlfw::Flags::None,
-                                 4, 1,
-                                 { {GLFW_SAMPLES, 8} });
+                                    ApplicationFlag::None,
+                                    4, 1,
+                                    { {GLFW_SAMPLES, 8} });
 
         Timer timer{glfwGetTime(), 0.};
 

@@ -101,8 +101,7 @@ int main(int argc, const char * argv[])
 
         // I suspect this is the default anyway
         //SetConsoleCP(CP_ACP);
-        ApplicationGlfw application("Texting", 1600, 1000,
-                                    ApplicationGlfw::Flags::None);
+        ApplicationGlfw application("Texting", 1600, 1000);
 
         Timer timer{glfwGetTime(), 0.};
         Scene scene{resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"),
