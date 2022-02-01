@@ -36,7 +36,9 @@ public:
 
     struct Instance
     {
-        Instance(math::Position<2, GLfloat> aPenOrigin_w, const detail::RenderedGlyph & aRendered);
+        Instance(math::Position<2, GLfloat> aPenOrigin_w,
+                 const detail::RenderedGlyph & aRendered,
+                 math::sdr::Rgba aColor);
 
         // TODO Ideally, this should be replaced by the local position of the glyph within the string, in pixel unit
         // this way, we do not have to keep mPixelToWorld value.
@@ -44,6 +46,7 @@ public:
         GLint offsetInTexture_p; // horizontal offset to the glyph in its texture.
         math::Size<2, GLfloat> boundingBox_p; // glyph bounding box in texture pixel coordinates;
         math::Vec<2, GLfloat> bearing_p;
+        math::sdr::Rgba color;
     };
 
     /// \brief A good type for the templated T_mapping (but not the only possiblity).
@@ -72,7 +75,10 @@ public:
 
     /// \brief The interface to convert the user string to be rendered into a mapping accepted by `updateInstance()`.
     template <class T_mapping>
-    void prepareString(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w, T_mapping & aOutputMap);
+    void prepareString(const std::string & aString,
+                       math::Position<2, GLfloat> aPenOrigin_w,
+                       math::sdr::Rgba aColor,
+                       T_mapping & aOutputMap);
 
     /// \brief Compute a string's bounding box in world space. 
     ///
@@ -115,11 +121,14 @@ private:
 //
 // Implementations
 //
-inline Texting::Instance::Instance(math::Position<2, GLfloat> aPenOrigin_w, const detail::RenderedGlyph & aRendered) :
+inline Texting::Instance::Instance(math::Position<2, GLfloat> aPenOrigin_w,
+                                   const detail::RenderedGlyph & aRendered,
+                                   math::sdr::Rgba aColor) :
     position_w{aPenOrigin_w},
     offsetInTexture_p{aRendered.offsetInTexture},
     boundingBox_p{aRendered.controlBoxSize},
-    bearing_p{aRendered.bearing}
+    bearing_p{aRendered.bearing},
+    color{aColor}
 {}
 
 
@@ -173,12 +182,15 @@ void Texting::updateInstances(T_mapping aTextureMappedBuffers)
 
 
 template <class T_mapping>
-void Texting::prepareString(const std::string & aString, math::Position<2, GLfloat> aPenOrigin_w, T_mapping & aOutputMap)
+void Texting::prepareString(const std::string & aString,
+                            math::Position<2, GLfloat> aPenOrigin_w,
+                            math::sdr::Rgba aColor,
+                            T_mapping & aOutputMap)
 {
     forEachGlyph(aString, aPenOrigin_w, mGlyphCache, mFontFace, mPixelToWorld,
-        [&aOutputMap](const detail::RenderedGlyph & rendered, math::Position<2, GLfloat> penPosition_w)
+        [&aOutputMap, aColor](const detail::RenderedGlyph & rendered, math::Position<2, GLfloat> penPosition_w)
         {
-            aOutputMap[rendered.texture].push_back(Texting::Instance{penPosition_w, rendered});
+            aOutputMap[rendered.texture].push_back(Texting::Instance{penPosition_w, rendered, aColor});
         });
 }
 

@@ -40,7 +40,7 @@ public:
     void step(const Timer & aTimer)
     {
         std::map<Texture *, std::vector<Texting::Instance>> glyphs;
-        mTexting.prepareString(mMessage, mPenPosition, glyphs);
+        mTexting.prepareString(mMessage, mPenPosition, math::sdr::gCyan, glyphs);
         mTexting.updateInstances(glyphs);
     }
     

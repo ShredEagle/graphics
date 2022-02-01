@@ -93,7 +93,7 @@ int main(int argc, const char * argv[])
 {
     try
     {
-        GLfloat glyphWorldHeight = 10.f;
+        GLfloat glyphWorldHeight = 50.f;
         if (argc == 2)
         {
             glyphWorldHeight = std::stod(argv[1]);

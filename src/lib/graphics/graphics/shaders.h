@@ -220,6 +220,7 @@ namespace texting
         layout(location=3) in ivec2 in_TextureOffset; // implicit 0 on y
         layout(location=4) in vec2  in_BoundingBox;
         layout(location=5) in vec2  in_Bearing;
+        layout(location=6) in vec4  in_Color;
         
         uniform vec2 u_BoundingOffsets_pixel;
         uniform vec2 u_PixelToWorld;
@@ -227,6 +228,7 @@ namespace texting
         uniform mat3 u_Projection;
 
         out vec2  ex_TextureUV;
+        out vec4  ex_Color;
 
         void main(void)
         {
@@ -238,6 +240,7 @@ namespace texting
             vec3 transformed = u_Projection * u_WorldToCamera * vec3(worldPosition, 1.);
             gl_Position = vec4(transformed.xy, 0., 1.);
             ex_TextureUV = in_TextureOffset + (ve_UV * in_BoundingBox);
+            ex_Color = in_Color;
         }
     )#";
 
@@ -245,6 +248,7 @@ namespace texting
         #version 400
 
         in vec2 ex_TextureUV;
+        in vec4 ex_Color;
         out vec4 out_Color;
 
         uniform sampler2DRect u_FontAtlas;
@@ -252,7 +256,7 @@ namespace texting
         void main(void)
         {
             float alpha = texture(u_FontAtlas, ex_TextureUV).r;
-            out_Color = vec4(1., 1., 1., alpha);
+            out_Color = ex_Color * vec4(1., 1., 1., alpha);
         }
     )#";
 };
