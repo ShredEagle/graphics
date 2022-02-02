@@ -41,6 +41,22 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
     GLenum mTarget;
 };
 
+
+inline void activateTextureUnit(GLint aTextureUnit)
+{
+    glActiveTexture(GL_TEXTURE0 + aTextureUnit);
+}
+
+inline Guard activateTextureUnitGuard(GLint aTextureUnit)
+{
+    activateTextureUnit(aTextureUnit);
+    return Guard([]()
+        {
+            glActiveTexture(GL_TEXTURE0);
+        });
+}
+
+
 /// \brief Bind the texture to the currently active texture unit.
 inline void bind(const Texture & aTexture)
 {
@@ -63,6 +79,8 @@ inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
     glActiveTexture(aTextureUnit);
     unbind(aTexture);
 }
+
+// TODO Ad 2022/02/02: Specialize bind_guard for Texture + TextureUnit
 
 inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
 {

@@ -26,6 +26,20 @@ struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
     {}
 };
 
+
+inline void bind(const VertexArrayObject & aVertexArray)
+{
+    glBindVertexArray(aVertexArray);
+}
+
+// TODO Ad 2022/02/02: Is it a good idea to "expect" the object to unbind
+// when the underlying unbinding mechanism does not use it (just reset a default)? 
+inline void unbind(const VertexArrayObject & aVertexArray)
+{
+    glBindVertexArray(0);
+}
+
+
 /// \TODO understand when glDisableVertexAttribArray should actually be called
 ///       (likely not specially before destruction, but more when rendering other objects
 ///        since it is a current(i.e. global) VAO state)
@@ -65,8 +79,15 @@ struct [[nodiscard]] VertexSpecification
 
 inline void bind(const VertexSpecification & aVertexSpecification)
 {
-    glBindVertexArray(aVertexSpecification.mVertexArray);
+    bind(aVertexSpecification.mVertexArray);
 }
+
+
+inline void unbind(const VertexSpecification & aVertexSpecification)
+{
+    unbind(aVertexSpecification.mVertexArray);
+}
+
 
 
 /// \brief Describes the attribute access from the shader (layout id, value type, normalization)

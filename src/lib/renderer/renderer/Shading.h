@@ -11,6 +11,7 @@
 namespace ad {
 namespace graphics {
 
+
 struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
 {
     Shader(GLenum aStage) :
@@ -30,6 +31,19 @@ struct [[nodiscard]] Program : public ResourceGuard<GLuint>
         ResourceGuard<GLuint>{glCreateProgram(), glDeleteProgram}
     {}
 };
+
+
+inline void use(const Program & aProgram)
+{
+    glUseProgram(aProgram);
+}
+
+
+inline void disableProgram()
+{
+    glUseProgram(0);
+}
+
 
 void handleGlslError(GLuint objectId,
                      GLenum aStatusEnumerator,
