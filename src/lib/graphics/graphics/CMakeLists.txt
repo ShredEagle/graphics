@@ -27,6 +27,8 @@ set(${TARGET_NAME}_HEADERS
     detail/UnitQuad.h
     detail/GlyphUtilities.h
 
+    effects/Fade.h
+    effects/Fade-shaders.h
     effects/GaussianBlur.h
     effects/GaussianBlur-shaders.h
 )
@@ -50,6 +52,7 @@ set(${TARGET_NAME}_SOURCES
     detail/UnitQuad.cpp
     detail/GlyphUtilities.cpp
 
+    effects/Fade.cpp
     effects/GaussianBlur.cpp
 )
 
