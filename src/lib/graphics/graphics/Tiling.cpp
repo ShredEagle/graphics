@@ -152,7 +152,7 @@ TileSet::TileSet(Size2<int> aCellSize, Size2<int> aGridDefinition) :
 
 void TileSet::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
 {
-    bindVertexArray(mVertexSpecification);
+    bind(mVertexSpecification);
 
     std::vector<Vertex> quad = makeQuad(aCellSize);
     respecifyBuffer(mVertexSpecification.mVertexBuffers.at(0), gsl::make_span(quad));

@@ -17,5 +17,12 @@ namespace sprite {
 using Color = math::Rgb_base<GLubyte>;
 
 
+// <renderer> forward declarations
+struct FrameBuffer;
+struct Program;
+struct Texture;
+struct VertexSpecification;
+
+
 } // namespace graphics
 } // namespace ad

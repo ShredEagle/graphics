@@ -28,39 +28,54 @@ inline DrawContext makeBareContext()
 }
 
 
-inline void bindVertexArray(const VertexSpecification & aVertexSpecification)
-{
-    glBindVertexArray(aVertexSpecification.mVertexArray);
-}
-
-
 inline void bindVertexArray(const DrawContext & aDrawContext)
 {
-    bindVertexArray(aDrawContext.mVertexSpecification);
+    bind(aDrawContext.mVertexSpecification);
 }
 
 
 inline void useProgram(const DrawContext & aDrawContext)
 {
-    glUseProgram(aDrawContext.mProgram);
+    use(aDrawContext.mProgram);
 }
 
-inline void activate(const DrawContext & aDrawContext)
-{
-    bindVertexArray(aDrawContext);
-    useProgram(aDrawContext);
-}
 
 inline void activate(const VertexArrayObject & aVertexArray, const Program & aProgram)
 {
-    glBindVertexArray(aVertexArray);
-    glUseProgram(aProgram);
+    bind(aVertexArray);
+    use(aProgram);
 }
+
+// TODO Ad 2022/02/02: Is it a good idea to "expect" the object to unbind
+// when the underlying unbinding mechanism does not use it (just reset a default)? 
+inline void deactivate(const VertexArrayObject & aVertexArray, const Program &)
+{
+    unbind(aVertexArray);
+    disableProgram();
+}
+
 
 inline void activate(const VertexSpecification & aVertexSpecification, const Program & aProgram)
 {
     activate(aVertexSpecification.mVertexArray, aProgram);
 }
+
+inline void deactivate(const VertexSpecification & aVertexSpecification, const Program & aProgram)
+{
+    deactivate(aVertexSpecification.mVertexArray, aProgram);
+}
+
+
+inline void activate(const DrawContext & aDrawContext)
+{
+    activate(aDrawContext.mVertexSpecification, aDrawContext.mProgram);
+}
+
+inline void deactivate(const DrawContext & aDrawContext)
+{
+    deactivate(aDrawContext.mVertexSpecification, aDrawContext.mProgram);
+}
+
 
 inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
 {
@@ -68,6 +83,9 @@ inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
 }
 
 
+// TODO Ad 2022/02/02 Pick a naming convention. Make the distinction between:
+// * Guarding some resource "activation" or value, then returning it to the default value.
+// * Guarding it, but then returning it to its **previous** state (which might not be default).
 template <class T_index>
 inline Guard scopePrimitiveRestartIndex(T_index aIndex)
 {

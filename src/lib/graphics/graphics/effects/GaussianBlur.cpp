@@ -202,7 +202,7 @@ void GaussianBlur::apply(int aPassCount,
         glUseProgram(mProgramSequence[step % mProgramSequence.size()]);
         // binds the source texture to the texture unit (which is the texture unit for all programs).
         bind(aFrameBuffers.getTexture(Role::Source));
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, detail::gQuadVerticeCount);
         aFrameBuffers.swap();
     };
 
@@ -242,7 +242,7 @@ void GaussianBlur::drawToBoundFrameBuffer(PingPongFrameBuffers & aFrameBuffers)
 
     glUseProgram(mPassthrough);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, detail::gQuadVerticeCount);
 }
 
 

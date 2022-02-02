@@ -72,7 +72,6 @@ namespace graphics {
     }
 
 
-
     template <class T_derived>
     inline void setUniform(Program & aProgram, const std::string & aNameInShader,
                            const math::Vector<T_derived, 4, GLfloat> & aVector)
@@ -81,6 +80,13 @@ namespace graphics {
         glProgramUniform4f(aProgram, location, aVector[0], aVector[1], aVector[2], aVector[3]);
     }
 
+
+    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+                           const math::hdr::Rgba & aColor)
+    {
+        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
+        glProgramUniform4f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2], (GLfloat)aColor[3]);
+    }
 
     inline void setUniformFloat(Program & aProgram, const std::string & aNameInShader,
                                 GLfloat aFloat)
