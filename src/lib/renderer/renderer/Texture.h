@@ -2,16 +2,16 @@
 
 #include "commons.h"
 #include "gl_helpers.h"
+#include "GL_Loader.h"
 #include "MappedGL.h"
 
 #include <arte/Image.h>
 
 #include <handy/Guard.h>
 
-#include "GL_Loader.h"
-
 #include <cassert>
 #include <string>
+
 
 namespace ad {
 namespace graphics {
@@ -81,6 +81,18 @@ inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
 }
 
 // TODO Ad 2022/02/02: Specialize bind_guard for Texture + TextureUnit
+// At least MSVC 16.11.1 refuses that
+//template <>
+//inline bind_guard::bind_guard<Texture, GLenum>(const Texture & aTexture, GLenum aTextureUnit) :
+//    mGuard{[&aTexture, aTextureUnit]()
+//        {
+//            unbind(aTexture, aTextureUnit);
+//            activateTextureUnit(GL_TEXTURE0); 
+//        }}
+//{
+//    bind(aTexture, aTextureUnit);
+//}
+
 
 inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
 {
