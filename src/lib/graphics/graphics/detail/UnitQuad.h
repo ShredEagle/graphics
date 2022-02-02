@@ -26,7 +26,9 @@ constexpr std::initializer_list<AttributeDescription> gVertexScreenDescription =
 };
 
 
-std::array<VertexUnitQuad, 4> make_RectangleVertices(math::Rectangle<GLfloat> aVertices);
+constexpr GLsizei gQuadVerticeCount = 4;
+
+std::array<VertexUnitQuad, gQuadVerticeCount> make_RectangleVertices(math::Rectangle<GLfloat> aVertices);
 
 VertexSpecification make_Rectangle(math::Rectangle<GLfloat> aVertices);
 // TODO make a global VertexSpecification instance instead

@@ -10,9 +10,9 @@ namespace graphics {
 namespace detail {
 
 
-std::array<VertexUnitQuad, 4> make_RectangleVertices(math::Rectangle<GLfloat> aVertices)
+std::array<VertexUnitQuad, gQuadVerticeCount> make_RectangleVertices(math::Rectangle<GLfloat> aVertices)
 {
-    return std::array<VertexUnitQuad, 4>{
+    return std::array<VertexUnitQuad, gQuadVerticeCount>{
         VertexUnitQuad{
             aVertices.bottomLeft(),
             {0.0f, 0.0f},
@@ -39,7 +39,7 @@ VertexSpecification make_UnitQuad()
 
 VertexSpecification make_Rectangle(math::Rectangle<GLfloat> aVertices)
 {
-    std::array<VertexUnitQuad, 4> gVerticesScreen = make_RectangleVertices(aVertices);
+    std::array<VertexUnitQuad, gQuadVerticeCount> gVerticesScreen = make_RectangleVertices(aVertices);
     VertexSpecification result;
     appendToVertexSpecification(result, gVertexScreenDescription, gsl::make_span(gVerticesScreen));
     return result;
