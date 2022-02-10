@@ -243,7 +243,7 @@ inline void loadImage(const Texture & aTexture,
 /// \brief Load an animation from an image containing a (column) array of frames.
 template <class T_pixel>
 inline void loadAnimationAsArray(const Texture & aTexture,
-                                 GLenum aTextureUnit,
+                                 GLenum /*aTextureUnit*/,
                                  const arte::Image<T_pixel> & aImage,
                                  const Size2<int> & aFrame,
                                  size_t aSteps)

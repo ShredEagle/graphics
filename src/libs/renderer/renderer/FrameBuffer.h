@@ -36,8 +36,7 @@ inline void bind(const FrameBuffer & aFrameBuffer)
     glBindFramebuffer(GL_FRAMEBUFFER, aFrameBuffer);
 }
 
-
-inline void unbind(const FrameBuffer & aFrameBuffer)
+inline void unbind(const FrameBuffer & /*aFrameBuffer*/)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
