@@ -8,7 +8,7 @@ namespace graphics {
 namespace sprite {
 
 
-std::pair<LoadedAtlas, std::vector<LoadedSprite>> loadMetaFile(const filesystem::path & aPath)
+SheetLoad loadMetaFile(const filesystem::path & aPath)
 {
     arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aPath);
     return load(sheet.cbegin(), sheet.cend(), sheet.image());

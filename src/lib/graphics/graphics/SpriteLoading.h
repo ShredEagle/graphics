@@ -19,6 +19,10 @@ struct LoadedAtlas
 };
 
 
+using SheetLoad = std::pair<LoadedAtlas, std::vector<LoadedSprite>>;
+using SingleLoad = std::pair<LoadedAtlas, LoadedSprite>;
+
+
 /// \attention This signature is not stable
 template <class T_pixel>
 LoadedAtlas loadAtlas(const arte::Image<T_pixel> & aRasterData);
@@ -26,25 +30,21 @@ LoadedAtlas loadAtlas(const arte::Image<T_pixel> & aRasterData);
 
 /// \brief Takes a pair of iterator to SpriteArea instances, and the corresponding raster data
 template <class T_iterator, class T_pixel>
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
-load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterData);
+SheetLoad load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterData);
 
 
 /// \brief Overload accepting a range.
 template <std::ranges::range T_range, class T_pixel>
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
-load(T_range aRange, const arte::Image<T_pixel> & aRasterData);
+SheetLoad load(T_range aRange, const arte::Image<T_pixel> & aRasterData);
 
 
 /// \brief Load all sprites defined in the meta (tilesheet) file.
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
-loadMetaFile(const filesystem::path & aPath);
+SheetLoad loadMetaFile(const filesystem::path & aPath);
 
 
 /// \brief Load the entire image as a single sprite.
 template <class T_pixel>
-std::pair<LoadedAtlas, LoadedSprite>
-load(const arte::Image<T_pixel> & aRasterData);
+SingleLoad load(const arte::Image<T_pixel> & aRasterData);
 
 
 //
@@ -61,8 +61,7 @@ LoadedAtlas loadAtlas(const arte::Image<T_pixel> & aRasterData)
 
 
 template <class T_iterator, class T_pixel>
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
-load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterData)
+SheetLoad load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterData)
 {
     static_assert(std::is_convertible_v<decltype(*std::declval<T_iterator>()), SpriteArea>,
                   "Iterators must point to SpriteArea instances.");
@@ -74,16 +73,14 @@ load(T_iterator aFirst, T_iterator aLast, const arte::Image<T_pixel> & aRasterDa
 
 
 template <std::ranges::range T_range, class T_pixel>
-std::pair<LoadedAtlas, std::vector<LoadedSprite>>
-load(T_range aRange, const arte::Image<T_pixel> & aRasterData)
+SheetLoad load(T_range aRange, const arte::Image<T_pixel> & aRasterData)
 {
     return load(std::begin(aRange), std::end(aRange), aRasterData);
 }
 
 
 template <class T_pixel>
-std::pair<LoadedAtlas, LoadedSprite>
-load(const arte::Image<T_pixel> & aRasterData)
+SingleLoad load(const arte::Image<T_pixel> & aRasterData)
 {
     std::array<SpriteArea, 1> fullSize{ SpriteArea{{0, 0}, aRasterData.dimensions()} };
     LoadedAtlas atlas;
