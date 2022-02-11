@@ -3,6 +3,7 @@
 #include <random>
 
 namespace ad {
+// TODO Use handy namespace
 
 template <class T_distribution = std::uniform_int_distribution<int>>
 struct Randomizer
