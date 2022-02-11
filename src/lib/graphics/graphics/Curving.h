@@ -32,6 +32,8 @@ public:
 
     void render(gsl::span<const Instance> aInstances) const;
 
+    void setColor(math::hdr::Rgba aColor);
+
     void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
 

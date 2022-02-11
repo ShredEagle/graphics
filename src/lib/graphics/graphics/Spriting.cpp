@@ -68,12 +68,14 @@ VertexSpecification makeQuad()
         initVertexBuffer<Spriting::Instance>(
             specification.mVertexArray,
             {
-                // Sprite position
-                { 2,                               2, offsetof(Spriting::Instance, mPosition),      MappedGL<GLfloat>::enumerator},
+                // Model transform
+                { 2, 3, offsetof(Spriting::Instance, mModelTransform) + 0 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
+                { 3, 3, offsetof(Spriting::Instance, mModelTransform) + 3 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
+                { 4, 3, offsetof(Spriting::Instance, mModelTransform) + 6 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
                 // LoadedSprite (i.e. sprite rectangle cutout in the texture)
-                { {3, Attribute::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite),  MappedGL<GLint>::enumerator},
-                { 4,                               1, offsetof(Spriting::Instance, mOpacity),       MappedGL<GLfloat>::enumerator},
-                { 5,                               2, offsetof(Spriting::Instance, mAxisMirroring), MappedGL<GLint>::enumerator},
+                { {5, Attribute::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite),  MappedGL<GLint>::enumerator},
+                { 6,                               1, offsetof(Spriting::Instance, mOpacity),       MappedGL<GLfloat>::enumerator},
+                { 7,                               2, offsetof(Spriting::Instance, mAxisMirroring), MappedGL<GLint>::enumerator},
             },
             1
         ));
@@ -96,6 +98,31 @@ Program makeProgram()
 }
 
 } // anonymous namespace
+
+
+Spriting::Instance::Instance(math::AffineMatrix<3, GLfloat> aModelTransform,
+                             LoadedSprite aSprite,
+                             GLfloat aOpacity,
+                             Mirroring aMirroring) :
+    mModelTransform{aModelTransform},
+    mLoadedSprite{std::move(aSprite)},
+    mOpacity{aOpacity},
+    mAxisMirroring{
+        (test(aMirroring, Mirroring::FlipHorizontal) ? -1 : 1),
+        (test(aMirroring, Mirroring::FlipVertical) ? -1 : 1)
+    }
+{}
+
+
+Spriting::Instance::Instance(Position2<GLfloat> aRenderingPosition, 
+                             LoadedSprite aSprite,
+                             GLfloat aOpacity,
+                             Mirroring aMirroring) :
+    Instance{math::trans2d::translate(aRenderingPosition.as<math::Vec>()), 
+             aSprite,
+             aOpacity,
+             aMirroring}
+{}
 
 
 Spriting::Spriting(GLfloat aPixelSize) :

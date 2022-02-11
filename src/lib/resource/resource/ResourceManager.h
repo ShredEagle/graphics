@@ -13,8 +13,10 @@ namespace ad {
 namespace resource {
 
 // TODO Make this class safer to use (currently it is very easy to get dangling references).
+// TODO Ad 2022/02/10 There should be a separate case where the loader has states 
+// (i.e. an instance is stored withing the ResourceManager data members).
 /// \attention The resources are currently hosted directly by the ResourceManager, not 
-/// inside any sharing mecanism.
+/// inside any sharing mechanism.
 /// It implies that the resource handles are only valid while the ResourceManager is alive,
 /// and while it contains them. This is currently left as the user responsibility.
 template <class T_resource, auto F_loader>

@@ -87,11 +87,11 @@ const GLchar* gFragmentShader = R"#(
 
     out vec4 out_Color;
 
-    uniform vec3 u_color;
+    uniform vec4 u_color;
 
     void main(void)
     {
-        out_Color = vec4(u_color, 1.0);
+        out_Color = u_color;
     }
 )#";
 

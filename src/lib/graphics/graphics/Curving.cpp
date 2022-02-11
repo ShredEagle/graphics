@@ -78,7 +78,7 @@ Curving::Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aPro
     setCameraTransformation(math::AffineMatrix<4, GLfloat>::Identity());
     setProjectionTransformation(aProjectionTransformation);
 
-    setUniform(mGpuProgram, "u_color", math::hdr::gWhite); 
+    setColor(math::hdr::gWhite);
 }
 
 
@@ -93,6 +93,12 @@ void Curving::render(gsl::span<const Instance> aInstances) const
                           0,
                           mVertexCount,
                           static_cast<GLsizei>(aInstances.size()));
+}
+
+
+void Curving::setColor(math::hdr::Rgba aColor)
+{
+    setUniform(mGpuProgram, "u_color", aColor);
 }
 
 

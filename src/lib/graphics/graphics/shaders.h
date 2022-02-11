@@ -10,11 +10,10 @@ inline const GLchar* gSpriteVertexShader = R"#(
     layout(location=0) in vec2  ve_VertexPosition;
     layout(location=1) in ivec2 ve_UV;
 
-    //layout(location=2) in mat3  in_ModelTransform;
-    layout(location=2) in vec2  in_InstancePosition;
-    layout(location=3) in ivec4 in_TextureArea;
-    layout(location=4) in float in_Opacity;
-    layout(location=5) in vec2  in_AxisMirroring;
+    layout(location=2) in mat3  in_ModelTransform;
+    layout(location=5) in ivec4 in_TextureArea;
+    layout(location=6) in float in_Opacity;
+    layout(location=7) in vec2  in_AxisMirroring;
 
     uniform vec2 u_pixelWorldSize;
     uniform mat3 u_camera;
@@ -26,8 +25,7 @@ inline const GLchar* gSpriteVertexShader = R"#(
     void main(void)
     {
         vec3 vertexPosition_local = vec3(ve_VertexPosition * in_TextureArea.zw * u_pixelWorldSize, 1.);
-        //vec3 vertexPosition_world = in_ModelTransform * vertexPosition_local;
-        vec3 vertexPosition_world = vec3(in_InstancePosition, 0.) + vertexPosition_local;
+        vec3 vertexPosition_world = in_ModelTransform * vertexPosition_local;
         vec3 vertexPosition_ndc = u_projection * u_camera * vertexPosition_world;
 
         gl_Position = vec4(vertexPosition_ndc.x, vertexPosition_ndc.y, 0., 1.);
