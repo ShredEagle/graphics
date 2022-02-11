@@ -25,13 +25,16 @@ class Spriting
 public:
     struct Instance
     {
-        Instance(Position2<GLfloat> aRenderingPosition, LoadedSprite aSprite, GLfloat aOpacity = 1.f, Vec2<int> aAxisMirroring = {1, 1}):
-            mPosition{std::move(aRenderingPosition)},
-            mLoadedSprite{std::move(aSprite)},
-            mOpacity{aOpacity},
-            mAxisMirroring{std::move(aAxisMirroring)}
-        {}
+        Instance(math::AffineMatrix<3, GLfloat> aModelTransform,
+                 LoadedSprite aSprite,
+                 GLfloat aOpacity = 1.f,
+                 Vec2<int> aAxisMirroring = {1, 1}); 
 
+        Instance(Position2<GLfloat> aRenderingPosition, 
+                 LoadedSprite aSprite,
+                 GLfloat aOpacity = 1.f,
+                 Vec2<int> aAxisMirroring = {1, 1});
+            
         Instance & mirrorHorizontal(bool aMirror = true)
         {
             mAxisMirroring.x() = aMirror ? -1 : 1;
@@ -44,7 +47,7 @@ public:
             return *this; 
         }
 
-        Position2<GLfloat> mPosition;
+        math::AffineMatrix<3, GLfloat> mModelTransform;
         LoadedSprite mLoadedSprite;
         GLfloat mOpacity;
         Vec2<int> mAxisMirroring;
