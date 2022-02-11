@@ -103,22 +103,25 @@ Program makeProgram()
 Spriting::Instance::Instance(math::AffineMatrix<3, GLfloat> aModelTransform,
                              LoadedSprite aSprite,
                              GLfloat aOpacity,
-                             Vec2<int> aAxisMirroring) :
+                             Mirroring aMirroring) :
     mModelTransform{aModelTransform},
     mLoadedSprite{std::move(aSprite)},
     mOpacity{aOpacity},
-    mAxisMirroring{std::move(aAxisMirroring)}
+    mAxisMirroring{
+        (test(aMirroring, Mirroring::FlipHorizontal) ? -1 : 1),
+        (test(aMirroring, Mirroring::FlipVertical) ? -1 : 1)
+    }
 {}
 
 
 Spriting::Instance::Instance(Position2<GLfloat> aRenderingPosition, 
                              LoadedSprite aSprite,
                              GLfloat aOpacity,
-                             Vec2<int> aAxisMirroring) :
+                             Mirroring aMirroring) :
     Instance{math::trans2d::translate(aRenderingPosition.as<math::Vec>()), 
              aSprite,
              aOpacity,
-             aAxisMirroring}
+             aMirroring}
 {}
 
 

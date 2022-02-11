@@ -4,6 +4,8 @@
 
 #include "Sprite.h"
 
+#include <handy/Bitmask.h>
+
 #include <math/Homogeneous.h>
 
 #include <renderer/Drawing.h>
@@ -28,24 +30,30 @@ public:
         Instance(math::AffineMatrix<3, GLfloat> aModelTransform,
                  LoadedSprite aSprite,
                  GLfloat aOpacity = 1.f,
-                 Vec2<int> aAxisMirroring = {1, 1}); 
+                 Mirroring aMirroring = Mirroring::None); 
 
         Instance(Position2<GLfloat> aRenderingPosition, 
                  LoadedSprite aSprite,
                  GLfloat aOpacity = 1.f,
-                 Vec2<int> aAxisMirroring = {1, 1});
+                 Mirroring aMirroring = Mirroring::None);
             
-        Instance & mirrorHorizontal(bool aMirror = true)
-        {
-            mAxisMirroring.x() = aMirror ? -1 : 1;
-            return *this; 
-        }
-
-        Instance & mirrorVertical(bool aMirror = true)
-        {
-            mAxisMirroring.y() = aMirror ? -1 : 1;
-            return *this; 
-        }
+        // NOTE Ad 2022/02/11: Ideally the mirroring would be embedded in the model transform
+        // Yet, this causes a complication since the sprite origin is at its bottom left corner.
+        // The translation to apply is dependent on the sprite dimension, and the spriting render
+        // "pixelToWorld" factor.
+        // So we keep the mirroring as separate data applied to uv coordinates for the moment, but remove
+        // these member functions from the API to simplify if one day we embed it in model transform.
+        //Instance & mirrorHorizontal(bool aMirror = true)
+        //{
+        //    mAxisMirroring.x() = aMirror ? -1 : 1;
+        //    return *this; 
+        //}
+        //
+        //Instance & mirrorVertical(bool aMirror = true)
+        //{
+        //    mAxisMirroring.y() = aMirror ? -1 : 1;
+        //    return *this; 
+        //}
 
         math::AffineMatrix<3, GLfloat> mModelTransform;
         LoadedSprite mLoadedSprite;
