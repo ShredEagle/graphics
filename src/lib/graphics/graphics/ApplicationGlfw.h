@@ -22,6 +22,7 @@ enum class ApplicationFlag
     None = 0,
     Window_Keep_Ratio = (1 << 1),
     Fullscreen = (1 << 2),
+    HideCursor = (1 << 3),
 };
 
 
@@ -63,6 +64,11 @@ public:
         if ((aFlags & ApplicationFlag::Window_Keep_Ratio) != ApplicationFlag::None)
         {
             glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
+        }
+
+        if (test(aFlags, ApplicationFlag::HideCursor))
+        {
+            glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
         }
 
         glfwMakeContextCurrent(mWindow);
