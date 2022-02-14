@@ -3,10 +3,12 @@ set(TARGET_NAME platform)
 set(${TARGET_NAME}_HEADERS
     Filesystem.h
     Locale.h
+    Path.h
 )
 
 set(${TARGET_NAME}_SOURCES
     Locale.cpp
+    Path.cpp
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
