@@ -134,7 +134,7 @@ struct DynamicGlyphCache
 
     void growAtlas()
     {
-        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8, margins, textureFiltering));
+        atlases.push_back(make_TextureRibon(ribonDimension, GL_R8, margins, textureFiltering));
     }
 
     RenderedGlyph at(arte::CharCode aCharCode, const arte::FontFace & aFontFace);
