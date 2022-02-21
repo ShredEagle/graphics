@@ -51,6 +51,8 @@ inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum a
 {
     TextureRibon ribon{Texture{GL_TEXTURE_RECTANGLE}, aDimensions.width(), aMargins};
     allocateStorage(ribon.texture, aInternalFormat, aDimensions.width(), aDimensions.height());
+    // Note: Only the first (red) value will be used for a GL_R8 texture, but the API requires a 4-channel color.
+    clear(ribon.texture, {math::hdr::gBlack, 0.f});
 
     bind(ribon.texture);
     glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_MIN_FILTER, aTextureFiltering);
@@ -132,7 +134,7 @@ struct DynamicGlyphCache
 
     void growAtlas()
     {
-        atlases.push_back(make_TextureRibon(ribonDimension, GL_RGB8, margins, textureFiltering));
+        atlases.push_back(make_TextureRibon(ribonDimension, GL_R8, margins, textureFiltering));
     }
 
     RenderedGlyph at(arte::CharCode aCharCode, const arte::FontFace & aFontFace);

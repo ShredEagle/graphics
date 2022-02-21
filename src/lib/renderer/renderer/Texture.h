@@ -134,6 +134,8 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
                            aResolution.width(), aResolution.height());
 }
 
+void clear(const Texture & aTexture, math::hdr::Rgba aClearValue);
+
 /// \brief Parameter for `writeTo()` below.
 struct InputImageParameters
 {

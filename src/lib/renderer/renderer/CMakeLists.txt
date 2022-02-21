@@ -23,6 +23,8 @@ set(${TARGET_NAME}_SOURCES
     Shading.cpp
     VertexSpecification.cpp
 
+    Texture.cpp
+
     stb_image.c
 )
 
