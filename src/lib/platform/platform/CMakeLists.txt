@@ -2,11 +2,13 @@ set(TARGET_NAME platform)
 
 set(${TARGET_NAME}_HEADERS
     Filesystem.h
+    Gui.h
     Locale.h
     Path.h
 )
 
 set(${TARGET_NAME}_SOURCES
+    Gui.cpp
     Locale.cpp
     Path.cpp
 )
