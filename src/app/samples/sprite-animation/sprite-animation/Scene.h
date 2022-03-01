@@ -33,7 +33,7 @@ public:
     Scene(Size2<int> aRenderResolution) :
         mSpriting{}
     {
-        setViewportVirtualResolution(mSpriting, aRenderResolution);
+        setViewedSize(mSpriting, aRenderResolution);
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aRenderResolution) / 2) );
 

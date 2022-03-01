@@ -17,7 +17,7 @@ public:
     Scene(Size2<int> aRenderResolution) :
         mSpriting{}
     {
-        setViewportVirtualResolution(mSpriting, aRenderResolution);
+        setViewedSize(mSpriting, aRenderResolution);
 
         constexpr Size2<int> frameDimensions{347-3, 303-3};
 

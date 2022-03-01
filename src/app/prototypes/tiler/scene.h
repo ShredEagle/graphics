@@ -37,7 +37,7 @@ struct Scroller
             // Cannot be properly initialized before the size of mLoadedTiles is known.
             mRandomIndex{0, 0} 
     {
-        setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
+        setViewedSize(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
 
         std::tie(mAtlas, mLoadedTiles) = sprite::loadMetaFile(aTilesheet);
         mRandomIndex = {0, static_cast<int>(mLoadedTiles.size()-1)};
@@ -47,7 +47,7 @@ struct Scroller
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            setViewportVirtualResolution(mTiling, aNewSize, ViewOrigin::LowerLeft);
+            setViewedSize(mTiling, aNewSize, ViewOrigin::LowerLeft);
             // +2 tiles on each dimension:
             // * 1 to compensate for the integral division module
             // * 1 to make sure there is at least the size of a complete tile in excess
@@ -123,7 +123,7 @@ struct Tiles
 
     Tiles(std::string aSpriteSheet, AppInterface & aAppInterface)
     {
-        setViewportVirtualResolution(mSpriting, aAppInterface.getWindowSize());
+        setViewedSize(mSpriting, aAppInterface.getWindowSize());
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
 
@@ -136,7 +136,7 @@ struct Tiles
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            setViewportVirtualResolution(mSpriting, aNewSize);
+            setViewedSize(mSpriting, aNewSize);
             mSpriting.setCameraTransformation(
                 math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aNewSize) / 2) );
         });

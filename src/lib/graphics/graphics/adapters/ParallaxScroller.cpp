@@ -85,14 +85,14 @@ ParallaxScroller::Layer::getModulus(Position2<TileSet::Position_t> aPosition)
 ParallaxScroller::ParallaxScroller(Size2<int> aVirtualResolution) :
     mViewportSize_cellPixels{aVirtualResolution}
 {
-    setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
+    setViewedSize(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
 }
 
 
 void ParallaxScroller::resetTiling(Size2<int> aVirtualResolution)
 {
     mViewportSize_cellPixels = aVirtualResolution;
-    setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
+    setViewedSize(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
     for (auto & layer : mLayers)
     {
         layer.resetTiling(computeTightGrid(layer.tileSet.getTileSize()));

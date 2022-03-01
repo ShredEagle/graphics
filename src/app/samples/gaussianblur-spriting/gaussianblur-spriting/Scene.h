@@ -32,7 +32,7 @@ public:
     {
         using namespace std::placeholders;
 
-        setViewportVirtualResolution(mSpriting, aRenderResolution);
+        setViewedSize(mSpriting, aRenderResolution);
         initializeSprite();
         aAppInterface->registerKeyCallback(std::bind(&Scene::onKey, this, _1, _2, _3, _4));
     }
