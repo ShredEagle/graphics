@@ -38,6 +38,10 @@ template <std::ranges::range T_range, class T_pixel>
 SheetLoad load(T_range aRange, const arte::Image<T_pixel> & aRasterData);
 
 
+/// \brief Load all sprites from a TileSheet.
+SheetLoad load(const arte::TileSheet & aTileSheet);
+
+
 /// \brief Load all sprites defined in the meta (tilesheet) file.
 SheetLoad loadMetaFile(const filesystem::path & aPath);
 

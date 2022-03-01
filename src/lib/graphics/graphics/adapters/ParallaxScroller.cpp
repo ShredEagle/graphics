@@ -22,18 +22,19 @@ ParallaxScroller::Layer::Layer(sprite::LoadedAtlas aAtlas,
     placedTiles{tileSet.getTileCount(), TileSet::gEmptyInstance},
     scrollFactor{aScrollFactor}
 {
-    fillAll();
+    fillAll(firstTileIndex);
 }
 
 
-void ParallaxScroller::Layer::fillAll()
+void ParallaxScroller::Layer::fillAll(math::Vec<2, int> aFirstTileIndex)
 {
     auto gridDefinition = tileSet.getGridDefinition();
     for (int i = 0; i != gridDefinition.height(); ++i)
     {
         for (int j = 0; j != gridDefinition.width(); ++j)
         {
-            placedTiles.at(j + i * gridDefinition.width()) = fillCallback({j, i});
+            placedTiles.at(j + i * gridDefinition.width()) =
+                fillCallback(math::Position<2, int>{j, i} + aFirstTileIndex);
         }
     }
     updateInstances();
@@ -43,6 +44,28 @@ void ParallaxScroller::Layer::fillAll()
 void ParallaxScroller::Layer::updateInstances()
 {
     tileSet.updateInstances(placedTiles);
+}
+
+
+void ParallaxScroller::Layer::setPosition(Position2<TileSet::Position_t> aPosition)
+{
+    math::Vec<2, int> newFirstTileIndex =
+        -static_cast<math::Vec<2, int>>(aPosition).cwDiv(tileSet.getTileSize().as<math::Vec>());
+    if (firstTileIndex != newFirstTileIndex)
+    {
+        firstTileIndex = newFirstTileIndex;
+        fillAll(firstTileIndex);
+    }
+
+    tileSet.setPosition(getModulus(aPosition));
+}
+
+
+void ParallaxScroller::Layer::resetTiling(Size2<int> aGridDefinition)
+{
+    tileSet.resetTiling(tileSet.getTileSize(), aGridDefinition);
+    placedTiles.resize(tileSet.getTileCount(), TileSet::gEmptyInstance);
+    fillAll(firstTileIndex);
 }
 
 
@@ -60,9 +83,20 @@ ParallaxScroller::Layer::getModulus(Position2<TileSet::Position_t> aPosition)
 // ParallaxScroller
 //
 ParallaxScroller::ParallaxScroller(Size2<int> aVirtualResolution) :
-    mViewportWorldSize{aVirtualResolution}
+    mViewportSize_cellPixels{aVirtualResolution}
 {
     setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
+}
+
+
+void ParallaxScroller::resetTiling(Size2<int> aVirtualResolution)
+{
+    mViewportSize_cellPixels = aVirtualResolution;
+    setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
+    for (auto & layer : mLayers)
+    {
+        layer.resetTiling(computeTightGrid(layer.tileSet.getTileSize()));
+    }
 }
 
 
@@ -81,8 +115,7 @@ void ParallaxScroller::positionCamera(Position2<GLfloat> aPosition)
 {
     for (auto & layer : mLayers)
     {
-        auto newLayerPosition = -aPosition * layer.scrollFactor;
-        layer.tileSet.setPosition(layer.getModulus(newLayerPosition));
+        layer.setPosition(-aPosition * layer.scrollFactor);
     }
 }
 
@@ -92,8 +125,8 @@ Size2<int> ParallaxScroller::computeTightGrid(Size2<int> aCellSize) const
     // +3 : 
     // * 1 for rounding up the division (the last tile, partially shown)
     // * 1 excess tile, i.e. initially completely "out of viewport"
-    // * 1 for the offset applied to fmod
-    return mViewportWorldSize.cwDiv(aCellSize) + Size2<GLint>{3, 3};
+    // * 1 for the offset substracted from fmod
+    return mViewportSize_cellPixels.cwDiv(aCellSize) + Size2<GLint>{3, 3};
 }
 
 
