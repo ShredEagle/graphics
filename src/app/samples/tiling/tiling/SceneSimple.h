@@ -25,7 +25,7 @@ public:
         mTiling{},
         mTileSet{gCellSize, mGridSize}
     {
-        setViewportVirtualResolution(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
+        setViewedSize(mTiling, aVirtualResolution, ViewOrigin::LowerLeft);
 
         auto [atlas, loadedTile] =
             sprite::load(arte::Image<math::sdr::Rgba>{

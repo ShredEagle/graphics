@@ -8,10 +8,15 @@ namespace graphics {
 namespace sprite {
 
 
+SheetLoad load(const arte::TileSheet & aTileSheet)
+{
+    return load(aTileSheet.cbegin(), aTileSheet.cend(), aTileSheet.image());
+}
+
+
 SheetLoad loadMetaFile(const filesystem::path & aPath)
 {
-    arte::TileSheet sheet = arte::TileSheet::LoadMetaFile(aPath);
-    return load(sheet.cbegin(), sheet.cend(), sheet.image());
+    return load(arte::TileSheet::LoadMetaFile(aPath));
 }
 
 

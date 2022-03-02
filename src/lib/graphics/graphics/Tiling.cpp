@@ -19,7 +19,8 @@ namespace graphics {
 const GLchar* gTilingVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec4  in_VertexPosition;
+    // The vertex position contains the cellsize.
+    layout(location=0) in vec4  ve_VertexPosition;
     layout(location=1) in ivec2 in_UV;
     layout(location=2) in vec2  in_InstancePosition;
     layout(location=3) in ivec4 in_TextureArea;
@@ -32,7 +33,7 @@ const GLchar* gTilingVertexShader = R"#(
 
     void main(void)
     {
-        vec3 worldPosition = vec3(in_InstancePosition + in_VertexPosition.xy + u_GridPosition, 1.);
+        vec3 worldPosition = vec3(in_InstancePosition + ve_VertexPosition.xy + u_GridPosition, 1.);
         vec3 transformed = u_projection * u_camera * worldPosition;
         gl_Position = vec4(transformed.x, transformed.y, 0., 1.);
 
@@ -77,9 +78,9 @@ std::vector<Position2<GLint>> makePositions(const Vec2<int> aCellOffset,
                                             const Size2<int> aGridDefinition)
 {
     std::vector<Position2<GLint>> positions;
-    for (int x : math::range(aGridDefinition.width()))
+    for (int y : math::range(aGridDefinition.height()))
     {
-        for (int y : math::range(aGridDefinition.height()))
+        for (int x : math::range(aGridDefinition.width()))
         {
             Vec2<GLint> position = aCellOffset.cwMul(Vec2<GLint>{x, y});
             positions.emplace_back(position.x(), position.y());
@@ -115,7 +116,6 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
                          1));
 
     // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
-    /// \todo separate buffer specification and filling
     specification.mVertexBuffers.push_back(
         initVertexBuffer<TileSet::Instance>(
             specification.mVertexArray,

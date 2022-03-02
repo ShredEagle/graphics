@@ -37,7 +37,7 @@ struct Scroller
             // Cannot be properly initialized before the size of mLoadedTiles is known.
             mRandomIndex{0, 0} 
     {
-        setViewportVirtualResolution(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
+        setViewedSize(mTiling, aAppInterface.getWindowSize(), ViewOrigin::LowerLeft);
 
         std::tie(mAtlas, mLoadedTiles) = sprite::loadMetaFile(aTilesheet);
         mRandomIndex = {0, static_cast<int>(mLoadedTiles.size()-1)};
@@ -47,7 +47,7 @@ struct Scroller
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            setViewportVirtualResolution(mTiling, aNewSize, ViewOrigin::LowerLeft);
+            setViewedSize(mTiling, aNewSize, ViewOrigin::LowerLeft);
             // +2 tiles on each dimension:
             // * 1 to compensate for the integral division module
             // * 1 to make sure there is at least the size of a complete tile in excess
@@ -63,10 +63,10 @@ struct Scroller
         mTileSet.setPosition(mTileSet.getPosition() + aDisplacement);
 
         Rectangle<GLfloat> grid(mTileSet.getGridRectangle());
-        GLint xDiff = static_cast<GLint>(grid.topRight().x())
-                      - aAppInterface.getWindowSize().width();
+        GLint yDiff = static_cast<GLint>(grid.topRight().y())
+                      - aAppInterface.getWindowSize().height();
 
-        if (xDiff < 0)
+        if (yDiff < 0)
         {
             reposition();
         }
@@ -91,15 +91,15 @@ private:
     {
         mTileSet.setPosition(
             mTileSet.getPosition()
-                + static_cast<Vec2<GLfloat>>(mTileSet.getTileSize().cwMul({1, 0})));
+                + static_cast<Vec2<GLfloat>>(mTileSet.getTileSize().cwMul({0, 1})));
 
         // Copy the tiles still appearing
-        std::copy(mPlacedTiles.begin() + mTileSet.getGridDefinition().height(),
+        std::copy(mPlacedTiles.begin() + mTileSet.getGridDefinition().width(),
                   mPlacedTiles.end(),
                   mPlacedTiles.begin());
 
         // Complete new tiles
-        fillRandom(mPlacedTiles.end() - mTileSet.getGridDefinition().height(), mPlacedTiles.end());
+        fillRandom(mPlacedTiles.end() - mTileSet.getGridDefinition().width(), mPlacedTiles.end());
         mTileSet.updateInstances(mPlacedTiles);
     }
 
@@ -123,7 +123,7 @@ struct Tiles
 
     Tiles(std::string aSpriteSheet, AppInterface & aAppInterface)
     {
-        setViewportVirtualResolution(mSpriting, aAppInterface.getWindowSize());
+        setViewedSize(mSpriting, aAppInterface.getWindowSize());
         mSpriting.setCameraTransformation(
             math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aAppInterface.getWindowSize()) / 2) );
 
@@ -136,7 +136,7 @@ struct Tiles
 
         mSizeListener = aAppInterface.listenFramebufferResize([this](Size2<int> aNewSize)
         {
-            setViewportVirtualResolution(mSpriting, aNewSize);
+            setViewedSize(mSpriting, aNewSize);
             mSpriting.setCameraTransformation(
                 math::trans2d::translate(-static_cast<math::Vec<2, GLfloat>>(aNewSize) / 2) );
         });
@@ -181,7 +181,7 @@ inline std::unique_ptr<Scene> setupScene(AppInterface & aAppInterface)
 
 inline void updateScene(Scene & aScene, AppInterface & aAppInterface, const Timer & aTimer)
 {
-    static const Vec2<GLfloat> scrollSpeed{-200.f, 0.f};
+    static const Vec2<GLfloat> scrollSpeed{0.f, -200.f};
     aScene.mBackground.scroll((GLfloat)aTimer.mDelta*scrollSpeed, aAppInterface);
 }
 

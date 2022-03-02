@@ -39,14 +39,14 @@ enum class ViewOrigin
 ///
 /// \important the viewport will be [-width/2, -height/2] x [width/2, height/2], unless aOrigin is LowerLeft,
 /// then the viewport will be [0, 0] x [width, height].
-template <class T_engine2D>
-void setViewportVirtualResolution(T_engine2D & aEngine,
-                                  math::Size<2, int> aViewportPixelSize,
-                                  ViewOrigin aOrigin = ViewOrigin::Unchanged)
+template <class T_engine2D, class T_value>
+void setViewedSize(T_engine2D & aEngine,
+                   math::Size<2, T_value> aViewportSize,
+                   ViewOrigin aOrigin = ViewOrigin::Unchanged)
 {
     math::Rectangle<GLfloat> viewportArea{
         math::Position<2, GLfloat>::Zero(),
-        static_cast<math::Size<2, GLfloat>>(aViewportPixelSize)
+        static_cast<math::Size<2, GLfloat>>(aViewportSize)
     };
 
     aEngine.setProjectionTransformation(
