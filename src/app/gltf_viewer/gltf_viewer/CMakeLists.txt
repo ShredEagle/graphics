@@ -1,12 +1,14 @@
 set(TARGET_NAME gltf_viewer)
 
 set(${TARGET_NAME}_HEADERS
+    GltfRendering.h
     Logging.h
 )
 
 set(${TARGET_NAME}_SOURCES
-    main.cpp
+    GltfRendering.cpp
     Logging.cpp
+    main.cpp
 )
 
 find_package(Boost REQUIRED COMPONENTS program_options)

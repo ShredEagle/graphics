@@ -70,7 +70,15 @@ template <class T_index>
 std::vector<T_index> makeIndicesVector(const Json & aArray)
 {
     std::vector<T_index> result;
-    std::ranges::copy(aArray, std::back_inserter(result));
+    // Is that a bug? the predicate seems strangej
+    // Anyway, such syntax makes no sense
+    //std::ranges::copy_if(aArray, std::back_inserter(result),
+    //                     [](auto){return true;},
+    //                     [](const auto & entry)->T_index{return entry.get<typename T_index::Value_t>();});
+    for (typename T_index::Value_t index : aArray)
+    {
+        result.push_back(index);
+    }
     return result;
 }
 
@@ -144,7 +152,7 @@ Primitive load(const Json & aPrimitiveObject)
                 std::map<std::string, Index<Accessor>> result;
                 for (auto attribute : attributes.items())
                 {
-                    result.emplace(attribute.key(), attribute.value().get<Index<Accessor>>());
+                    result.emplace(attribute.key(), attribute.value().get<Index<Accessor>::Value_t>());
                 }
                 return result;
             }(),
@@ -266,6 +274,18 @@ std::optional<std::reference_wrapper<const gltf::Scene>> Gltf::getDefaultScene()
         return std::cref(mScenes.at(*mDefaultScene));
     }
     return std::nullopt;
+}
+
+
+const Node & Gltf::get(Index<Node> aNodeIndex) const
+{
+    return mNodes.at(aNodeIndex);
+}
+
+
+const gltf::Mesh & Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
+{
+    return mMeshes.at(aMeshIndex);
 }
 
 

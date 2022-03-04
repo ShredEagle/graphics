@@ -1,5 +1,7 @@
 #include "Logging.h"
 
+#include "GltfRendering.h"
+
 #include <arte/Gltf.h>
 #include <arte/Logging.h>
 
@@ -12,6 +14,7 @@
 
 using namespace ad;
 using namespace ad::graphics;
+using namespace ad::gltfviewer;
 
 namespace po = boost::program_options;
 
@@ -46,25 +49,34 @@ void initializeLogging()
 {
     arte::initializeLogging();
     gltfviewer::initializeLogging();
+    spdlog::get(gltfviewer::gMainLogger)->set_level(spdlog::level::trace);
 }
+
 
 
 int main(int argc, const char * argv[])
 {
     try
     {
-        initializeLogging();
+        ::initializeLogging();
 
         po::variables_map arguments = handleCommandLineArguments(argc, argv);
 
         arte::Gltf gltf{arguments["gltf-path"].as<std::string>()};
-        if (auto defaultScene = gltf.getDefaultScene())
-        {
-            ADLOG(gltfviewer::gMainLogger, info)("Default scene: {}.", *defaultScene);
-        }
 
         constexpr Size2<int> gWindowSize{800, 600};
         ApplicationGlfw application("glTF Viewer", gWindowSize);
+
+        // Requires OpenGL context to render
+        if (auto defaultScene = gltf.getDefaultScene())
+        {
+            arte::gltf::Scene scene = *defaultScene;
+            ADLOG(gltfviewer::gMainLogger, info)("Rendering default scene: {}.", scene);
+            for (const auto & nodeId : scene.nodes)
+            {
+                render(gltf.get(gltf.get(nodeId).mesh));
+            }
+        }
 
         Timer timer{glfwGetTime(), 0.};
 

@@ -18,7 +18,29 @@ namespace gltf {
     using EnumType = unsigned int; // this seems to be GLenum type.
 
     template <class T_indexed>
-    using Index = std::vector<T_indexed>::size_type;
+    struct Index
+    {
+        using Value_t = std::vector<T_indexed>::size_type;
+
+        Index(Value_t aValue) : 
+            value{aValue}
+        {}
+
+        Index(const Index & aIndex) : 
+            Index{aIndex.value}
+        {}
+
+        Index & operator=(Value_t aValue)
+        {
+            value = aValue;
+            return this;
+        }
+
+        operator Value_t() const
+        { return value; }
+
+        Value_t value;
+    };
 
     template <class T_indexed>
     std::ostream & operator<<(std::ostream & aOut, const std::vector<T_indexed> & aIndexVector);
@@ -110,6 +132,9 @@ public:
     explicit Gltf(const filesystem::path & aGltfJson);
 
     std::optional<std::reference_wrapper<const gltf::Scene>> getDefaultScene() const;
+
+    const gltf::Node & get(gltf::Index<gltf::Node> aNodeIndex) const;
+    const gltf::Mesh & get(gltf::Index<gltf::Mesh> aMeshIndex) const;
 
 private:
     std::optional<gltf::Index<gltf::Scene>> mDefaultScene;
