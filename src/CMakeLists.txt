@@ -12,6 +12,8 @@ if(BUILD_tests)
     add_subdirectory(app/graphics_tests/graphics_tests)
     add_subdirectory(app/handy_tests/handy_tests)
 
+    add_subdirectory(app/gltf_viewer/gltf_viewer)
+
     # In order of implementation
     add_subdirectory(app/prototypes/demo)
     add_subdirectory(app/prototypes/simple)

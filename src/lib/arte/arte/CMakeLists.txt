@@ -2,6 +2,7 @@ set(TARGET_NAME arte)
 
 set(${TARGET_NAME}_HEADERS
     Freetype.h
+    Gltf.h
     Image.h
     Logging.h
     SpriteSheet.h
@@ -14,6 +15,7 @@ set(${TARGET_NAME}_HEADERS
 )
 
 set(${TARGET_NAME}_SOURCES
+    Gltf.cpp
     Image.cpp
     Logging.cpp
     SpriteSheet.cpp
