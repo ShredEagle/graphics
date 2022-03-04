@@ -114,7 +114,6 @@ namespace gltf {
         Index<Mesh> mesh;
     };
 
-
     struct Scene
     {
         std::string name;
@@ -126,6 +125,42 @@ namespace gltf {
 } // namespace gltf
 
 
+template <class T_element>
+class Const_Owned
+{
+    friend class Gltf;
+
+public:
+    Const_Owned(const Gltf & aGltf, const T_element & aElement);
+
+    template <class T_indexed>
+    Const_Owned<T_indexed> get(gltf::Index<T_indexed> aIndex) const;
+
+    operator const T_element &()
+    { return mElement; }
+
+    const T_element & elem()
+    { return mElement; }
+
+    // TODO make lazy
+    template <class T_member>
+    std::vector<Const_Owned<T_member>> iterate(std::vector<T_member> T_element::* aMemberVector)
+    {
+        std::vector<Const_Owned<T_member>> result;
+        for (const T_member & element : mElement.*aMemberVector)
+        {
+            result.emplace_back(mOwningGltf, element);
+        }
+        return result;
+    }
+
+private:
+
+    const Gltf & mOwningGltf;
+    const T_element & mElement; 
+};
+
+
 class Gltf
 {
 public:
@@ -133,8 +168,9 @@ public:
 
     std::optional<std::reference_wrapper<const gltf::Scene>> getDefaultScene() const;
 
-    const gltf::Node & get(gltf::Index<gltf::Node> aNodeIndex) const;
-    const gltf::Mesh & get(gltf::Index<gltf::Mesh> aMeshIndex) const;
+    Const_Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex) const;
+    Const_Owned<gltf::Mesh> get(gltf::Index<gltf::Mesh> aMeshIndex) const;
+    Const_Owned<gltf::Node> get(gltf::Index<gltf::Node> aNodeIndex) const;
 
 private:
     std::optional<gltf::Index<gltf::Scene>> mDefaultScene;
@@ -177,6 +213,21 @@ namespace gltf
 
      
 } // namespace gltf
+
+
+template <class T_element>
+    Const_Owned<T_element>::Const_Owned(const Gltf & aGltf, const T_element & aElement) :
+    mOwningGltf{aGltf},
+    mElement{aElement}
+{}
+
+
+template <class T_element>
+template <class T_indexed>
+Const_Owned<T_indexed> Const_Owned<T_element>::get(gltf::Index<T_indexed> aIndex) const
+{
+    return mOwningGltf.get(aIndex);
+}
 
 
 } // namespace arte

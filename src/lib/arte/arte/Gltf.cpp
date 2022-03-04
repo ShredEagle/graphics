@@ -137,7 +137,7 @@ Node load(const Json & aNodeObject)
     return Node{
         .name = aNodeObject.value(gTagName, ""),
         .children = makeIndicesVector<Index<Node>>(getOptionalArray(aNodeObject, gTagChildren)),
-        .mesh = aNodeObject.at(gTagMesh), // TODO extend to other node types
+        .mesh = aNodeObject.at(gTagMesh).get<Index<Mesh>::Value_t>(), // TODO extend to other node types
     };
 }
 
@@ -192,7 +192,7 @@ BufferView load(const Json & aJson)
 {
     return{
         .name = aJson.value(gTagName, ""),
-        .buffer = aJson.at(gTagBuffer),
+        .buffer = aJson.at(gTagBuffer).get<Index<Buffer>::Value_t>(),
         .byteOffset = aJson.value<std::size_t>(gTagByteOffset, 0),
         .byteLength = aJson.at(gTagByteLength),
         .byteStride = getOptional<std::size_t>(aJson, gTagByteStride),
@@ -276,16 +276,20 @@ std::optional<std::reference_wrapper<const gltf::Scene>> Gltf::getDefaultScene()
     return std::nullopt;
 }
 
-
-const Node & Gltf::get(Index<Node> aNodeIndex) const
+Const_Owned<gltf::Accessor> Gltf::get(gltf::Index<gltf::Accessor> aAccessorIndex) const
 {
-    return mNodes.at(aNodeIndex);
+    return {*this, mAccessors.at(aAccessorIndex)};
+}
+
+Const_Owned<gltf::Mesh> Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
+{
+    return {*this, mMeshes.at(aMeshIndex)};
 }
 
 
-const gltf::Mesh & Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
+Const_Owned<Node> Gltf::get(gltf::Index<gltf::Node> aNodeIndex) const
 {
-    return mMeshes.at(aMeshIndex);
+    return {*this, mNodes.at(aNodeIndex)};
 }
 
 

@@ -8,7 +8,7 @@ namespace ad {
 namespace gltfviewer {
 
 
-void render(const arte::gltf::Mesh & aMesh);
+void render(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
 
 } // namespace gltfviewer

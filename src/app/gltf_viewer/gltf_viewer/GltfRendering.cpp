@@ -15,7 +15,7 @@ namespace gltfviewer {
 
 struct MeshPrimitive
 {
-    MeshPrimitive(const gltf::Primitive & aPrimitive);
+    MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive);
 
     GLenum drawMode;
     bool indexed;
@@ -25,19 +25,20 @@ struct MeshPrimitive
 };
 
 
-MeshPrimitive::MeshPrimitive(const gltf::Primitive & aPrimitive)
+MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive)
 {
     glBindVertexArray(vao);
-    for (const auto & [semantic, accessorIndex] : aPrimitive.attributes)
+    for (const auto & [semantic, accessorIndex] : aPrimitive.elem().attributes)
     {
-        ADLOG(gMainLogger, debug)("Accessor index: {}", accessorIndex);
+        const gltf::Accessor & accessor = aPrimitive.get(accessorIndex);
+        ADLOG(gMainLogger, debug)("Accessor {}: {}", semantic, accessorIndex);
     }
 }
 
 
-void render(const gltf::Mesh & aMesh)
+void render(arte::Const_Owned<arte::gltf::Mesh> aMesh)
 {
-    for (const auto & primitive : aMesh.primitives)     
+    for (auto & primitive : aMesh.iterate(&arte::gltf::Mesh::primitives))     
     {
         MeshPrimitive meshPrimitive{primitive};
     }

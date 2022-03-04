@@ -74,7 +74,7 @@ int main(int argc, const char * argv[])
             ADLOG(gltfviewer::gMainLogger, info)("Rendering default scene: {}.", scene);
             for (const auto & nodeId : scene.nodes)
             {
-                render(gltf.get(gltf.get(nodeId).mesh));
+                render(gltf.get(gltf.get(nodeId).elem().mesh));
             }
         }
 
