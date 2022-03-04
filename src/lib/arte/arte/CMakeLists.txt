@@ -3,6 +3,7 @@ set(TARGET_NAME arte)
 set(${TARGET_NAME}_HEADERS
     Freetype.h
     Image.h
+    Logging.h
     SpriteSheet.h
 
     detail/Json.h
@@ -14,6 +15,7 @@ set(${TARGET_NAME}_HEADERS
 
 set(${TARGET_NAME}_SOURCES
     Image.cpp
+    Logging.cpp
     SpriteSheet.cpp
 
     detail/3rdparty/stb_image.cpp
@@ -48,6 +50,7 @@ target_link_libraries(${TARGET_NAME}
 
         Freetype::Freetype
         nlohmann_json::nlohmann_json
+        spdlog::spdlog
 )
 
 ##

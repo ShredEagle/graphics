@@ -111,7 +111,7 @@ struct Attribute
 
     GLuint mIndex; // index to match in vertex shader.
     Access mTypeInShader{Access::Float}; // destination data type
-    bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/max_value)
+    bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
 
 /// \brief The complete description of an attribute expected by OpenGL

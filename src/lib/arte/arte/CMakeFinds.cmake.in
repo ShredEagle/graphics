@@ -3,3 +3,4 @@
 
 @find_package@(Freetype @REQUIRED@)
 @find_package@(nlohmann_json 3.9 @REQUIRED@)
+@find_package@(spdlog @REQUIRED@)

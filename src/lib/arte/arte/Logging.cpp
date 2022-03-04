@@ -4,8 +4,7 @@
 
 
 namespace ad {
-namespace graphics {
-namespace detail {
+namespace arte {
 
 
 namespace {
@@ -17,9 +16,6 @@ namespace {
     {
         LoggingInitializationSingleton()
         {
-            // Intended for message issued by opengl
-            spdlog::stdout_color_mt(gOpenglLogger);
-            // Intended for the actual library messages
             spdlog::stdout_color_mt(gMainLogger);
         }
     };
@@ -33,6 +29,5 @@ void initializeLogging()
 };
 
 
-} // namespace detail
-} // namespace graphics
+} // namespace arte
 } // namespace ad

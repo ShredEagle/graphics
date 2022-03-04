@@ -40,11 +40,11 @@ void AppInterface::callbackWindowMinimize(bool aMinimized)
 {
     if (aMinimized)
     {
-        LOG(graphics, info)("The window has be minimized.");
+        ADLOG(gMainLogger, info)("The window has be minimized.");
     }
     else
     {
-        LOG(graphics, info)("The window has be restored.");
+        ADLOG(gMainLogger, info)("The window has be restored.");
     }
     mWindowIsMinimized = aMinimized;
 }
@@ -52,7 +52,7 @@ void AppInterface::callbackWindowMinimize(bool aMinimized)
 
 void AppInterface::callbackWindowSize(int width, int height)
 {
-    LOG(graphics, debug)("The window has been resized to ({}, {}).", width, height);
+    ADLOG(gMainLogger, debug)("The window has been resized to ({}, {}).", width, height);
     //glViewport(0, 0, width, height);
     mWindowSize.width() = width;
     mWindowSize.height() = height;
@@ -63,7 +63,7 @@ void AppInterface::callbackWindowSize(int width, int height)
 
 void AppInterface::callbackFramebufferSize(int width, int height)
 {
-    LOG(graphics, debug)("The framebuffer has been resized to ({}, {}).", width, height);
+    ADLOG(gMainLogger, debug)("The framebuffer has been resized to ({}, {}).", width, height);
     glViewport(0, 0, width, height);
     mFramebufferSize.width() = width;
     mFramebufferSize.height() = height;
@@ -101,11 +101,11 @@ void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
     ;
     if (type == GL_DEBUG_TYPE_ERROR)
     {
-        LOG(opengl, error)(oss.str());
+        ADLOG(gOpenglLogger, error)(oss.str());
     }
     else
     {
-        LOG(opengl, info)(oss.str());
+        ADLOG(gOpenglLogger, info)(oss.str());
     }
 }
 
