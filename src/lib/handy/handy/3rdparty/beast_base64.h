@@ -1,38 +1,49 @@
 //
-// Copyright (c) 2013-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+// Copyright (c) 2016-2019 Vinnie Falco (vinnie dot falco at gmail dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+// Official repository: https://github.com/boostorg/beast
 //
 
 /*
    Portions from http://www.adp-gmbh.ch/cpp/common/base64.html
    Copyright notice:
+
    base64.cpp and base64.h
-   Copyright (C) 2004-2008 René Nyffenegger
+
+   Copyright (C) 2004-2008 Rene Nyffenegger
+
    This source code is provided 'as-is', without any express or implied
    warranty. In no event will the author be held liable for any damages
    arising from the use of this software.
+
    Permission is granted to anyone to use this software for any purpose,
    including commercial applications, and to alter it and redistribute it
    freely, subject to the following restrictions:
+
    1. The origin of this source code must not be misrepresented; you must not
       claim that you wrote the original source code. If you use this source code
       in a product, an acknowledgment in the product documentation would be
       appreciated but is not required.
+
    2. Altered source versions must be plainly marked as such, and must not be
       misrepresented as being the original source code.
+
    3. This notice may not be removed or altered from any source distribution.
-   René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+
+   Rene Nyffenegger rene.nyffenegger@adp-gmbh.ch
 */
 
-#ifndef BEAST_DETAIL_BASE64_HPP
-#define BEAST_DETAIL_BASE64_HPP
+#ifndef BOOST_BEAST_DETAIL_BASE64_IPP
+#define BOOST_BEAST_DETAIL_BASE64_IPP
 
 #include <cctype>
 #include <string>
 #include <utility>
 
+namespace boost {
 namespace beast {
 namespace detail {
 
@@ -43,7 +54,10 @@ char const*
 get_alphabet()
 {
     static char constexpr tab[] = {
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+        "ABCDEFGHIJKLMNOP"
+        "QRSTUVWXYZabcdef"
+        "ghijklmnopqrstuv"
+        "wxyz0123456789+/"
     };
     return &tab[0];
 }
@@ -57,7 +71,7 @@ get_inverse()
          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, //  16-31
          -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, //  32-47
          52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, //  48-63
-         -1, -1,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, //  64-79
+         -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, //  64-79
          15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, //  80-95
          -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, //  96-111
          41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1, // 112-127
@@ -88,18 +102,20 @@ std::size_t constexpr
 decoded_size(std::size_t n)
 {
     return n / 4 * 3; // requires n&3==0, smaller
-    //return 3 * n / 4;
 }
 
 /** Encode a series of octets as a padded, base64 string.
+
     The resulting string will not be null terminated.
+
     @par Requires
+
     The memory pointed to by `out` points to valid memory
     of at least `encoded_size(len)` bytes.
+
     @return The number of characters written to `out`. This
     will exclude any null termination.
 */
-template<class = void>
 std::size_t
 encode(void* dest, void const* src, std::size_t len)
 {
@@ -140,14 +156,16 @@ encode(void* dest, void const* src, std::size_t len)
 }
 
 /** Decode a padded base64 string into a series of octets.
+
     @par Requires
+
     The memory pointed to by `out` points to valid memory
     of at least `decoded_size(len)` bytes.
+
     @return The number of octets written to `out`, and
     the number of characters read from the input string,
     expressed as a pair.
 */
-template<class = void>
 std::pair<std::size_t, std::size_t>
 decode(void* dest, char const* src, std::size_t len)
 {
@@ -194,38 +212,8 @@ decode(void* dest, char const* src, std::size_t len)
 
 } // base64
 
-template<class = void>
-std::string
-base64_encode (std::uint8_t const* data,
-    std::size_t len)
-{
-    std::string dest;
-    dest.resize(base64::encoded_size(len));
-    dest.resize(base64::encode(&dest[0], data, len));
-    return dest;
-}
-
-inline
-std::string
-base64_encode(std::string const& s)
-{
-    return base64_encode (reinterpret_cast <
-        std::uint8_t const*> (s.data()), s.size());
-}
-
-template<class = void>
-std::string
-base64_decode(std::string const& data)
-{
-    std::string dest;
-    dest.resize(base64::decoded_size(data.size()));
-    auto const result = base64::decode(
-        &dest[0], data.data(), data.size());
-    dest.resize(result.first);
-    return dest;
-}
-
 } // detail
 } // beast
+} // boost
 
 #endif
