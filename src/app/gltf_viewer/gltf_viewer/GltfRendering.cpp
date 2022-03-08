@@ -56,7 +56,7 @@ std::vector<std::byte> loadBufferData(Const_Owned<gltf::BufferView> aBufferView)
 
     if (!buffer->uri)
     {
-        ADLOG(gMainLogger, critical)
+        ADLOG(gPrepareLogger, critical)
              ("Buffer #{} does not have target defined.", aBufferView->buffer);
         throw std::logic_error{"Buffer was expected to have an Uri."};
     }
@@ -68,7 +68,7 @@ std::vector<std::byte> loadBufferData(Const_Owned<gltf::BufferView> aBufferView)
     {
     case gltf::Uri::Type::Data:
     {
-        ADLOG(gMainLogger, trace)("Buffer #{} data is read from a data URI.", aBufferView->buffer);
+        ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from a data URI.", aBufferView->buffer);
         std::string_view encoded{uri.string};
         encoded.remove_prefix(encoded.find(base64Prefix) + std::strlen(base64Prefix));
         return handy::base64::decode(encoded);
@@ -93,7 +93,7 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
 
     if (!bufferView->target)
     {
-        ADLOG(gMainLogger, critical)
+        ADLOG(gPrepareLogger, critical)
              ("Buffer view #{} does not have target defined.", *aAccessor->bufferView);
         throw std::logic_error{"Buffer view was expected to have a target."};
     }
@@ -106,7 +106,7 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
                  loadBufferData(bufferView).data() + bufferView->byteOffset,
                  GL_STATIC_DRAW);
 
-    ADLOG(gMainLogger, debug)
+    ADLOG(gPrepareLogger, debug)
          ("Loaded {} bytes in target {}, offset in source buffer is {} bytes.",
           bufferView->byteLength,
           *bufferView->target,
@@ -149,7 +149,7 @@ void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
 
     std::ostringstream oss;
     outputElements(oss, span, aAccessor->count, layout);
-    ADLOG(gMainLogger, debug)("Accessor content:\n{}", oss.str());
+    ADLOG(gPrepareLogger, debug)("Accessor content:\n{}", oss.str());
 }
 
 
@@ -159,7 +159,7 @@ void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 
     if (bufferView->byteStride)
     {
-        ADLOG(gMainLogger, critical)
+        ADLOG(gPrepareLogger, critical)
              ("Accessor's buffer view #{} has a byte stride, which is not currently supported.", *aAccessor->bufferView);
         throw std::logic_error{"Byte stride not supported in analyze."};
     }
@@ -169,7 +169,7 @@ void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
     switch(aAccessor->componentType)
     {
     default:
-        ADLOG(gMainLogger, error)
+        ADLOG(gPrepareLogger, error)
              ("Analysis not available for component type {}.", aAccessor->componentType);
         return;
     case GL_UNSIGNED_SHORT:
@@ -204,7 +204,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 
     for (const auto & [semantic, accessorIndex] : aPrimitive.elem().attributes)
     {
-        ADLOG(gMainLogger, debug)("Semantic '{}' is associated to accessor #{}", semantic, accessorIndex);
+        ADLOG(gPrepareLogger, debug)("Semantic '{}' is associated to accessor #{}", semantic, accessorIndex);
         Const_Owned<gltf::Accessor> accessor = aPrimitive.get(accessorIndex);
 
         // All accessors for a given primitive must have the same count.
@@ -213,7 +213,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
         if (!accessor->bufferView)
         {
             // TODO Handle no buffer view (accessor initialized to zeros)
-            ADLOG(gMainLogger, error)
+            ADLOG(gPrepareLogger, error)
                  ("Unsupported: accessor #{} does not have a buffer view.", accessorIndex);
             continue;
         }
@@ -249,7 +249,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
                                   reinterpret_cast<void *>(accessor->byteOffset)
                                   );
 
-            ADLOG(gMainLogger, debug)
+            ADLOG(gPrepareLogger, debug)
                  ("Attached semantic '{}' to vertex attribute {}. Source data elements have {} components of type {}. Stride is {}, offset is {}.",
                   semantic, found->second,
                   layout.componentsPerAttribute, accessor->componentType,
@@ -257,7 +257,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
         }
         else
         {
-            ADLOG(gMainLogger, warn)("Semantic '{}' is ignored.", semantic);
+            ADLOG(gPrepareLogger, warn)("Semantic '{}' is ignored.", semantic);
         }
     }
 
@@ -288,7 +288,7 @@ void render(const MeshPrimitive & aMeshPrimitive)
     graphics::bind_guard boundVao{aMeshPrimitive.vao};
     if (aMeshPrimitive.indices)
     {
-        ADLOG(gMainLogger, trace)
+        ADLOG(gDrawLogger, trace)
              ("Indexed rendering of {} vertices with mode {}.", aMeshPrimitive.count, aMeshPrimitive.drawMode);
 
         const Indices & indices = *aMeshPrimitive.indices;
@@ -299,7 +299,7 @@ void render(const MeshPrimitive & aMeshPrimitive)
     }
     else
     {
-        ADLOG(gMainLogger, trace)
+        ADLOG(gDrawLogger, trace)
              ("Array rendering of {} vertices with mode {}.", aMeshPrimitive.count, aMeshPrimitive.drawMode);
 
         glDrawArrays(aMeshPrimitive.drawMode,  

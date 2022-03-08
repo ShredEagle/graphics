@@ -49,7 +49,8 @@ void initializeLogging()
 {
     arte::initializeLogging();
     gltfviewer::initializeLogging();
-    spdlog::get(gltfviewer::gMainLogger)->set_level(spdlog::level::trace);
+    spdlog::get(gltfviewer::gPrepareLogger)->set_level(spdlog::level::trace);
+    spdlog::get(gltfviewer::gDrawLogger)->set_level(spdlog::level::debug);
 }
 
 
@@ -73,7 +74,7 @@ int main(int argc, const char * argv[])
             if (auto defaultScene = gltf.getDefaultScene())
             {
                 auto scene = *defaultScene;
-                ADLOG(gltfviewer::gMainLogger, info)("Rendering default scene: {}.", *scene);
+                ADLOG(gltfviewer::gPrepareLogger, info)("Rendering default scene: {}.", *scene);
                 return scene;
             }
             throw std::logic_error{"Viewer expects a default scene"};

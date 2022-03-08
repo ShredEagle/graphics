@@ -16,7 +16,8 @@ namespace {
     {
         LoggingInitializationSingleton()
         {
-            spdlog::stdout_color_mt(gMainLogger);
+            spdlog::stdout_color_mt(gPrepareLogger);
+            spdlog::stdout_color_mt(gDrawLogger);
         }
     };
 

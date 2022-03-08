@@ -11,7 +11,8 @@ namespace ad {
 namespace gltfviewer {
 
 
-constexpr const char * gMainLogger = "gltfviewer";
+constexpr const char * gPrepareLogger = "gltfv-prep";
+constexpr const char * gDrawLogger = "gltfv-draw";
 
 
 void initializeLogging();
