@@ -8,6 +8,8 @@
 #include <renderer/GL_Loader.h>
 #include <renderer/Shading.h>
 
+#include <span>
+
 
 namespace ad {
 
@@ -27,6 +29,9 @@ struct VertexAttributeLayout
 {
     GLint componentsPerAttribute;
     std::size_t occupiedAttributes{1}; // For matrices types, will be the number of columns.
+
+    std::size_t totalComponents() const
+    { return componentsPerAttribute * occupiedAttributes; }
 };
 
 using ElementType = gltf::Accessor::ElementType;
@@ -63,6 +68,7 @@ std::vector<std::byte> loadBufferData(Const_Owned<gltf::BufferView> aBufferView)
     {
     case gltf::Uri::Type::Data:
     {
+        ADLOG(gMainLogger, trace)("Buffer #{} data is read from a data URI.", aBufferView->buffer);
         std::string_view encoded{uri.string};
         encoded.remove_prefix(encoded.find(base64Prefix) + std::strlen(base64Prefix));
         return handy::base64::decode(encoded);
@@ -100,10 +106,84 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
                  loadBufferData(bufferView).data() + bufferView->byteOffset,
                  GL_STATIC_DRAW);
 
+    ADLOG(gMainLogger, debug)
+         ("Loaded {} bytes in target {}, offset in source buffer is {} bytes.",
+          bufferView->byteLength,
+          *bufferView->target,
+          bufferView->byteOffset);
 
     return {bufferView, std::move(buffer)};
 }
 
+
+template <class T_component>
+void outputElements(std::ostream & aOut, std::span<T_component> aData, std::size_t aElementCount, VertexAttributeLayout aLayout)
+{
+    std::size_t accessId = 0;
+    for (std::size_t elementId = 0; elementId != aElementCount; ++elementId)
+    {
+        aOut << "{";
+        // All element types have at least 1 component.
+        aOut << aData[accessId++];
+        for (std::size_t componentId = 1; componentId != aLayout.totalComponents(); ++componentId)
+        {
+            aOut << ", " << aData[accessId];
+            ++accessId;
+        }
+        aOut << "}, ";
+    }
+}
+
+
+template <class T_component>
+void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
+                  Const_Owned<gltf::BufferView> aBufferView,
+                  const std::vector<std::byte> & aBytes)
+{
+    VertexAttributeLayout layout = gElementTypeToLayout.at(aAccessor->type);
+
+    std::span<const T_component> span{
+        reinterpret_cast<const T_component *>(aBytes.data() + aBufferView->byteOffset + aAccessor->byteOffset), 
+        aAccessor->count * layout.totalComponents()
+    };
+
+    std::ostringstream oss;
+    outputElements(oss, span, aAccessor->count, layout);
+    ADLOG(gMainLogger, debug)("Accessor content:\n{}", oss.str());
+}
+
+
+void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
+{
+    Const_Owned<gltf::BufferView> bufferView = aAccessor.get(&gltf::Accessor::bufferView);
+
+    if (bufferView->byteStride)
+    {
+        ADLOG(gMainLogger, critical)
+             ("Accessor's buffer view #{} has a byte stride, which is not currently supported.", *aAccessor->bufferView);
+        throw std::logic_error{"Byte stride not supported in analyze."};
+    }
+
+    std::vector<std::byte> bytes = loadBufferData(bufferView);
+
+    switch(aAccessor->componentType)
+    {
+    default:
+        ADLOG(gMainLogger, error)
+             ("Analysis not available for component type {}.", aAccessor->componentType);
+        return;
+    case GL_UNSIGNED_SHORT:
+    {
+        analyze_impl<GLshort>(aAccessor, bufferView, bytes);
+        break;
+    }
+    case GL_FLOAT:
+    {
+        analyze_impl<GLfloat>(aAccessor, bufferView, bytes);
+        break;
+    }
+    }
+}
 
 //
 // Loaded buffers types
@@ -120,12 +200,11 @@ Indices::Indices(Const_Owned<gltf::Accessor> aAccessor) :
 MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
     drawMode{aPrimitive->mode}
 {
-    // TODO use "scoped bounds" helpers
-    glBindVertexArray(vao);
+    graphics::bind_guard boundVao{vao};
 
     for (const auto & [semantic, accessorIndex] : aPrimitive.elem().attributes)
     {
-        ADLOG(gMainLogger, trace)("Accessor {}: {}", semantic, accessorIndex);
+        ADLOG(gMainLogger, debug)("Semantic '{}' is associated to accessor #{}", semantic, accessorIndex);
         Const_Owned<gltf::Accessor> accessor = aPrimitive.get(accessorIndex);
 
         // All accessors for a given primitive must have the same count.
@@ -143,6 +222,8 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
         auto [bufferView, vertexBuffer] = prepareBuffer_impl<graphics::VertexBufferObject>(accessor);
         // From here on the corresponding vertex buffer is bound.
 
+        analyzeAccessor(accessor);
+
         vbos.push_back(std::move(vertexBuffer));
 
         if (auto found = gSemanticToAttribute.find(semantic);
@@ -154,16 +235,29 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
                 throw std::logic_error{"Matrix attributes not implemented yet."};
             }
 
+            glEnableVertexAttribArray(found->second);
+
+
+            GLsizei stride = static_cast<GLsizei>(bufferView->byteStride ? *bufferView->byteStride : 0);
             // The vertex attributes in the shader are float, so use glVertexAttribPointer.
             glVertexAttribPointer(found->second,
                                   layout.componentsPerAttribute,
                                   accessor->componentType,
                                   accessor->normalized,
-                                  static_cast<GLsizei>(bufferView->byteStride ? *bufferView->byteStride : 0),
+                                  stride,
                                   // Note: The buffer view byte offset is directly taken into account when loading data with glBufferData().
                                   reinterpret_cast<void *>(accessor->byteOffset)
                                   );
-            glEnableVertexAttribArray(found->second);
+
+            ADLOG(gMainLogger, debug)
+                 ("Attached semantic '{}' to vertex attribute {}. Source data elements have {} components of type {}. Stride is {}, offset is {}.",
+                  semantic, found->second,
+                  layout.componentsPerAttribute, accessor->componentType,
+                  stride, accessor->byteOffset);
+        }
+        else
+        {
+            ADLOG(gMainLogger, warn)("Semantic '{}' is ignored.", semantic);
         }
     }
 
@@ -172,9 +266,9 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
         auto indicesAccessor = aPrimitive.get(&gltf::Primitive::indices);
         indices = Indices{indicesAccessor};
         count = indicesAccessor->count;
-    }
 
-    glBindVertexArray(0);
+        analyzeAccessor(indicesAccessor);
+    }
 }
 
 
@@ -194,6 +288,9 @@ void render(const MeshPrimitive & aMeshPrimitive)
     graphics::bind_guard boundVao{aMeshPrimitive.vao};
     if (aMeshPrimitive.indices)
     {
+        ADLOG(gMainLogger, trace)
+             ("Indexed rendering of {} vertices with mode {}.", aMeshPrimitive.count, aMeshPrimitive.drawMode);
+
         const Indices & indices = *aMeshPrimitive.indices;
         glDrawElements(aMeshPrimitive.drawMode, 
                        aMeshPrimitive.count,
@@ -202,6 +299,9 @@ void render(const MeshPrimitive & aMeshPrimitive)
     }
     else
     {
+        ADLOG(gMainLogger, trace)
+             ("Array rendering of {} vertices with mode {}.", aMeshPrimitive.count, aMeshPrimitive.drawMode);
+
         glDrawArrays(aMeshPrimitive.drawMode,  
                      0, // Start at the beginning of enable arrays, all byte offsets are aleady applied.
                      aMeshPrimitive.count);
