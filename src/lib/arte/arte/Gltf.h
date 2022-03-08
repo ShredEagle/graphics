@@ -125,7 +125,7 @@ namespace gltf {
         std::string name;
         std::vector<Index<Node>> children;
         // TODO Handle non-mesh nodes
-        Index<Mesh> mesh;
+        std::optional<Index<Mesh>> mesh;
     };
 
     struct Scene
@@ -149,9 +149,6 @@ public:
     Const_Owned(const Gltf & aGltf, const T_element & aElement);
 
     operator const T_element &()
-    { return mElement; }
-
-    [[deprecated]] const T_element & elem()
     { return mElement; }
 
     const T_element * operator->()

@@ -145,20 +145,25 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
 
 
 template <class T_component>
-void outputElements(std::ostream & aOut, std::span<T_component> aData, std::size_t aElementCount, VertexAttributeLayout aLayout)
+void outputElements(std::ostream & aOut,
+                    std::span<T_component> aData,
+                    std::size_t aElementCount,
+                    VertexAttributeLayout aLayout,
+                    std::size_t aComponentStride)
 {
     std::size_t accessId = 0;
     for (std::size_t elementId = 0; elementId != aElementCount; ++elementId)
     {
         aOut << "{";
         // All element types have at least 1 component.
-        aOut << aData[accessId++];
+        aOut << aData[accessId];
         for (std::size_t componentId = 1; componentId != aLayout.totalComponents(); ++componentId)
         {
-            aOut << ", " << aData[accessId];
-            ++accessId;
+            aOut << ", " << aData[accessId + componentId];
         }
         aOut << "}, ";
+
+        accessId += aComponentStride;
     }
 }
 
@@ -175,8 +180,16 @@ void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
         aAccessor->count * layout.totalComponents()
     };
 
+    std::size_t increment = layout.totalComponents();
+    if (aBufferView->byteStride)
+    {
+        auto stride = *aBufferView->byteStride;
+        assert(stride % sizeof(T_component) == 0);
+        increment = stride / sizeof(T_component);
+    }
+
     std::ostringstream oss;
-    outputElements(oss, span, aAccessor->count, layout);
+    outputElements(oss, span, aAccessor->count, layout, increment);
     ADLOG(gPrepareLogger, debug)("Accessor content:\n{}", oss.str());
 }
 
@@ -184,13 +197,6 @@ void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
 void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 {
     Const_Owned<gltf::BufferView> bufferView = aAccessor.get(&gltf::Accessor::bufferView);
-
-    if (bufferView->byteStride)
-    {
-        ADLOG(gPrepareLogger, critical)
-             ("Accessor's buffer view #{} has a byte stride, which is not currently supported.", *aAccessor->bufferView);
-        throw std::logic_error{"Byte stride not supported in analyze."};
-    }
 
     std::vector<std::byte> bytes = loadBufferData(bufferView);
 
@@ -230,7 +236,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 {
     graphics::bind_guard boundVao{vao};
 
-    for (const auto & [semantic, accessorIndex] : aPrimitive.elem().attributes)
+    for (const auto & [semantic, accessorIndex] : aPrimitive->attributes)
     {
         ADLOG(gPrepareLogger, debug)("Semantic '{}' is associated to accessor #{}", semantic, accessorIndex);
         Const_Owned<gltf::Accessor> accessor = aPrimitive.get(accessorIndex);
@@ -252,8 +258,6 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 
         analyzeAccessor(accessor);
 
-        vbos.push_back(std::move(vertexBuffer));
-
         if (auto found = gSemanticToAttribute.find(semantic);
             found != gSemanticToAttribute.end())
         {
@@ -264,7 +268,6 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
             }
 
             glEnableVertexAttribArray(found->second);
-
 
             GLsizei stride = static_cast<GLsizei>(bufferView->byteStride ? *bufferView->byteStride : 0);
             // The vertex attributes in the shader are float, so use glVertexAttribPointer.
@@ -278,10 +281,14 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
                                   );
 
             ADLOG(gPrepareLogger, debug)
-                 ("Attached semantic '{}' to vertex attribute {}. Source data elements have {} components of type {}. Stride is {}, offset is {}.",
+                 ("Attached semantic '{}' to vertex attribute {}."
+                  " Source data elements have {} components of type {}."
+                  " OpenGL buffer #{}, stride is {}, offset is {}.",
                   semantic, found->second,
                   layout.componentsPerAttribute, accessor->componentType,
-                  stride, accessor->byteOffset);
+                  vertexBuffer, stride, accessor->byteOffset);
+
+            vbos.push_back(std::move(vertexBuffer));
         }
         else
         {
@@ -297,6 +304,29 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 
         analyzeAccessor(indicesAccessor);
     }
+}
+
+std::ostream & operator<<(std::ostream & aOut, const MeshPrimitive & aPrimitive)
+{
+    return aOut << "<gltfviewer::MeshPrimitive> " 
+                << (aPrimitive.indices ? "indexed" : "non-indexed")
+                << " with " << aPrimitive.vbos.size() << " vbos."
+        ;
+}
+
+
+std::ostream & operator<<(std::ostream & aOut, const Mesh & aMesh)
+{
+    aOut << "<gltfviewer::Mesh> " 
+         << " with " << aMesh.primitives.size() << " primitives:"
+        ;
+
+    for (const auto & primitive : aMesh.primitives)
+    {
+        aOut << "\n\t* " << primitive;
+    }
+    
+    return aOut;
 }
 
 

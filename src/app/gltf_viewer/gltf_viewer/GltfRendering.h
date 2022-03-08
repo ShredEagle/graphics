@@ -42,6 +42,13 @@ struct Mesh
 };
 
 
+std::ostream & operator<<(std::ostream & aOut, const MeshPrimitive &);
+std::ostream & operator<<(std::ostream & aOut, const Mesh &);
+
+
+
+using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, Mesh>;
+
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
 void render(const Mesh & aMesh);

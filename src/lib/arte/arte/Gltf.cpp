@@ -138,7 +138,7 @@ Node load(const Json & aNodeObject)
     return Node{
         .name = aNodeObject.value(gTagName, ""),
         .children = makeIndicesVector<Index<Node>>(getOptionalArray(aNodeObject, gTagChildren)),
-        .mesh = aNodeObject.at(gTagMesh).get<Index<Mesh>::Value_t>(), // TODO extend to other node types
+        .mesh = getOptional<Index<Mesh>>(aNodeObject, gTagMesh),
     };
 }
 

@@ -51,6 +51,24 @@ void initializeLogging()
     gltfviewer::initializeLogging();
     spdlog::get(gltfviewer::gPrepareLogger)->set_level(spdlog::level::trace);
     spdlog::get(gltfviewer::gDrawLogger)->set_level(spdlog::level::debug);
+    //spdlog::get(gltfviewer::gDrawLogger)->set_level(spdlog::level::trace);
+}
+
+
+
+template <class T_nodeRange>
+void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aNodes)
+{
+    for (arte::Const_Owned<arte::gltf::Node> node : aNodes)
+    {
+        if(node->mesh && !aRepository.contains(*node->mesh))
+        {
+            auto [it, didInsert] = 
+                aRepository.emplace(*node->mesh, prepare(node.get(&arte::gltf::Node::mesh)));
+            ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second);
+        }
+        populateMeshRepository(aRepository, node.iterate(&arte::gltf::Node::children));
+    }
 }
 
 
@@ -64,10 +82,6 @@ int main(int argc, const char * argv[])
 
         arte::Gltf gltf{arguments["gltf-path"].as<std::string>()};
 
-        constexpr Size2<int> gWindowSize{800, 600};
-        ApplicationGlfw application("glTF Viewer", gWindowSize);
-
-        // Requires OpenGL context to render
         arte::Const_Owned<arte::gltf::Scene> scene = [&]()
         {
             if (auto defaultScene = gltf.getDefaultScene())
@@ -79,11 +93,12 @@ int main(int argc, const char * argv[])
             throw std::logic_error{"Viewer expects a default scene"};
         }();
 
-        std::vector<Mesh> meshes;
-        for (arte::Const_Owned<arte::gltf::Node> node : scene.iterate(&arte::gltf::Scene::nodes))
-        {
-            meshes.push_back(prepare(node.get(&arte::gltf::Node::mesh)));
-        }
+        constexpr Size2<int> gWindowSize{800, 600};
+        ApplicationGlfw application("glTF Viewer", gWindowSize);
+
+        // Requires OpenGL context to call gl functions
+        MeshRepository indexToMeshes;
+        populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
 
         Timer timer{glfwGetTime(), 0.};
 
@@ -91,7 +106,7 @@ int main(int argc, const char * argv[])
         {
             application.getAppInterface()->clear();
 
-            for (const Mesh & mesh : meshes)
+            for (const auto & [id, mesh] : indexToMeshes)
             {
                 render(mesh);
             }
