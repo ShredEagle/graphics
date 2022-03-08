@@ -68,21 +68,28 @@ int main(int argc, const char * argv[])
         ApplicationGlfw application("glTF Viewer", gWindowSize);
 
         // Requires OpenGL context to render
-        if (auto defaultScene = gltf.getDefaultScene())
+        arte::Const_Owned<arte::gltf::Scene> scene = [&]()
         {
-            arte::gltf::Scene scene = *defaultScene;
-            ADLOG(gltfviewer::gMainLogger, info)("Rendering default scene: {}.", scene);
-            for (const auto & nodeId : scene.nodes)
+            if (auto defaultScene = gltf.getDefaultScene())
             {
-                render(gltf.get(gltf.get(nodeId).elem().mesh));
+                auto scene = *defaultScene;
+                ADLOG(gltfviewer::gMainLogger, info)("Rendering default scene: {}.", *scene);
+                return scene;
             }
-        }
+            throw std::logic_error{"Viewer expects a default scene"};
+        }();
 
         Timer timer{glfwGetTime(), 0.};
 
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
+
+            for (arte::Const_Owned<arte::gltf::Node> node : scene.iterate(&arte::gltf::Scene::nodes))
+            {
+                render(prepare(node.get(&arte::gltf::Node::mesh)));
+            }
+
             timer.mark(glfwGetTime());
         }
     }

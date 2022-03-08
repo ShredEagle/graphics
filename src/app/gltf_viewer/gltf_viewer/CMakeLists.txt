@@ -3,6 +3,7 @@ set(TARGET_NAME gltf_viewer)
 set(${TARGET_NAME}_HEADERS
     GltfRendering.h
     Logging.h
+    Shaders.h
 )
 
 set(${TARGET_NAME}_SOURCES

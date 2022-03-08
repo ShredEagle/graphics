@@ -47,7 +47,20 @@ namespace gltf {
 
     struct Uri
     {
+        enum class Type
+        {
+            Data,
+            File,
+        };
+
+        Uri(std::string aString) :
+            string{std::move(aString)}
+        {
+            type = (string.rfind("data:", 0) == 0) ? Type::Data : Type::File;
+        }
+
         std::string string;
+        Type type;
     };
 
     struct Buffer
@@ -89,6 +102,7 @@ namespace gltf {
         std::size_t byteOffset;
         ElementType type;
         EnumType componentType;
+        bool normalized;
         std::size_t count;
         // TODO Handle min-max
         // TODO Handle sparse
@@ -133,16 +147,50 @@ class Const_Owned
 public:
     Const_Owned(const Gltf & aGltf, const T_element & aElement);
 
-    template <class T_indexed>
-    Const_Owned<T_indexed> get(gltf::Index<T_indexed> aIndex) const;
-
     operator const T_element &()
     { return mElement; }
 
-    const T_element & elem()
+    [[deprecated]] const T_element & elem()
     { return mElement; }
 
-    // TODO make lazy
+    const T_element * operator->()
+    {
+        return &mElement;
+    }
+
+    const T_element & operator*()
+    {
+        return mElement;
+    }
+
+    template <class T_indexed>
+    Const_Owned<T_indexed> get(gltf::Index<T_indexed> aIndex) const;
+
+    template <class T_indexed>
+    Const_Owned<T_indexed> get(gltf::Index<T_indexed> T_element::* aDataMember) const
+    {
+        return get(mElement.*aDataMember);
+    }
+
+    template <class T_indexed>
+    Const_Owned<T_indexed> get(std::optional<gltf::Index<T_indexed>> T_element::* aDataMember) const
+    {
+        return get(*(mElement.*aDataMember));
+    }
+
+    template <class T_member>
+    std::vector<Const_Owned<T_member>> 
+    iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector)
+    {
+        std::vector<Const_Owned<T_member>> result;
+        for (gltf::Index<T_member> index : mElement.*aMemberIndexVector)
+        {
+            result.emplace_back(mOwningGltf.get(index));
+        }
+        return result;
+    }
+
+    // TODO make lazy iteration
     template <class T_member>
     std::vector<Const_Owned<T_member>> iterate(std::vector<T_member> T_element::* aMemberVector)
     {
@@ -166,11 +214,14 @@ class Gltf
 public:
     explicit Gltf(const filesystem::path & aGltfJson);
 
-    std::optional<std::reference_wrapper<const gltf::Scene>> getDefaultScene() const;
+    std::optional<Const_Owned<gltf::Scene>> getDefaultScene() const;
 
     Const_Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex) const;
+    Const_Owned<gltf::Buffer> get(gltf::Index<gltf::Buffer> aBufferIndex) const;
+    Const_Owned<gltf::BufferView> get(gltf::Index<gltf::BufferView> aBufferViewIndex) const;
     Const_Owned<gltf::Mesh> get(gltf::Index<gltf::Mesh> aMeshIndex) const;
     Const_Owned<gltf::Node> get(gltf::Index<gltf::Node> aNodeIndex) const;
+    Const_Owned<gltf::Scene> get(gltf::Index<gltf::Scene> aNodeIndex) const;
 
 private:
     std::optional<gltf::Index<gltf::Scene>> mDefaultScene;

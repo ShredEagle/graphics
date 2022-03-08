@@ -32,6 +32,7 @@ constexpr const char * gTagMeshes           = "meshes";
 constexpr const char * gTagMode             = "mode";
 constexpr const char * gTagName             = "name";
 constexpr const char * gTagNodes            = "nodes";
+constexpr const char * gTagNormalized       = "normalized";
 constexpr const char * gTagPrimitives       = "primitives";
 constexpr const char * gTagScene            = "scene";
 constexpr const char * gTagScenes           = "scenes";
@@ -54,7 +55,7 @@ const std::array<std::string, 7> gElementTypeToString{
 
 const std::map<std::string, Accessor::ElementType> gStringToElementType{
     {"SCALAR", Accessor::ElementType::Scalar},
-    {"VEC2",   Accessor::ElementType::Vec3},
+    {"VEC2",   Accessor::ElementType::Vec2},
     {"VEC3",   Accessor::ElementType::Vec3},
     {"VEC4",   Accessor::ElementType::Vec4},
     {"MAT2",   Accessor::ElementType::Mat2},
@@ -210,6 +211,7 @@ Accessor load(const Json & aJson)
         .byteOffset = aJson.value<std::size_t>(gTagByteOffset, 0),
         .type = gStringToElementType.at(aJson.at(gTagType)),
         .componentType = aJson.at(gTagComponentType),
+        .normalized = aJson.value(gTagNormalized, false),
         .count = aJson.at(gTagCount),
     };
 }
@@ -218,8 +220,6 @@ Accessor load(const Json & aJson)
 // 
 // Output operators
 // 
-
-
 std::string prependNotEmpty(std::string_view aString, std::string aPrefix = " ")
 {
     if (!aString.empty())
@@ -267,11 +267,11 @@ Gltf::Gltf(const filesystem::path & aGltfJson)
 }
 
 
-std::optional<std::reference_wrapper<const gltf::Scene>> Gltf::getDefaultScene() const
+std::optional<Const_Owned<gltf::Scene>> Gltf::getDefaultScene() const
 {
     if (mDefaultScene)
     {
-        return std::cref(mScenes.at(*mDefaultScene));
+        return get(*mDefaultScene);
     }
     return std::nullopt;
 }
@@ -280,6 +280,19 @@ Const_Owned<gltf::Accessor> Gltf::get(gltf::Index<gltf::Accessor> aAccessorIndex
 {
     return {*this, mAccessors.at(aAccessorIndex)};
 }
+
+
+Const_Owned<gltf::Buffer> Gltf::get(gltf::Index<gltf::Buffer> aBufferIndex) const
+{
+    return {*this, mBuffers.at(aBufferIndex)};
+}
+
+
+Const_Owned<gltf::BufferView> Gltf::get(gltf::Index<gltf::BufferView> aBufferViewIndex) const
+{
+    return {*this, mBufferViews.at(aBufferViewIndex)};
+}
+
 
 Const_Owned<gltf::Mesh> Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
 {
@@ -290,6 +303,12 @@ Const_Owned<gltf::Mesh> Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
 Const_Owned<Node> Gltf::get(gltf::Index<gltf::Node> aNodeIndex) const
 {
     return {*this, mNodes.at(aNodeIndex)};
+}
+
+
+Const_Owned<gltf::Scene> Gltf::get(gltf::Index<gltf::Scene> aSceneIndex) const
+{
+    return {*this, mScenes.at(aSceneIndex)};
 }
 
 
