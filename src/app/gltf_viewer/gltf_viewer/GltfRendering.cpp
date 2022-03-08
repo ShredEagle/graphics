@@ -3,6 +3,8 @@
 #include "Logging.h"
 #include "Shaders.h"
 
+#include <renderer/Uniforms.h>
+
 #include <handy/Base64.h>
 
 #include <renderer/GL_Loader.h>
@@ -367,19 +369,34 @@ void render(const MeshPrimitive & aMeshPrimitive)
 }
 
 
-void render(const Mesh & aMesh)
-{
-    graphics::Program program = graphics::makeLinkedProgram({
+Renderer::Renderer() :
+    mProgram{graphics::makeLinkedProgram({
         {GL_VERTEX_SHADER,   gltfviewer::gNaiveVertexShader},
         {GL_FRAGMENT_SHADER, gltfviewer::gNaiveFragmentShader},
-    });
+    })}
+{}
 
-    graphics::bind_guard boundProgram{program};
+
+void Renderer::render(const Mesh & aMesh)
+{
+    graphics::bind_guard boundProgram{mProgram};
 
     for (const auto & primitive : aMesh.primitives)
     {
-        render(primitive);
+        gltfviewer::render(primitive);
     }
+}
+
+
+void Renderer::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+{
+    setUniform(mProgram, "u_camera", aTransformation); 
+}
+
+
+void Renderer::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+{
+    setUniform(mProgram, "u_projection", aTransformation); 
 }
 
 

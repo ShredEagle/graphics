@@ -3,7 +3,11 @@
 
 #include <arte/Gltf.h>
 
+#include <math/Homogeneous.h>
+
 #include <renderer/VertexSpecification.h>
+
+#include <renderer/Shading.h>
 
 
 namespace ad {
@@ -46,13 +50,25 @@ std::ostream & operator<<(std::ostream & aOut, const MeshPrimitive &);
 std::ostream & operator<<(std::ostream & aOut, const Mesh &);
 
 
-
 using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, Mesh>;
+
 
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
-void render(const Mesh & aMesh);
 
+class Renderer
+{
+public:
+    Renderer();
+
+    void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
+
+    void render(const Mesh & aMesh);
+
+private:
+    graphics::Program mProgram;
+};
 
 } // namespace gltfviewer
 } // namespace ad

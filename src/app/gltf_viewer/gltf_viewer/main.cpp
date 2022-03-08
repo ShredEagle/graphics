@@ -7,6 +7,7 @@
 
 #include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
+#include <graphics/CameraUtilities.h>
 #include <graphics/Timer.h>
 
 #include <boost/program_options.hpp>
@@ -96,19 +97,38 @@ int main(int argc, const char * argv[])
         constexpr Size2<int> gWindowSize{800, 600};
         ApplicationGlfw application("glTF Viewer", gWindowSize);
 
+
         // Requires OpenGL context to call gl functions
         MeshRepository indexToMeshes;
         populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
 
         Timer timer{glfwGetTime(), 0.};
 
+        Renderer renderer;
+
+        math::Position<3, GLfloat> cameraPosition{6.f, 5.f, 2.f};
+        const math::Position<3, GLfloat> gGazePoint{0.f, 0.f, 0.f};
+
+        constexpr GLfloat gDepth = 10000;
+        const math::Box<GLfloat> aProjectedBox =
+            graphics::getViewVolume(gWindowSize,
+                                    2.f,
+                                    0.f,
+                                    gDepth);
+
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
 
+            math::Position<3, GLfloat> cameraCartesian = cameraPosition;
+            renderer.setCameraTransformation(
+                graphics::getCameraTransform(cameraCartesian, gGazePoint - cameraCartesian));
+
+            renderer.setProjectionTransformation(math::trans3d::orthographicProjection(aProjectedBox));
+
             for (const auto & [id, mesh] : indexToMeshes)
             {
-                render(mesh);
+                renderer.render(mesh);
             }
 
             timer.mark(glfwGetTime());
