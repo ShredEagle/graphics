@@ -247,7 +247,8 @@ namespace gltf {
 //
 // Gltf member functions
 //
-Gltf::Gltf(const filesystem::path & aGltfJson)
+Gltf::Gltf(const filesystem::path & aGltfJson) :
+    mPath{aGltfJson}
 {
     std::ifstream jsonInput{aGltfJson.string()};
     Json json;
@@ -309,6 +310,13 @@ Const_Owned<Node> Gltf::get(gltf::Index<gltf::Node> aNodeIndex) const
 Const_Owned<gltf::Scene> Gltf::get(gltf::Index<gltf::Scene> aSceneIndex) const
 {
     return {*this, mScenes.at(aSceneIndex)};
+}
+
+
+filesystem::path Gltf::getPathFor(gltf::Uri aFileUri) const
+{
+    assert(aFileUri.type == gltf::Uri::Type::File);
+    return mPath.parent_path() / aFileUri.string;
 }
 
 

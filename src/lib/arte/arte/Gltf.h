@@ -203,8 +203,18 @@ public:
         return result;
     }
 
-private:
+    filesystem::path getFilePath(gltf::Uri T_element::* aMemberUri)
+    {
+        return mOwningGltf.getPathFor(mElement.*aMemberUri);
+    }
 
+    filesystem::path getFilePath(std::optional<gltf::Uri> T_element::* aMemberUri)
+    {
+        return mOwningGltf.getPathFor(*(mElement.*aMemberUri));
+    }
+
+
+private:
     const Gltf & mOwningGltf;
     const T_element & mElement; 
 };
@@ -224,7 +234,11 @@ public:
     Const_Owned<gltf::Node> get(gltf::Index<gltf::Node> aNodeIndex) const;
     Const_Owned<gltf::Scene> get(gltf::Index<gltf::Scene> aNodeIndex) const;
 
+    filesystem::path getPathFor(gltf::Uri aFileUri) const;
+
 private:
+    filesystem::path mPath;
+
     std::optional<gltf::Index<gltf::Scene>> mDefaultScene;
 
     // the order in which they appear in Triangle.gltf sample

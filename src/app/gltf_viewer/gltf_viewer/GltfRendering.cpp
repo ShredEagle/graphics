@@ -50,6 +50,29 @@ const std::map<gltf::Accessor::ElementType, VertexAttributeLayout> gElementTypeT
 //
 // Helper functions
 //
+
+std::vector<std::byte> loadInputStream(std::istream && aInput, std::size_t aByteLength, const std::string & aStreamId)
+{
+    constexpr std::size_t gChunkSize = 128 * 1024;
+
+    std::vector<std::byte> result(aByteLength);
+    std::size_t remainingBytes = aByteLength;
+    
+    while (remainingBytes)
+    {
+        std::size_t readSize = std::min(remainingBytes, gChunkSize);
+        if (!aInput.read(reinterpret_cast<char *>(result.data()), readSize).good())
+        {
+            throw std::runtime_error{"Problem reading '" + aStreamId + "': "
+                // If stream is not good(), yet converts to 'true', it means only eofbit is set.
+                + (aInput ? "stream truncacted." : "read error.")};
+        }
+        remainingBytes -= readSize;
+    }
+    return result;
+}
+
+
 std::vector<std::byte> loadBufferData(Const_Owned<gltf::BufferView> aBufferView)
 {
     auto buffer = aBufferView.get(&gltf::BufferView::buffer);
@@ -74,13 +97,18 @@ std::vector<std::byte> loadBufferData(Const_Owned<gltf::BufferView> aBufferView)
         return handy::base64::decode(encoded);
     }
     case gltf::Uri::Type::File:
-        // TODO Implement buffer content from file
-        throw std::logic_error{"File uri not implemented yet."};
+    {
+        ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from file {}.", aBufferView->buffer, uri.string);
+        return loadInputStream(
+            std::ifstream{buffer.getFilePath(&gltf::Buffer::uri).string(),
+                          std::ios_base::in | std::ios_base::binary},
+            buffer->byteLength, 
+            uri.string);
+    }
     default:
         throw std::logic_error{"Invalid uri type."};
     }
 }
-
 
 
 template <class T_buffer>

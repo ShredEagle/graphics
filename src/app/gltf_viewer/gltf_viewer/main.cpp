@@ -54,7 +54,6 @@ void initializeLogging()
 }
 
 
-
 int main(int argc, const char * argv[])
 {
     try
