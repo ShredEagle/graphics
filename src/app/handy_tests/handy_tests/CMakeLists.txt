@@ -7,6 +7,7 @@ set(${TARGET_NAME}_HEADERS
 set(${TARGET_NAME}_SOURCES
     main.cpp
 
+    Base64_tests.cpp
     Crc_tests.cpp
     StringId_tests.cpp
 )
