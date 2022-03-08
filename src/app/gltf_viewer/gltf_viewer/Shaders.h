@@ -8,8 +8,8 @@ namespace gltfviewer {
 inline const GLchar* gNaiveVertexShader = R"#(
     #version 400
 
-    layout(location=0) in vec4  ve_Position;
-    layout(location=1) in vec3  ve_Normal;
+    layout(location=0) in vec4 ve_Position;
+    layout(location=1) in vec3 ve_Normal;
 
     void main(void)
     {

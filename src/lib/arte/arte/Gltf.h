@@ -139,6 +139,7 @@ namespace gltf {
 } // namespace gltf
 
 
+// TODO Ad 2022/03/08 Embed the index of the element, to help debug printing.
 template <class T_element>
 class Const_Owned
 {

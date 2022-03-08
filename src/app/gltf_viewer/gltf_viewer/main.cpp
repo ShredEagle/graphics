@@ -79,15 +79,21 @@ int main(int argc, const char * argv[])
             throw std::logic_error{"Viewer expects a default scene"};
         }();
 
+        std::vector<Mesh> meshes;
+        for (arte::Const_Owned<arte::gltf::Node> node : scene.iterate(&arte::gltf::Scene::nodes))
+        {
+            meshes.push_back(prepare(node.get(&arte::gltf::Node::mesh)));
+        }
+
         Timer timer{glfwGetTime(), 0.};
 
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
 
-            for (arte::Const_Owned<arte::gltf::Node> node : scene.iterate(&arte::gltf::Scene::nodes))
+            for (const Mesh & mesh : meshes)
             {
-                render(prepare(node.get(&arte::gltf::Node::mesh)));
+                render(mesh);
             }
 
             timer.mark(glfwGetTime());
