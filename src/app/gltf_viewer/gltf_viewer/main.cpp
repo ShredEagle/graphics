@@ -1,13 +1,13 @@
 #include "Logging.h"
 
 #include "GltfRendering.h"
+#include "Scene.h"
 
 #include <arte/Gltf.h>
 #include <arte/Logging.h>
 
 #include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
-#include <graphics/CameraUtilities.h>
 #include <graphics/Timer.h>
 
 #include <boost/program_options.hpp>
@@ -57,22 +57,6 @@ void initializeLogging()
 
 
 
-template <class T_nodeRange>
-void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aNodes)
-{
-    for (arte::Const_Owned<arte::gltf::Node> node : aNodes)
-    {
-        if(node->mesh && !aRepository.contains(*node->mesh))
-        {
-            auto [it, didInsert] = 
-                aRepository.emplace(*node->mesh, prepare(node.get(&arte::gltf::Node::mesh)));
-            ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second);
-        }
-        populateMeshRepository(aRepository, node.iterate(&arte::gltf::Node::children));
-    }
-}
-
-
 int main(int argc, const char * argv[])
 {
     try
@@ -83,7 +67,7 @@ int main(int argc, const char * argv[])
 
         arte::Gltf gltf{arguments["gltf-path"].as<std::string>()};
 
-        arte::Const_Owned<arte::gltf::Scene> scene = [&]()
+        arte::Const_Owned<arte::gltf::Scene> gltfScene = [&]()
         {
             if (auto defaultScene = gltf.getDefaultScene())
             {
@@ -97,39 +81,17 @@ int main(int argc, const char * argv[])
         constexpr Size2<int> gWindowSize{800, 600};
         ApplicationGlfw application("glTF Viewer", gWindowSize);
 
-
         // Requires OpenGL context to call gl functions
-        MeshRepository indexToMeshes;
-        populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
+        Scene viewerScene{gltfScene, application.getAppInterface()};
 
         Timer timer{glfwGetTime(), 0.};
-
-        Renderer renderer;
-
-        math::Position<3, GLfloat> cameraPosition{6.f, 5.f, 2.f};
-        const math::Position<3, GLfloat> gGazePoint{0.f, 0.f, 0.f};
-
-        constexpr GLfloat gDepth = 10000;
-        const math::Box<GLfloat> aProjectedBox =
-            graphics::getViewVolume(gWindowSize,
-                                    2.f,
-                                    0.f,
-                                    gDepth);
 
         while(application.nextFrame())
         {
             application.getAppInterface()->clear();
 
-            math::Position<3, GLfloat> cameraCartesian = cameraPosition;
-            renderer.setCameraTransformation(
-                graphics::getCameraTransform(cameraCartesian, gGazePoint - cameraCartesian));
-
-            renderer.setProjectionTransformation(math::trans3d::orthographicProjection(aProjectedBox));
-
-            for (const auto & [id, mesh] : indexToMeshes)
-            {
-                renderer.render(mesh);
-            }
+            viewerScene.update();
+            viewerScene.render();
 
             timer.mark(glfwGetTime());
         }

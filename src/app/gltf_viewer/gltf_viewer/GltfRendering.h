@@ -64,7 +64,7 @@ public:
     void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
 
-    void render(const Mesh & aMesh);
+    void render(const Mesh & aMesh) const;
 
 private:
     graphics::Program mProgram;

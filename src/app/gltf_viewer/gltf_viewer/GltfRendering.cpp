@@ -377,7 +377,7 @@ Renderer::Renderer() :
 {}
 
 
-void Renderer::render(const Mesh & aMesh)
+void Renderer::render(const Mesh & aMesh) const
 {
     graphics::bind_guard boundProgram{mProgram};
 

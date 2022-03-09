@@ -33,6 +33,7 @@ public:
     template <class T_keyCallback>
     void registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback);
 
+    /// \important Coordinate system origin is TOP-left corner of the window (unlike openGL).
     template <class T_mouseButtonCallback>
     void registerMouseButtonCallback(T_mouseButtonCallback && mCallback);
 
