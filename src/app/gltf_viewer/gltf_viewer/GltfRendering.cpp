@@ -189,21 +189,24 @@ void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
 {
     VertexAttributeLayout layout = gElementTypeToLayout.at(aAccessor->type);
 
-    std::span<const T_component> span{
-        reinterpret_cast<const T_component *>(aBytes.data() + aBufferView->byteOffset + aAccessor->byteOffset), 
-        aAccessor->count * layout.totalComponents()
-    };
-
-    std::size_t increment = layout.totalComponents();
+    // If there is no explicit stride, the vertex attribute elements are tightly packed
+    // i.e. the stride, in term of components, is the number of components in one element.
+    std::size_t componentStride = layout.totalComponents();
     if (aBufferView->byteStride)
     {
         auto stride = *aBufferView->byteStride;
         assert(stride % sizeof(T_component) == 0);
-        increment = stride / sizeof(T_component);
+        componentStride = stride / sizeof(T_component);
     }
 
+    std::span<const T_component> span{
+        reinterpret_cast<const T_component *>(aBytes.data() + aBufferView->byteOffset + aAccessor->byteOffset), 
+        // All the components, but not more (i.e. no "stride padding" after the last component)
+        componentStride * (aAccessor->count - 1) + layout.totalComponents()
+    };
+
     std::ostringstream oss;
-    outputElements(oss, span, aAccessor->count, layout, increment);
+    outputElements(oss, span, aAccessor->count, layout, componentStride);
     ADLOG(gPrepareLogger, debug)("Accessor content:\n{}", oss.str());
 }
 
