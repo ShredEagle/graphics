@@ -57,7 +57,7 @@ struct Scene
     void update()
     {
         const math::Position<3, GLfloat> cameraCartesian = cameraPosition.toCartesian();
-        ADLOG(gDrawLogger, debug)("Camera position {}.", cameraCartesian);
+        ADLOG(gDrawLogger, trace)("Camera position {}.", cameraCartesian);
 
         math::Vec<3, GLfloat> gazeDirection = gGazePoint - cameraCartesian;
         renderer.setCameraTransformation(

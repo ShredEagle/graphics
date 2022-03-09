@@ -113,6 +113,7 @@ std::vector<std::byte> loadBufferData(Const_Owned<gltf::BufferView> aBufferView)
 }
 
 
+// TODO accept the buffer view directly, but it require to embed the index in it for debug print.
 template <class T_buffer>
 std::pair<Const_Owned<gltf::BufferView>, T_buffer>
 prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
@@ -128,6 +129,16 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
         throw std::logic_error{"Buffer view was expected to have a target."};
     }
 
+    // Sanity check, that the target in the buffer view matches the type of GL buffer.
+    if constexpr(std::is_same_v<T_buffer, graphics::VertexBufferObject>)
+    {
+        assert(*bufferView->target == GL_ARRAY_BUFFER);
+    }
+    else if constexpr(std::is_same_v<T_buffer, graphics::IndexBufferObject>)
+    {
+        assert(*bufferView->target == GL_ELEMENT_ARRAY_BUFFER);
+    }
+
     glBindBuffer(*bufferView->target, buffer);
     glBufferData(*bufferView->target,
                  bufferView->byteLength,
@@ -135,6 +146,7 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
                  // at bufferView->byteOffset (and also limit the length there, actually).
                  loadBufferData(bufferView).data() + bufferView->byteOffset,
                  GL_STATIC_DRAW);
+    glBindBuffer(*bufferView->target, 0);
 
     ADLOG(gPrepareLogger, debug)
          ("Loaded {} bytes in target {}, offset in source buffer is {} bytes.",
@@ -233,6 +245,30 @@ Indices::Indices(Const_Owned<gltf::Accessor> aAccessor) :
 }
 
 
+// TODO accept the buffer view directly, but it require to embed the index in it for debug print.
+const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::Accessor> aAccessor)
+{
+    assert(aAccessor->bufferView);
+
+    auto found = vbos.find(*aAccessor->bufferView);
+    if (found == vbos.end())
+    {
+        auto [bufferView, vertexBuffer] = 
+            prepareBuffer_impl<graphics::VertexBufferObject>(aAccessor);
+        auto inserted = 
+            vbos.emplace(*aAccessor->bufferView,
+                         ViewerVertexBuffer{
+                            std::move(vertexBuffer), 
+                            bufferView->byteStride ? (GLsizei)*bufferView->byteStride : 0});
+        return inserted.first->second;
+    }
+    else
+    {
+        return found->second;
+    }
+}
+
+
 MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
     drawMode{aPrimitive->mode}
 {
@@ -254,9 +290,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
             continue;
         }
 
-        // TODO 1 handle interleaved vertex buffers, instead of always making a new gl buffer.
-        auto [bufferView, vertexBuffer] = prepareBuffer_impl<graphics::VertexBufferObject>(accessor);
-        // From here on the corresponding vertex buffer is bound.
+        const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(accessor);
 
         analyzeAccessor(accessor);
 
@@ -271,13 +305,14 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 
             glEnableVertexAttribArray(found->second);
 
-            GLsizei stride = static_cast<GLsizei>(bufferView->byteStride ? *bufferView->byteStride : 0);
+            graphics::bind_guard boundBuffer{vertexBuffer.vbo};
+
             // The vertex attributes in the shader are float, so use glVertexAttribPointer.
             glVertexAttribPointer(found->second,
                                   layout.componentsPerAttribute,
                                   accessor->componentType,
                                   accessor->normalized,
-                                  stride,
+                                  vertexBuffer.stride,
                                   // Note: The buffer view byte offset is directly taken into account when loading data with glBufferData().
                                   reinterpret_cast<void *>(accessor->byteOffset)
                                   );
@@ -288,9 +323,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
                   " OpenGL buffer #{}, stride is {}, offset is {}.",
                   semantic, found->second,
                   layout.componentsPerAttribute, accessor->componentType,
-                  vertexBuffer, stride, accessor->byteOffset);
-
-            vbos.push_back(std::move(vertexBuffer));
+                  vertexBuffer.vbo, vertexBuffer.stride, accessor->byteOffset);
         }
         else
         {
@@ -352,6 +385,7 @@ void render(const MeshPrimitive & aMeshPrimitive)
              ("Indexed rendering of {} vertices with mode {}.", aMeshPrimitive.count, aMeshPrimitive.drawMode);
 
         const Indices & indices = *aMeshPrimitive.indices;
+        graphics::bind_guard boundIndexBuffer{indices.ibo};
         glDrawElements(aMeshPrimitive.drawMode, 
                        aMeshPrimitive.count,
                        indices.componentType,
