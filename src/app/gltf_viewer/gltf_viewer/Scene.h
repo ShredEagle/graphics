@@ -7,6 +7,8 @@
 #include <graphics/AppInterface.h>
 #include <graphics/CameraUtilities.h>
 
+#include <renderer/Uniforms.h>
+
 #include <math/Box.h>
 
 // Dirty include, to get the GLFW input definitions
@@ -35,8 +37,11 @@ void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aN
 
 struct Scene
 {
-    Scene(arte::Const_Owned<arte::gltf::Scene> aScene,
+    Scene(std::shared_ptr<arte::Gltf> aGltf,
+          arte::Const_Owned<arte::gltf::Scene> aScene,
           std::shared_ptr<graphics::AppInterface> aAppInterface) :
+        gltf{std::move(aGltf)},
+        scene{aScene},
         appInterface{std::move(aAppInterface)}
     {
         populateMeshRepository(indexToMeshes, aScene.iterate(&arte::gltf::Scene::nodes));
@@ -66,11 +71,28 @@ struct Scene
                                          cameraPosition.getUpTangent()));
     }
 
-    void render() const
+    // TODO make const when update populates instances
+    void render() //const
     {
-        for (const auto & [id, mesh] : indexToMeshes)
+        for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
         {
-            renderer.render(mesh);
+            render(node);
+        }
+    }
+
+    // Recursive function, rendering the node mesh then traversing the node children.
+    void render(arte::Const_Owned<arte::gltf::Node> aNode,
+                math::AffineMatrix<4, float> aParentTransform = math::AffineMatrix<4, float>::Identity()) //const
+    {
+        math::AffineMatrix<4, float> modelTransform = getLocalTransform(aNode) * aParentTransform;
+        if(aNode->mesh)
+        {
+            graphics::setUniform(renderer.mProgram, "u_model", modelTransform); 
+            renderer.render(indexToMeshes.at(*aNode->mesh));
+        }
+        for (auto node : aNode.iterate(&arte::gltf::Node::children))
+        {
+            render(node, modelTransform);
         }
     }
 
@@ -132,6 +154,8 @@ struct Scene
         Line,
     };
 
+    std::shared_ptr<arte::Gltf> gltf;
+    const arte::Const_Owned<arte::gltf::Scene> & scene;
     Polar cameraPosition{2.f};
     MeshRepository indexToMeshes;
     Renderer renderer;

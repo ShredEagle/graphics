@@ -1,11 +1,15 @@
 #pragma once
 
 
+#include <math/Homogeneous.h>
+#include <math/Quaternion.h>
+
 #include <platform/Filesystem.h>
 
 #include <functional>
 #include <map>
 #include <optional>
+#include <variant>
 #include <vector>
 
 
@@ -122,8 +126,17 @@ namespace gltf {
 
     struct Node
     {
+        using Matrix = math::AffineMatrix<4, float>;
+        struct TRS
+        {
+            math::Vec<3, float> translation;
+            math::Quaternion<float> rotation;
+            math::Vec<3, float> scale;
+        };
+
         std::string name;
         std::vector<Index<Node>> children;
+        std::variant<Matrix, TRS> transformation;
         // TODO Handle non-mesh nodes
         std::optional<Index<Mesh>> mesh;
     };
@@ -148,15 +161,15 @@ class Const_Owned
 public:
     Const_Owned(const Gltf & aGltf, const T_element & aElement);
 
-    operator const T_element &()
+    operator const T_element &() const
     { return mElement; }
 
-    const T_element * operator->()
+    const T_element * operator->() const
     {
         return &mElement;
     }
 
-    const T_element & operator*()
+    const T_element & operator*() const
     {
         return mElement;
     }
@@ -178,7 +191,7 @@ public:
 
     template <class T_member>
     std::vector<Const_Owned<T_member>> 
-    iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector)
+    iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector) const
     {
         std::vector<Const_Owned<T_member>> result;
         for (gltf::Index<T_member> index : mElement.*aMemberIndexVector)
@@ -190,7 +203,7 @@ public:
 
     // TODO make lazy iteration
     template <class T_member>
-    std::vector<Const_Owned<T_member>> iterate(std::vector<T_member> T_element::* aMemberVector)
+    std::vector<Const_Owned<T_member>> iterate(std::vector<T_member> T_element::* aMemberVector) const
     {
         std::vector<Const_Owned<T_member>> result;
         for (const T_member & element : mElement.*aMemberVector)
@@ -200,12 +213,12 @@ public:
         return result;
     }
 
-    filesystem::path getFilePath(gltf::Uri T_element::* aMemberUri)
+    filesystem::path getFilePath(gltf::Uri T_element::* aMemberUri) const
     {
         return mOwningGltf.getPathFor(mElement.*aMemberUri);
     }
 
-    filesystem::path getFilePath(std::optional<gltf::Uri> T_element::* aMemberUri)
+    filesystem::path getFilePath(std::optional<gltf::Uri> T_element::* aMemberUri) const
     {
         return mOwningGltf.getPathFor(*(mElement.*aMemberUri));
     }

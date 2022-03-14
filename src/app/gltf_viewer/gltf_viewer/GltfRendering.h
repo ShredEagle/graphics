@@ -73,8 +73,14 @@ using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, Mesh>;
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
 
+math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode);
+
+
 class Renderer
 {
+    // TODO remove this friendship once the api is complete
+    friend class Scene;
+
 public:
     Renderer();
 

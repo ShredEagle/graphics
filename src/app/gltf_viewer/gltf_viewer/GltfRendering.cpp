@@ -7,6 +7,8 @@
 
 #include <handy/Base64.h>
 
+#include <math/Transformations.h>
+
 #include <renderer/GL_Loader.h>
 #include <renderer/Shading.h>
 
@@ -376,6 +378,24 @@ Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
         mesh.primitives.emplace_back(primitive);
     }
     return mesh;
+}
+
+
+math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode)
+{
+    if(auto matrix = std::get_if<math::AffineMatrix<4, float>>(&aNode.transformation))
+    {
+        return *matrix;
+    }
+    else
+    {
+        gltf::Node::TRS & trs = std::get<gltf::Node::TRS>(aNode.transformation);
+        return 
+            math::trans3d::scale(trs.scale.as<math::Size>())
+            * trs.rotation.toRotationMatrix()
+            * math::trans3d::translate(trs.translation)
+            ;
+    }
 }
 
 

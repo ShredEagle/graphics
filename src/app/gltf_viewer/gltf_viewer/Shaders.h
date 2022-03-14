@@ -13,10 +13,11 @@ inline const GLchar* gNaiveVertexShader = R"#(
 
     uniform mat4 u_camera;
     uniform mat4 u_projection;
+    uniform mat4 u_model;
 
     void main(void)
     {
-        gl_Position = u_projection * u_camera * ve_position;
+        gl_Position = u_projection * u_camera * u_model * ve_position;
     }
 )#";
 
