@@ -228,9 +228,11 @@ Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
     auto destination = std::make_unique<unsigned char[]>(aSource.dimensions().area());
 
     std::transform(aSource.begin(), aSource.end(), destination.get(),
-                   [](math::sdr::Rgb aPixel) -> math::sdr::Grayscale
+                   [](math::sdr::Rgb aPixel) -> unsigned char
                    {
-                       return (aPixel.r() + aPixel.g() + aPixel.b()) / 3;
+                        return math::sdr::Grayscale{
+                            static_cast<std::uint8_t>((aPixel.r() + aPixel.g() + aPixel.b()) / 3)
+                        }.v();
                    });
 
     return {aSource.dimensions(), std::move(destination)};
