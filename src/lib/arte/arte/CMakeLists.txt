@@ -7,6 +7,7 @@ set(${TARGET_NAME}_HEADERS
     Logging.h
     SpriteSheet.h
 
+    detail/GltfJson.h
     detail/Json.h
     detail/3rdparty/stb_image.h
     detail/3rdparty/stb_image_include.h
