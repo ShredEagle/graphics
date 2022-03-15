@@ -67,6 +67,51 @@ namespace gltf {
         Type type;
     };
 
+    struct Accessor;
+
+    struct Sampler
+    {
+        enum class Interpolation
+        {
+            Linear,
+            Step,
+            CubicSpline,
+        };
+
+        Index<Accessor> input;
+        Interpolation interpolation;
+        Index<Accessor> output;
+    };
+
+    struct Node;
+
+    struct Target
+    {
+        enum class Path
+        {
+            Translation,
+            Rotation,
+            Scale,
+            Weights,
+        };
+
+        std::optional<Index<Node>> node;
+        Path path;
+    };
+
+    struct Channel
+    {
+        Index<Sampler> sampler;
+        Target target;
+    };
+
+    struct Animation
+    {
+        std::string name;
+        std::vector<Channel> channels;
+        std::vector<Sampler> samplers;
+    };
+
     struct Buffer
     {
         std::string name;
@@ -150,6 +195,10 @@ namespace gltf {
     std::ostream & operator<<(std::ostream & aOut, const Scene & aScene);
 
 } // namespace gltf
+
+
+std::string to_string(gltf::Accessor::ElementType aElementType);
+std::string to_string(gltf::Sampler::Interpolation aInterpolation);
 
 
 // TODO Ad 2022/03/08 Embed the index of the element, to help debug printing.
@@ -237,12 +286,15 @@ public:
 
     std::optional<Const_Owned<gltf::Scene>> getDefaultScene() const;
 
+    std::vector<Const_Owned<gltf::Animation>> getAnimations() const;
+
     Const_Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex) const;
     Const_Owned<gltf::Buffer> get(gltf::Index<gltf::Buffer> aBufferIndex) const;
     Const_Owned<gltf::BufferView> get(gltf::Index<gltf::BufferView> aBufferViewIndex) const;
     Const_Owned<gltf::Mesh> get(gltf::Index<gltf::Mesh> aMeshIndex) const;
     Const_Owned<gltf::Node> get(gltf::Index<gltf::Node> aNodeIndex) const;
-    Const_Owned<gltf::Scene> get(gltf::Index<gltf::Scene> aNodeIndex) const;
+    Const_Owned<gltf::Scene> get(gltf::Index<gltf::Scene> aSceneIndex) const;
+    Const_Owned<gltf::Animation> get(gltf::Index<gltf::Animation> aAnimationIndex) const;
 
     filesystem::path getPathFor(gltf::Uri aFileUri) const;
 
@@ -255,6 +307,7 @@ private:
     std::vector<gltf::Scene> mScenes;
     std::vector<gltf::Node> mNodes;
     std::vector<gltf::Mesh> mMeshes;
+    std::vector<gltf::Animation> mAnimations;
     std::vector<gltf::Buffer> mBuffers;
     std::vector<gltf::BufferView> mBufferViews;
     std::vector<gltf::Accessor> mAccessors;

@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "GltfAnimation.h"
 #include "GltfRendering.h"
 #include "Polar.h"
 
@@ -19,6 +20,10 @@ namespace ad {
 namespace gltfviewer {
 
 
+using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, Mesh>;
+using AnimationRepository = std::vector<Animation>;
+
+
 template <class T_nodeRange>
 void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aNodes)
 {
@@ -35,6 +40,16 @@ void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aN
 }
 
 
+template <class T_animationRange>
+void populateAnimationRepository(AnimationRepository & aRepository, const T_animationRange & aAnimations)
+{
+    for (arte::Const_Owned<arte::gltf::Animation> animation : aAnimations)
+    {
+        aRepository.push_back(prepare(animation));
+    }
+}
+
+
 struct Scene
 {
     Scene(std::shared_ptr<arte::Gltf> aGltf,
@@ -45,6 +60,7 @@ struct Scene
         appInterface{std::move(aAppInterface)}
     {
         populateMeshRepository(indexToMeshes, aScene.iterate(&arte::gltf::Scene::nodes));
+        populateAnimationRepository(animations, gltf->getAnimations());
 
         const math::Box<GLfloat> aProjectedBox =
             graphics::getViewVolume(appInterface->getWindowSize(), 2.f, 0.f, gViewedDepth);
@@ -156,8 +172,9 @@ struct Scene
 
     std::shared_ptr<arte::Gltf> gltf;
     const arte::Const_Owned<arte::gltf::Scene> & scene;
-    Polar cameraPosition{2.f};
     MeshRepository indexToMeshes;
+    AnimationRepository animations;
+    Polar cameraPosition{2.f};
     Renderer renderer;
     PolygonMode polygonMode{PolygonMode::Fill};
     std::shared_ptr<graphics::AppInterface> appInterface;

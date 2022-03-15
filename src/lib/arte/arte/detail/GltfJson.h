@@ -3,12 +3,20 @@
 #include "Json.h"
 
 
-//
-// Gltf json to math types
-//
 namespace nlohmann {
 
+    template <class T_indexed>
+    struct adl_serializer<ad::arte::gltf::Index<T_indexed>> 
+    {
+        static ad::arte::gltf::Index<T_indexed> from_json(const Json & aJson)
+        {
+            return aJson.get<typename ad::arte::gltf::Index<T_indexed>::Value_t>();
+        }
+    };
 
+    //
+    // Gltf json to math types
+    //
     template <>
     struct adl_serializer<ad::math::Vec<3, float>> 
     {

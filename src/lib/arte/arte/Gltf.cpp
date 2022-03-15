@@ -16,6 +16,7 @@ using namespace gltf;
 namespace {
 
 constexpr const char * gTagAccessors        = "accessors";
+constexpr const char * gTagAnimations       = "animations";
 constexpr const char * gTagAttributes       = "attributes";
 constexpr const char * gTagBuffer           = "buffer";
 constexpr const char * gTagBuffers          = "buffers";
@@ -24,19 +25,27 @@ constexpr const char * gTagBufferViews      = "bufferViews";
 constexpr const char * gTagByteLength       = "byteLength";
 constexpr const char * gTagByteOffset       = "byteOffset";
 constexpr const char * gTagByteStride       = "byteStride";
+constexpr const char * gTagChannels         = "channels";
 constexpr const char * gTagChildren         = "children";
 constexpr const char * gTagCount            = "count";
 constexpr const char * gTagComponentType    = "componentType";
 constexpr const char * gTagIndices          = "indices";
+constexpr const char * gTagInput            = "input";
+constexpr const char * gTagInterpolation    = "interpolation";
 constexpr const char * gTagMatrix           = "matrix";
 constexpr const char * gTagMesh             = "mesh";
 constexpr const char * gTagMeshes           = "meshes";
 constexpr const char * gTagMode             = "mode";
 constexpr const char * gTagName             = "name";
+constexpr const char * gTagNode             = "node";
 constexpr const char * gTagNodes            = "nodes";
 constexpr const char * gTagNormalized       = "normalized";
+constexpr const char * gTagOutput           = "output";
+constexpr const char * gTagPath             = "path";
 constexpr const char * gTagPrimitives       = "primitives";
 constexpr const char * gTagRotation         = "rotation";
+constexpr const char * gTagSampler          = "sampler";
+constexpr const char * gTagSamplers         = "samplers";
 constexpr const char * gTagScale            = "scale";
 constexpr const char * gTagScene            = "scene";
 constexpr const char * gTagScenes           = "scenes";
@@ -58,6 +67,14 @@ const std::array<std::string, 7> gElementTypeToString{
     "MAT4",
 };
 
+
+std::string to_string(Accessor::ElementType aElementType)
+{
+    std::size_t index = static_cast<std::size_t>(aElementType);
+    assert(index < gElementTypeToString.size());
+    return gElementTypeToString.at(index);
+}
+
 const std::map<std::string, Accessor::ElementType> gStringToElementType{
     {"SCALAR", Accessor::ElementType::Scalar},
     {"VEC2",   Accessor::ElementType::Vec2},
@@ -66,6 +83,42 @@ const std::map<std::string, Accessor::ElementType> gStringToElementType{
     {"MAT2",   Accessor::ElementType::Mat2},
     {"MAT3",   Accessor::ElementType::Mat3},
     {"MAT4",   Accessor::ElementType::Mat4},
+};
+
+
+const std::array<std::string, 4> gTargetPathToString{
+    "translation",
+    "rotation",
+    "scale",
+    "weights",
+};
+
+const std::map<std::string, Target::Path> gStringToTargetPath{
+    {"translation", Target::Path::Translation},
+    {"rotation",    Target::Path::Rotation},
+    {"scale",       Target::Path::Scale},
+    {"weights",     Target::Path::Weights},
+};
+
+
+const std::array<std::string, 3> gSamplerInterpolationToString{
+    "LINEAR",
+    "STEP",
+    "CUBICSPLINE",
+};
+
+
+std::string to_string(Sampler::Interpolation aInterpolation)
+{
+    std::size_t index = static_cast<std::size_t>(aInterpolation);
+    assert(index < gSamplerInterpolationToString.size());
+    return gSamplerInterpolationToString.at(index);
+}
+
+const std::map<std::string, Sampler::Interpolation> gStringToSamplerInterpolation{
+    {"LINEAR",      Sampler::Interpolation::Linear},
+    {"STEP",        Sampler::Interpolation::Step},
+    {"CUBICSPLINE", Sampler::Interpolation::CubicSpline},
 };
 
 
@@ -240,6 +293,47 @@ Accessor load(const Json & aJson)
 }
 
 
+template <>
+Animation load(const Json & aJson)
+{
+    Animation animation{
+        .name = aJson.value(gTagName, ""),
+    };
+
+    populateVector(aJson, animation.channels, gTagChannels);
+    populateVector(aJson, animation.samplers, gTagSamplers);
+
+    return animation;
+}
+
+
+template <>
+Channel load(const Json & aJson)
+{
+    Json target = aJson.at(gTagTarget);
+
+    return {
+        .sampler = aJson.at(gTagSampler).get<Index<Sampler>>(),
+        .target = {
+            .node = getOptional<Index<Node>>(target, gTagNode),
+            .path = gStringToTargetPath.at(target.at(gTagPath)),
+        },
+    };
+}
+
+
+template <>
+Sampler load(const Json & aJson)
+{
+    return {
+        .input = aJson.at(gTagInput).get<Index<Accessor>>(),
+        .interpolation = gStringToSamplerInterpolation.at(aJson.value(gTagInterpolation, "LINEAR")),
+        .output = aJson.at(gTagOutput).get<Index<Accessor>>(),
+    };
+}
+
+
+
 // 
 // Output operators
 // 
@@ -282,12 +376,13 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVector(json, mScenes, gTagScenes);
     populateVector(json, mNodes, gTagNodes);
     populateVector(json, mMeshes, gTagMeshes);
+    populateVector(json, mAnimations, gTagAnimations);
     populateVector(json, mBuffers, gTagBuffers);
     populateVector(json, mBufferViews, gTagBufferViews);
     populateVector(json, mAccessors, gTagAccessors);
 
-    ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} buffer(s).",
-                             mScenes.size(), mNodes.size(), mMeshes.size(), mBuffers.size());
+    ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} animation(s), {} buffer(s).",
+                             mScenes.size(), mNodes.size(), mMeshes.size(), mAnimations.size(), mBuffers.size());
 }
 
 
@@ -299,6 +394,18 @@ std::optional<Const_Owned<gltf::Scene>> Gltf::getDefaultScene() const
     }
     return std::nullopt;
 }
+
+
+std::vector<Const_Owned<gltf::Animation>> Gltf::getAnimations() const
+{
+    std::vector<Const_Owned<gltf::Animation>> result;
+    for (const auto & animation : mAnimations)
+    {
+        result.emplace_back(*this, animation);
+    }
+    return result;
+}
+
 
 Const_Owned<gltf::Accessor> Gltf::get(gltf::Index<gltf::Accessor> aAccessorIndex) const
 {
@@ -333,6 +440,12 @@ Const_Owned<Node> Gltf::get(gltf::Index<gltf::Node> aNodeIndex) const
 Const_Owned<gltf::Scene> Gltf::get(gltf::Index<gltf::Scene> aSceneIndex) const
 {
     return {*this, mScenes.at(aSceneIndex)};
+}
+
+
+Const_Owned<gltf::Animation> Gltf::get(gltf::Index<gltf::Animation> aAnimationIndex) const
+{
+    return {*this, mAnimations.at(aAnimationIndex)};
 }
 
 
