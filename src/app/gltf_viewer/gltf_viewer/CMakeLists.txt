@@ -2,6 +2,7 @@ set(TARGET_NAME gltf_viewer)
 
 set(${TARGET_NAME}_HEADERS
     GltfRendering.h
+    LoadBuffer.h
     Logging.h
     Polar.h
     Scene.h
@@ -10,6 +11,7 @@ set(${TARGET_NAME}_HEADERS
 
 set(${TARGET_NAME}_SOURCES
     GltfRendering.cpp
+    LoadBuffer.cpp
     Logging.cpp
     main.cpp
 )
