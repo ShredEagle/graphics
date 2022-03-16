@@ -45,6 +45,8 @@ public:
 
     InstanceList()
     {
+        // Ensures there is once instance with indentity model transform until client codes
+        // specifies explicit instances.
         std::vector<Instance> defaultInstance{ {math::AffineMatrix<4, GLfloat>::Identity()} };
         update(defaultInstance);
     }
@@ -56,7 +58,7 @@ public:
 
 private:
     graphics::VertexBufferObject mVbo;
-    GLsizei mInstanceCount;
+    GLsizei mInstanceCount{0};
 };
 
 
@@ -108,9 +110,6 @@ math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode);
 
 class Renderer
 {
-    // TODO remove this friendship once the api is complete
-    friend class Scene;
-
 public:
     Renderer();
 

@@ -20,8 +20,25 @@ namespace ad {
 namespace gltfviewer {
 
 
-using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, Mesh>;
+struct MeshInstances
+{
+    Mesh mesh;
+    std::vector<InstanceList::Instance> instances; 
+};
+
+
+using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>,
+                                MeshInstances>;
 using AnimationRepository = std::vector<Animation>;
+
+
+void clearInstances(MeshRepository & aRepository)
+{
+    for(auto & [index, mesh] : aRepository)
+    {
+        mesh.instances.clear();
+    }
+}
 
 
 template <class T_nodeRange>
@@ -32,8 +49,9 @@ void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aN
         if(node->mesh && !aRepository.contains(*node->mesh))
         {
             auto [it, didInsert] = 
-                aRepository.emplace(*node->mesh, prepare(node.get(&arte::gltf::Node::mesh)));
-            ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second);
+                aRepository.emplace(*node->mesh,
+                                    MeshInstances{.mesh =prepare(node.get(&arte::gltf::Node::mesh))});
+            ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second.mesh);
         }
         populateMeshRepository(aRepository, node.iterate(&arte::gltf::Node::children));
     }
@@ -77,6 +95,12 @@ struct Scene
 
     void update()
     {
+        updateCamera();
+        updateInstances();
+    }
+
+    void updateCamera()
+    {
         const math::Position<3, GLfloat> cameraCartesian = cameraPosition.toCartesian();
         ADLOG(gDrawLogger, trace)("Camera position {}.", cameraCartesian);
 
@@ -87,30 +111,52 @@ struct Scene
                                          cameraPosition.getUpTangent()));
     }
 
-    // TODO make const when update populates instances
-    void render() //const
+    void updateInstances()
     {
+        clearInstances(indexToMeshes);
         for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
         {
-            render(node);
+            update(node);
+        }
+
+        for(auto & [index, mesh] : indexToMeshes)
+        {
+            // Update the VBO containing instance data with the client vector of instance data
+            mesh.mesh.instances.update(mesh.instances);
         }
     }
 
-    // Recursive function, rendering the node mesh then traversing the node children.
-    void render(arte::Const_Owned<arte::gltf::Node> aNode,
-                math::AffineMatrix<4, float> aParentTransform = math::AffineMatrix<4, float>::Identity()) //const
+    // Recursive function to:
+    // * update the node (animation)
+    // * queue its mesh instance
+    // * traverse the node children
+    void update(arte::Const_Owned<arte::gltf::Node> aNode,
+                math::AffineMatrix<4, float> aParentTransform = 
+                    math::AffineMatrix<4, float>::Identity())
     {
         math::AffineMatrix<4, float> modelTransform = getLocalTransform(aNode) * aParentTransform;
+
         if(aNode->mesh)
         {
-            graphics::setUniform(renderer.mProgram, "u_model", modelTransform); 
-            renderer.render(indexToMeshes.at(*aNode->mesh));
+            indexToMeshes.at(*aNode->mesh).instances.push_back({modelTransform});
         }
+
         for (auto node : aNode.iterate(&arte::gltf::Node::children))
         {
-            render(node, modelTransform);
+            update(node, modelTransform);
         }
     }
+
+
+    void render() const
+    {
+        // TODO should it be optimized to only call when there is at least once instance?
+        for(const auto & [index, mesh] : indexToMeshes)
+        {
+            renderer.render(mesh.mesh);
+        }
+    }
+
 
     void callbackKeyboard(int key, int scancode, int action, int mods)
     {
