@@ -5,6 +5,9 @@
 
 #include <renderer/GL_Loader.h>
 
+#include <math/Interpolation/Interpolation.h>
+#include <math/Interpolation/QuaternionInterpolation.h>
+
 
 namespace ad {
 namespace gltfviewer {
@@ -16,6 +19,15 @@ using Time_t = GLfloat;
 template <class T_value>
 struct Keyframes
 {
+    struct Keyframe
+    {
+        Time_t time;
+        T_value output;
+    };
+
+    // If second keyframe is absent, it means we are clamping to an edge.
+    std::pair<Keyframe, std::optional<Keyframe>> getBounds(Time_t aTimepoint) const;
+
     // NOTE: Kepts separate instead of the more structured vector<pair<timestamp, keyframe>>
     // so we can initialize by copy from raw buffers.
     std::vector<Time_t> timestamps;
@@ -97,9 +109,60 @@ std::ostream & operator<<(std::ostream & aOut, const Keyframes<T_value> & aKeyfr
     return aOut;
 }
 
+
+template <class T_value>
+std::pair<typename Keyframes<T_value>::Keyframe, std::optional<typename Keyframes<T_value>::Keyframe> >
+Keyframes<T_value>::getBounds(Time_t aTimepoint) const
+{
+    std::size_t id = 0;
+
+    if (timestamps[id] >= aTimepoint)
+    {
+        return { 
+            {timestamps[id], outputs[id]},
+            std::nullopt 
+        };
+    }
+
+    for(++id; id < timestamps.size(); ++id)
+    {
+        if(timestamps[id] >= aTimepoint)
+        {
+            return { 
+                Keyframe{timestamps[id-1], outputs[id-1]},
+                Keyframe{timestamps[id], outputs[id]},
+            };
+        }
+    }
+
+    return { 
+        {timestamps.back(), outputs.back()},
+        std::nullopt 
+    };
+}
+
+
 template <class T_value>
 void SamplerLinear<T_value>::interpolate(Time_t aTimepoint, T_value & aDestination) const
-{}
+{
+    auto [firstBound, optionalBound] = keyframes.getBounds(aTimepoint);
+
+    if(optionalBound)
+    {
+        GLfloat interpolationParam = 
+            (aTimepoint - firstBound.time) / (optionalBound->time - firstBound.time);
+
+        // TODO 1 slerp on quaternions
+        aDestination = math::lerp(
+            optionalBound->output,
+            firstBound.output,
+            math::Clamped{interpolationParam});
+    }
+    else
+    {
+        aDestination = firstBound.output;
+    }
+}
 
 
 template <class T_value>

@@ -16,6 +16,7 @@ namespace gltfviewer {
 namespace preparing {
 
 
+// TODO move to a more general header.
 template <class T_value>
 std::vector<T_value> loadAccessorData(arte::Const_Owned<arte::gltf::Accessor> aAccessor)
 {
@@ -120,11 +121,7 @@ std::shared_ptr<Sampler> selectComponent(arte::Const_Owned<gltf::Sampler> aSampl
 
 std::shared_ptr<Sampler> prepare(arte::Const_Owned<arte::gltf::Sampler> aSampler)
 {
-    //return preparing::selectComponent(aSampler);
-    auto sampler = preparing::selectComponent(aSampler);
-    sampler->output(std::cout);
-    std::cout << "\n";
-    return sampler;
+    return preparing::selectComponent(aSampler);
 }
 
 
