@@ -35,7 +35,7 @@ struct MeshPrimitive
 {
     MeshPrimitive(arte::Const_Owned<arte::gltf::Primitive> aPrimitive);
 
-    const ViewerVertexBuffer & prepareVertexBuffer(arte::Const_Owned<arte::gltf::Accessor> aAccessor);
+    const ViewerVertexBuffer & prepareVertexBuffer(arte::Const_Owned<arte::gltf::BufferView> aBufferView);
 
     // NOTE Ad 2022/03/04: I wanted to use this occasion to brush-up knowledge of OpenGL functions.
     // So instead of using the abstractions in render libraries, do most of the calls directly.

@@ -53,50 +53,58 @@ const std::map<gltf::Accessor::ElementType, VertexAttributeLayout> gElementTypeT
 //
 // Helper functions
 //
-
-// TODO accept the buffer view directly, but it first require to embed the index in it for debug print.
-template <class T_buffer>
-std::pair<Const_Owned<gltf::BufferView>, T_buffer>
-prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
+/// \brief Returns the buffer view associated to the accessor, or throw if there is none.
+Const_Owned<gltf::BufferView> checkedBufferView(Const_Owned<gltf::Accessor> aAccessor)
 {
-    Const_Owned<gltf::BufferView> bufferView = aAccessor.get(&gltf::Accessor::bufferView);
-
-    T_buffer buffer;
-
-    if (!bufferView->target)
+    if (!aAccessor->bufferView)
     {
         ADLOG(gPrepareLogger, critical)
-             ("Buffer view #{} does not have target defined.", *aAccessor->bufferView);
+             ("Unsupported: Accessor #{} does not have a buffer view associated.", aAccessor.id());
+        throw std::logic_error{"Accessor was expected to have a buffer view."};
+    }
+    return aAccessor.get(&gltf::Accessor::bufferView);
+}
+
+
+template <class T_buffer>
+T_buffer prepareBuffer_impl(Const_Owned<gltf::BufferView> aBufferView)
+{
+    T_buffer buffer;
+
+    if (!aBufferView->target)
+    {
+        ADLOG(gPrepareLogger, critical)
+             ("Buffer view #{} does not have target defined.", aBufferView.id());
         throw std::logic_error{"Buffer view was expected to have a target."};
     }
 
     // Sanity check, that the target in the buffer view matches the type of GL buffer.
     if constexpr(std::is_same_v<T_buffer, graphics::VertexBufferObject>)
     {
-        assert(*bufferView->target == GL_ARRAY_BUFFER);
+        assert(*aBufferView->target == GL_ARRAY_BUFFER);
     }
     else if constexpr(std::is_same_v<T_buffer, graphics::IndexBufferObject>)
     {
-        assert(*bufferView->target == GL_ELEMENT_ARRAY_BUFFER);
+        assert(*aBufferView->target == GL_ELEMENT_ARRAY_BUFFER);
     }
 
-    glBindBuffer(*bufferView->target, buffer);
-    glBufferData(*bufferView->target,
-                 bufferView->byteLength,
+    glBindBuffer(*aBufferView->target, buffer);
+    glBufferData(*aBufferView->target,
+                 aBufferView->byteLength,
                  // TODO might be even better to only load in main memory the part of the buffer starting
-                 // at bufferView->byteOffset (and also limit the length there, actually).
-                 loadBufferData(bufferView.get(&gltf::BufferView::buffer)).data() 
-                    + bufferView->byteOffset,
+                 // at aBufferView->byteOffset (and also limit the length there, actually).
+                 loadBufferData(aBufferView.get(&gltf::BufferView::buffer)).data() 
+                    + aBufferView->byteOffset,
                  GL_STATIC_DRAW);
-    glBindBuffer(*bufferView->target, 0);
+    glBindBuffer(*aBufferView->target, 0);
 
     ADLOG(gPrepareLogger, debug)
          ("Loaded {} bytes in target {}, offset in source buffer is {} bytes.",
-          bufferView->byteLength,
-          *bufferView->target,
-          bufferView->byteOffset);
+          aBufferView->byteLength,
+          *aBufferView->target,
+          aBufferView->byteOffset);
 
-    return {bufferView, std::move(buffer)};
+    return buffer;
 }
 
 
@@ -155,7 +163,7 @@ void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
 
 void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 {
-    Const_Owned<gltf::BufferView> bufferView = aAccessor.get(&gltf::Accessor::bufferView);
+    auto bufferView = checkedBufferView(aAccessor);
 
     std::vector<std::byte> bytes = loadBufferData(bufferView.get(&gltf::BufferView::buffer));
 
@@ -183,28 +191,22 @@ void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 //
 Indices::Indices(Const_Owned<gltf::Accessor> aAccessor) :
     componentType{aAccessor->componentType},
-    byteOffset{aAccessor->byteOffset}
+    byteOffset{aAccessor->byteOffset},
+    ibo{prepareBuffer_impl<graphics::IndexBufferObject>(checkedBufferView(aAccessor))}
+{}
+
+
+const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::BufferView> aBufferView)
 {
-    auto [bufferView, indexBuffer] = prepareBuffer_impl<graphics::IndexBufferObject>(aAccessor);
-    ibo = std::move(indexBuffer);
-}
-
-
-// TODO accept the buffer view directly, but it require to embed the index in it for debug print.
-const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::Accessor> aAccessor)
-{
-    assert(aAccessor->bufferView);
-
-    auto found = vbos.find(*aAccessor->bufferView);
+    auto found = vbos.find(aBufferView.id());
     if (found == vbos.end())
     {
-        auto [bufferView, vertexBuffer] = 
-            prepareBuffer_impl<graphics::VertexBufferObject>(aAccessor);
+        auto vertexBuffer = prepareBuffer_impl<graphics::VertexBufferObject>(aBufferView);
         auto inserted = 
-            vbos.emplace(*aAccessor->bufferView,
+            vbos.emplace(aBufferView.id(),
                          ViewerVertexBuffer{
                             std::move(vertexBuffer), 
-                            bufferView->byteStride ? (GLsizei)*bufferView->byteStride : 0});
+                            aBufferView->byteStride ? (GLsizei)*aBufferView->byteStride : 0});
         return inserted.first->second;
     }
     else
@@ -235,7 +237,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
             continue;
         }
 
-        const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(accessor);
+        const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(checkedBufferView(accessor));
 
         analyzeAccessor(accessor);
 
@@ -398,4 +400,4 @@ void Renderer::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> 
 
 
 } // namespace gltfviewer
-} // namespace ad
+} // namespace ad 
