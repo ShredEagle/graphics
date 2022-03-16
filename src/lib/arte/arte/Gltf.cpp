@@ -376,7 +376,10 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVector(json, mScenes, gTagScenes);
     populateVector(json, mNodes, gTagNodes);
     populateVector(json, mMeshes, gTagMeshes);
-    populateVector(json, mAnimations, gTagAnimations);
+    if(json.contains(gTagAnimations))
+    {
+        populateVector(json, mAnimations, gTagAnimations);
+    }
     populateVector(json, mBuffers, gTagBuffers);
     populateVector(json, mBufferViews, gTagBufferViews);
     populateVector(json, mAccessors, gTagAccessors);
