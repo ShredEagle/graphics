@@ -23,9 +23,8 @@ std::vector<T_value> loadAccessorData(arte::Const_Owned<arte::gltf::Accessor> aA
     if (!aAccessor->bufferView)
     {
         // TODO Handle no buffer view (accessor initialized to zeros)
-        // TODO 1 Add accessor id
         ADLOG(gPrepareLogger, critical)
-             ("Unsupported: accessor #{} does not have a buffer view.", -1);
+             ("Unsupported: accessor #{} does not have a buffer view.", aAccessor.id());
         throw std::logic_error{"Accessor without buffer view in animation."};
     }
 
@@ -42,7 +41,8 @@ std::vector<T_value> loadAccessorData(arte::Const_Owned<arte::gltf::Accessor> aA
 
     // TODO Ad 2022/03/15 This can probably be optimized to work without a copy
     // by only loading the accessor bytes (in case of no-stride).
-    std::vector<std::byte> completeBuffer = loadBufferData(bufferView);
+    std::vector<std::byte> completeBuffer = 
+        loadBufferData(bufferView.get(&gltf::BufferView::buffer));
 
     std::vector<T_value> result;
     result.reserve(aAccessor->count);
@@ -138,9 +138,8 @@ Animation prepare(arte::Const_Owned<arte::gltf::Animation> aAnimation)
     {
         if(!channel->target.node)
         {
-            // TODO 1 use elements ids once in their Const_Owned
             ADLOG(gPrepareLogger, critical)
-                 ("Unsupported: Channel does not have a target node.");
+                 ("Unsupported: Channel #{} does not have a target node.", channel.id());
             throw std::logic_error{"Animation channel without a target node."};
         }
 

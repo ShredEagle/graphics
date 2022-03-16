@@ -85,7 +85,8 @@ prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
                  bufferView->byteLength,
                  // TODO might be even better to only load in main memory the part of the buffer starting
                  // at bufferView->byteOffset (and also limit the length there, actually).
-                 loadBufferData(bufferView).data() + bufferView->byteOffset,
+                 loadBufferData(bufferView.get(&gltf::BufferView::buffer)).data() 
+                    + bufferView->byteOffset,
                  GL_STATIC_DRAW);
     glBindBuffer(*bufferView->target, 0);
 
@@ -156,7 +157,7 @@ void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 {
     Const_Owned<gltf::BufferView> bufferView = aAccessor.get(&gltf::Accessor::bufferView);
 
-    std::vector<std::byte> bytes = loadBufferData(bufferView);
+    std::vector<std::byte> bytes = loadBufferData(bufferView.get(&gltf::BufferView::buffer));
 
     switch(aAccessor->componentType)
     {

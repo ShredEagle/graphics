@@ -31,36 +31,34 @@ std::vector<std::byte> loadInputStream(std::istream && aInput, std::size_t aByte
 }
 
 
-std::vector<std::byte> loadBufferData(arte::Const_Owned<arte::gltf::BufferView> aBufferView)
+std::vector<std::byte> loadBufferData(arte::Const_Owned<arte::gltf::Buffer> aBuffer)
 {
-    auto buffer = aBufferView.get(&arte::gltf::BufferView::buffer);
-
-    if (!buffer->uri)
+    if (!aBuffer->uri)
     {
         ADLOG(gPrepareLogger, critical)
-             ("Buffer #{} does not have target defined.", aBufferView->buffer);
+             ("Buffer #{} does not have target defined.", aBuffer.id());
         throw std::logic_error{"Buffer was expected to have an Uri."};
     }
 
     constexpr const char * base64Prefix{"base64,"};
 
-    arte::gltf::Uri uri = *buffer->uri;
+    arte::gltf::Uri uri = *aBuffer->uri;
     switch(uri.type)
     {
     case arte::gltf::Uri::Type::Data:
     {
-        ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from a data URI.", aBufferView->buffer);
+        ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from a data URI.", aBuffer.id());
         std::string_view encoded{uri.string};
         encoded.remove_prefix(encoded.find(base64Prefix) + std::strlen(base64Prefix));
         return handy::base64::decode(encoded);
     }
     case arte::gltf::Uri::Type::File:
     {
-        ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from file {}.", aBufferView->buffer, uri.string);
+        ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from file {}.", aBuffer.id(), uri.string);
         return loadInputStream(
-            std::ifstream{buffer.getFilePath(&arte::gltf::Buffer::uri).string(),
+            std::ifstream{aBuffer.getFilePath(&arte::gltf::Buffer::uri).string(),
                           std::ios_base::in | std::ios_base::binary},
-            buffer->byteLength, 
+            aBuffer->byteLength, 
             uri.string);
     }
     default:

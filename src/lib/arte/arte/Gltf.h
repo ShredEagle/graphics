@@ -208,7 +208,7 @@ class Const_Owned
     friend class Gltf;
 
 public:
-    Const_Owned(const Gltf & aGltf, const T_element & aElement);
+    Const_Owned(const Gltf & aGltf, const T_element & aElement, gltf::Index<T_element> aIndex);
 
     operator const T_element &() const
     { return mElement; }
@@ -221,6 +221,11 @@ public:
     const T_element & operator*() const
     {
         return mElement;
+    }
+
+    gltf::Index<T_element> id() const
+    {
+        return mIndex;
     }
 
     template <class T_indexed>
@@ -255,9 +260,9 @@ public:
     std::vector<Const_Owned<T_member>> iterate(std::vector<T_member> T_element::* aMemberVector) const
     {
         std::vector<Const_Owned<T_member>> result;
-        for (const T_member & element : mElement.*aMemberVector)
+        for (std::size_t id = 0; id != (mElement.*aMemberVector).size(); ++id)
         {
-            result.emplace_back(mOwningGltf, element);
+            result.emplace_back(mOwningGltf, (mElement.*aMemberVector)[id], id);
         }
         return result;
     }
@@ -276,6 +281,7 @@ public:
 private:
     const Gltf & mOwningGltf;
     const T_element & mElement; 
+    const gltf::Index<T_element> mIndex;
 };
 
 
@@ -345,9 +351,10 @@ namespace gltf
 
 
 template <class T_element>
-    Const_Owned<T_element>::Const_Owned(const Gltf & aGltf, const T_element & aElement) :
+Const_Owned<T_element>::Const_Owned(const Gltf & aGltf, const T_element & aElement, gltf::Index<T_element> aIndex) :
     mOwningGltf{aGltf},
-    mElement{aElement}
+    mElement{aElement},
+    mIndex{aIndex}
 {}
 
 
