@@ -28,6 +28,9 @@ const std::map<std::string /*semantic*/, GLuint /*vertex attribute index*/> gSem
 };
 
 
+/// \brief First attribute index available for per-instance attributes.
+constexpr GLuint gInstanceAttributeIndex = 8;
+
 struct VertexAttributeLayout
 {
     GLint componentsPerAttribute;
@@ -216,6 +219,19 @@ const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::
 }
 
 
+void InstanceList::update(std::span<Instance> aInstances)
+{
+    {
+        graphics::bind_guard boundBuffer{mVbo};
+        // Orphan the previous buffer, if any
+        glBufferData(GL_ARRAY_BUFFER, aInstances.size_bytes(), NULL, GL_STREAM_DRAW);
+        // Copy value to new buffer
+        glBufferSubData(GL_ARRAY_BUFFER, 0, aInstances.size_bytes(), aInstances.data());
+    }
+    mInstanceCount = aInstances.size();
+}
+
+
 MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
     drawMode{aPrimitive->mode}
 {
@@ -239,6 +255,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 
         const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(checkedBufferView(accessor));
 
+        // TODO Have control whether analysis takes place
         analyzeAccessor(accessor);
 
         if (auto found = gSemanticToAttribute.find(semantic);
@@ -284,9 +301,41 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
         indices = Indices{indicesAccessor};
         count = indicesAccessor->count;
 
+        // TODO Have control whether analysis takes place
         analyzeAccessor(indicesAccessor);
     }
 }
+
+
+MeshPrimitive::MeshPrimitive(arte::Const_Owned<arte::gltf::Primitive> aPrimitive,
+                             const InstanceList & aInstances) :
+    MeshPrimitive{aPrimitive}
+{
+    associateInstanceBuffer(aInstances);
+}
+
+
+void MeshPrimitive::associateInstanceBuffer(const InstanceList & aInstances)
+{
+    graphics::bind_guard boundVao{vao};
+    graphics::bind_guard boundBuffer{aInstances.mVbo};
+
+    for(GLuint attributeOffset = 0; attributeOffset != 4; ++attributeOffset)
+    {
+        GLuint attributeIndex = gInstanceAttributeIndex + attributeOffset;
+
+        glEnableVertexAttribArray(attributeIndex);
+        // The vertex attributes in the shader are float, so use glVertexAttribPointer.
+        glVertexAttribPointer(attributeIndex,
+                              4,
+                              GL_FLOAT,
+                              GL_FALSE, //normalized
+                              sizeof(decltype(InstanceList::Instance::aModelTransform)),
+                              reinterpret_cast<void *>(sizeof(GLfloat) * 4 * attributeOffset));
+        glVertexAttribDivisor(attributeIndex, 1);
+    }
+}
+
 
 std::ostream & operator<<(std::ostream & aOut, const MeshPrimitive & aPrimitive)
 {
@@ -317,7 +366,7 @@ Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
     Mesh mesh;
     for (auto & primitive : aMesh.iterate(&arte::gltf::Mesh::primitives))     
     {
-        mesh.primitives.emplace_back(primitive);
+        mesh.primitives.emplace_back(primitive, mesh.instances);
     }
     return mesh;
 }
@@ -341,6 +390,7 @@ math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode)
 }
 
 
+/// \brief A single (non-instanted) draw of the mesh primitive.
 void render(const MeshPrimitive & aMeshPrimitive)
 {
     graphics::bind_guard boundVao{aMeshPrimitive.vao};
@@ -368,6 +418,41 @@ void render(const MeshPrimitive & aMeshPrimitive)
 }
 
 
+/// \brief Instantiated rendering of the mesh primitive.
+void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
+{
+    graphics::bind_guard boundVao{aMeshPrimitive.vao};
+    if (aMeshPrimitive.indices)
+    {
+        ADLOG(gDrawLogger, trace)
+             ("Indexed rendering of {} instance(s) of {} vertices with mode {}.",
+              aMeshPrimitive.count, aInstanceCount, aMeshPrimitive.drawMode);
+
+        const Indices & indices = *aMeshPrimitive.indices;
+        graphics::bind_guard boundIndexBuffer{indices.ibo};
+        glDrawElementsInstanced(
+            aMeshPrimitive.drawMode, 
+            aMeshPrimitive.count,
+            indices.componentType,
+            reinterpret_cast<void *>(indices.byteOffset),
+            aInstanceCount);
+    }
+    else
+    {
+        ADLOG(gDrawLogger, trace)
+             ("Instanced array rendering of {} instance(s) of {} vertices with mode {}.",
+              aMeshPrimitive.count, aInstanceCount, aMeshPrimitive.drawMode);
+
+        glDrawArraysInstanced(
+            aMeshPrimitive.drawMode,  
+            0, // Start at the beginning of enable arrays, all byte offsets are aleady applied.
+            aMeshPrimitive.count,
+            aInstanceCount);
+    }
+}
+
+
+
 Renderer::Renderer() :
     mProgram{graphics::makeLinkedProgram({
         {GL_VERTEX_SHADER,   gltfviewer::gNaiveVertexShader},
@@ -382,7 +467,7 @@ void Renderer::render(const Mesh & aMesh) const
 
     for (const auto & primitive : aMesh.primitives)
     {
-        gltfviewer::render(primitive);
+        gltfviewer::render(primitive, aMesh.instances.size());
     }
 }
 
@@ -393,7 +478,7 @@ void Renderer::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aT
 }
 
 
-void Renderer::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+void Renderer::setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation)
 {
     setUniform(mProgram, "u_projection", aTransformation); 
 }
