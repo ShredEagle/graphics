@@ -142,25 +142,29 @@ struct Scene
     {
         math::AffineMatrix<4, float> modelTransform = [&]()
         {
-            if(auto nodeChannel = getAnimationChannel(aNode))
+            if(auto nodeChannels = getAnimationChannels(aNode))
             {
-                const arte::gltf::Node::TRS * trs = 
-                    std::get_if<arte::gltf::Node::TRS>(&aNode->transformation);
-                assert(trs);
-
-                auto trsCopy = *trs;
-                switch(nodeChannel->path)
+                for (auto nodeChannel : *nodeChannels)
                 {
-                case arte::gltf::Target::Path::Rotation:
-                    nodeChannel->sampler->interpolate(aTimer.time(), trsCopy.rotation);
-                    break;
+                    arte::gltf::Node::TRS * trs = 
+                        std::get_if<arte::gltf::Node::TRS>(&aNode->transformation);
+                    assert(trs);
+
+                    switch(nodeChannel.path)
+                    {
+                    case arte::gltf::Target::Path::Translation:
+                        nodeChannel.sampler->interpolate(aTimer.time(), trs->translation);
+                        break;
+                    case arte::gltf::Target::Path::Rotation:
+                        nodeChannel.sampler->interpolate(aTimer.time(), trs->rotation);
+                        break;
+                    case arte::gltf::Target::Path::Scale:
+                        nodeChannel.sampler->interpolate(aTimer.time(), trs->scale);
+                        break;
+                    }
                 }
-                return getLocalTransform(trsCopy);
             }
-            else
-            {
-                return getLocalTransform(aNode);
-            }
+            return getLocalTransform(aNode);
         }();
 
         if(aNode->mesh)
@@ -175,14 +179,14 @@ struct Scene
     }
 
 
-    std::optional<Animation::NodeChannel>
-    getAnimationChannel(arte::Owned<arte::gltf::Node> aNode)
+    std::optional<std::vector<Animation::NodeChannel>>
+    getAnimationChannels(arte::Owned<arte::gltf::Node> aNode)
     {
         if(activeAnimation != nullptr)
         {
             Animation & animation = *activeAnimation;
-            if(auto found = animation.nodeToChannel.find(aNode.id());
-               found != animation.nodeToChannel.end())
+            if(auto found = animation.nodeToChannels.find(aNode.id());
+               found != animation.nodeToChannels.end())
             {
                 return found->second;
             }

@@ -80,11 +80,10 @@ struct Animation
     };
 
     std::vector<std::shared_ptr<Sampler>> samplers;
-    // TODO 1 several pathes can coexist for the same node! NodeChannel should be a vector
-    // At most one sampler for each {node, path} pair:
     // > Within one animation, each target (a combination of a node and a path)
     // > MUST NOT be used more than once.
-    std::map<arte::gltf::Index<arte::gltf::Node>, NodeChannel> nodeToChannel;
+    std::map<arte::gltf::Index<arte::gltf::Node>, 
+             std::vector<NodeChannel>> nodeToChannels;
 };
 
 
@@ -159,7 +158,6 @@ void SamplerLinear<T_value>::interpolate(Time_t aTimepoint, T_value & aDestinati
         GLfloat interpolationParam = 
             (time - firstBound.time) / (optionalBound->time - firstBound.time);
 
-        // TODO 1 slerp on quaternions
         if constexpr (std::is_same_v<math::Quaternion<GLfloat>, T_value>)
         {
             aDestination = math::slerp(

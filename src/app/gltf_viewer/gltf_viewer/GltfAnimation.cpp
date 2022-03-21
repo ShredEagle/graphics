@@ -143,8 +143,7 @@ Animation prepare(arte::Const_Owned<arte::gltf::Animation> aAnimation)
             throw std::logic_error{"Animation channel without a target node."};
         }
 
-        result.nodeToChannel.emplace(
-            *channel->target.node,
+        result.nodeToChannels[*channel->target.node].push_back(
             Animation::NodeChannel{
                 .path = channel->target.path,
                 .sampler = result.samplers.at(channel->sampler).get(),
