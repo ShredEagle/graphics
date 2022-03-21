@@ -372,7 +372,17 @@ Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
 }
 
 
-math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode)
+math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node::TRS & aTRS)
+{
+    return 
+        math::trans3d::scale(aTRS.scale.as<math::Size>())
+        * aTRS.rotation.toRotationMatrix()
+        * math::trans3d::translate(aTRS.translation)
+        ;
+}
+
+
+math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node & aNode)
 {
     if(auto matrix = std::get_if<math::AffineMatrix<4, float>>(&aNode.transformation))
     {
@@ -380,12 +390,7 @@ math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode)
     }
     else
     {
-        gltf::Node::TRS & trs = std::get<gltf::Node::TRS>(aNode.transformation);
-        return 
-            math::trans3d::scale(trs.scale.as<math::Size>())
-            * trs.rotation.toRotationMatrix()
-            * math::trans3d::translate(trs.translation)
-            ;
+        return getLocalTransform(std::get<gltf::Node::TRS>(aNode.transformation));
     }
 }
 

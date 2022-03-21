@@ -80,6 +80,10 @@ struct Animation
     };
 
     std::vector<std::shared_ptr<Sampler>> samplers;
+    // TODO 1 several pathes can coexist for the same node! NodeChannel should be a vector
+    // At most one sampler for each {node, path} pair:
+    // > Within one animation, each target (a combination of a node and a path)
+    // > MUST NOT be used more than once.
     std::map<arte::gltf::Index<arte::gltf::Node>, NodeChannel> nodeToChannel;
 };
 
@@ -145,18 +149,31 @@ Keyframes<T_value>::getBounds(Time_t aTimepoint) const
 template <class T_value>
 void SamplerLinear<T_value>::interpolate(Time_t aTimepoint, T_value & aDestination) const
 {
-    auto [firstBound, optionalBound] = keyframes.getBounds(aTimepoint);
+    // Implement repeat
+    Time_t time = std::fmod(aTimepoint, keyframes.timestamps.back());
+
+    auto [firstBound, optionalBound] = keyframes.getBounds(time);
 
     if(optionalBound)
     {
         GLfloat interpolationParam = 
-            (aTimepoint - firstBound.time) / (optionalBound->time - firstBound.time);
+            (time - firstBound.time) / (optionalBound->time - firstBound.time);
 
         // TODO 1 slerp on quaternions
-        aDestination = math::lerp(
-            optionalBound->output,
-            firstBound.output,
-            math::Clamped{interpolationParam});
+        if constexpr (std::is_same_v<math::Quaternion<GLfloat>, T_value>)
+        {
+            aDestination = math::slerp(
+                firstBound.output,
+                optionalBound->output,
+                math::Clamped{interpolationParam});
+        }
+        else
+        {
+            aDestination = math::lerp(
+                firstBound.output,
+                optionalBound->output,
+                math::Clamped{interpolationParam});
+        }
     }
     else
     {

@@ -90,7 +90,7 @@ int main(int argc, const char * argv[])
         {
             application.getAppInterface()->clear();
 
-            viewerScene.update();
+            viewerScene.update(timer);
             viewerScene.render();
 
             timer.mark(glfwGetTime());

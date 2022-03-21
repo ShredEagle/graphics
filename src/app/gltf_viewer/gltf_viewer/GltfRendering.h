@@ -105,7 +105,8 @@ std::ostream & operator<<(std::ostream & aOut, const Mesh &);
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
 
-math::AffineMatrix<4, float> getLocalTransform(arte::gltf::Node aNode);
+math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node::TRS & aTRS);
+math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node & aNode);
 
 
 class Renderer

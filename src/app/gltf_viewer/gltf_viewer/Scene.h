@@ -7,6 +7,7 @@
 
 #include <graphics/AppInterface.h>
 #include <graphics/CameraUtilities.h>
+#include <graphics/Timer.h>
 
 #include <renderer/Uniforms.h>
 
@@ -79,6 +80,10 @@ struct Scene
     {
         populateMeshRepository(indexToMeshes, aScene.iterate(&arte::gltf::Scene::nodes));
         populateAnimationRepository(animations, gltf->getAnimations());
+        if (!animations.empty())
+        {
+            activeAnimation = &animations.front();
+        }
 
         const math::Box<GLfloat> aProjectedBox =
             graphics::getViewVolume(appInterface->getWindowSize(), 2.f, 0.f, gViewedDepth);
@@ -93,10 +98,10 @@ struct Scene
             std::bind(&Scene::callbackCursorPosition, this, _1, _2));
     }
 
-    void update()
+    void update(const graphics::Timer & aTimer)
     {
         updateCamera();
-        updateInstances();
+        updateInstances(aTimer);
     }
 
     void updateCamera()
@@ -111,12 +116,12 @@ struct Scene
                                          cameraPosition.getUpTangent()));
     }
 
-    void updateInstances()
+    void updateInstances(const graphics::Timer & aTimer)
     {
         clearInstances(indexToMeshes);
         for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
         {
-            update(node);
+            update(node, aTimer);
         }
 
         for(auto & [index, mesh] : indexToMeshes)
@@ -131,10 +136,32 @@ struct Scene
     // * queue its mesh instance
     // * traverse the node children
     void update(arte::Const_Owned<arte::gltf::Node> aNode,
+                const graphics::Timer & aTimer,
                 math::AffineMatrix<4, float> aParentTransform = 
                     math::AffineMatrix<4, float>::Identity())
     {
-        math::AffineMatrix<4, float> modelTransform = getLocalTransform(aNode) * aParentTransform;
+        math::AffineMatrix<4, float> modelTransform = [&]()
+        {
+            if(auto nodeChannel = getAnimationChannel(aNode))
+            {
+                const arte::gltf::Node::TRS * trs = 
+                    std::get_if<arte::gltf::Node::TRS>(&aNode->transformation);
+                assert(trs);
+
+                auto trsCopy = *trs;
+                switch(nodeChannel->path)
+                {
+                case arte::gltf::Target::Path::Rotation:
+                    nodeChannel->sampler->interpolate(aTimer.time(), trsCopy.rotation);
+                    break;
+                }
+                return getLocalTransform(trsCopy);
+            }
+            else
+            {
+                return getLocalTransform(aNode);
+            }
+        }();
 
         if(aNode->mesh)
         {
@@ -143,8 +170,24 @@ struct Scene
 
         for (auto node : aNode.iterate(&arte::gltf::Node::children))
         {
-            update(node, modelTransform);
+            update(node, aTimer, modelTransform);
         }
+    }
+
+
+    std::optional<Animation::NodeChannel>
+    getAnimationChannel(arte::Const_Owned<arte::gltf::Node> aNode)
+    {
+        if(activeAnimation != nullptr)
+        {
+            Animation & animation = *activeAnimation;
+            if(auto found = animation.nodeToChannel.find(aNode.id());
+               found != animation.nodeToChannel.end())
+            {
+                return found->second;
+            }
+        }
+        return std::nullopt;
     }
 
 
@@ -220,6 +263,7 @@ struct Scene
     const arte::Const_Owned<arte::gltf::Scene> & scene;
     MeshRepository indexToMeshes;
     AnimationRepository animations;
+    Animation * activeAnimation{nullptr};
     Polar cameraPosition{2.f};
     Renderer renderer;
     PolygonMode polygonMode{PolygonMode::Fill};
