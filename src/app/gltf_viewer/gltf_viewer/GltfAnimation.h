@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <arte/Gltf.h>
+#include <arte/gltf/Gltf.h>
 
 #include <renderer/GL_Loader.h>
 

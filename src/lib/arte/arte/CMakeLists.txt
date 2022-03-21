@@ -2,7 +2,6 @@ set(TARGET_NAME arte)
 
 set(${TARGET_NAME}_HEADERS
     Freetype.h
-    Gltf.h
     Image.h
     Logging.h
     SpriteSheet.h
@@ -13,15 +12,19 @@ set(${TARGET_NAME}_HEADERS
     detail/3rdparty/stb_image_include.h
     detail/ImageFormats/Netpbm.h
     detail/ImageFormats/StbImageFormats.h
+
+    gltf/Gltf.h
+    gltf/Owned.h
 )
 
 set(${TARGET_NAME}_SOURCES
-    Gltf.cpp
     Image.cpp
     Logging.cpp
     SpriteSheet.cpp
 
     detail/3rdparty/stb_image.cpp
+
+    gltf/Gltf.cpp
 )
 
 add_library(${TARGET_NAME}

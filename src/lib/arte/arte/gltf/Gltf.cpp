@@ -1,9 +1,9 @@
 #include "Gltf.h"
 
-#include "Logging.h"
+#include "../Logging.h"
 
-#include "detail/Json.h"
-#include "detail/GltfJson.h"
+#include "../detail/Json.h"
+#include "../detail/GltfJson.h"
 
 
 namespace ad {

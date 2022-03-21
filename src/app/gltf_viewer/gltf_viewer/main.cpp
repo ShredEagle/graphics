@@ -3,7 +3,7 @@
 #include "GltfRendering.h"
 #include "Scene.h"
 
-#include <arte/Gltf.h>
+#include <arte/gltf/Gltf.h>
 #include <arte/Logging.h>
 
 #include <graphics/ApplicationGlfw.h>
