@@ -162,16 +162,31 @@ class Gltf
 public:
     explicit Gltf(const filesystem::path & aGltfJson);
 
+    std::optional<Owned<gltf::Scene>> getDefaultScene();
     std::optional<Const_Owned<gltf::Scene>> getDefaultScene() const;
 
+    std::vector<Owned<gltf::Animation>> getAnimations();
     std::vector<Const_Owned<gltf::Animation>> getAnimations() const;
 
+    Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex);
     Const_Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex) const;
+
+    Owned<gltf::Buffer> get(gltf::Index<gltf::Buffer> aBufferIndex);
     Const_Owned<gltf::Buffer> get(gltf::Index<gltf::Buffer> aBufferIndex) const;
+
+    Owned<gltf::BufferView> get(gltf::Index<gltf::BufferView> aBufferViewIndex);
     Const_Owned<gltf::BufferView> get(gltf::Index<gltf::BufferView> aBufferViewIndex) const;
+
+    Owned<gltf::Mesh> get(gltf::Index<gltf::Mesh> aMeshIndex);
     Const_Owned<gltf::Mesh> get(gltf::Index<gltf::Mesh> aMeshIndex) const;
+
+    Owned<gltf::Node> get(gltf::Index<gltf::Node> aNodeIndex);
     Const_Owned<gltf::Node> get(gltf::Index<gltf::Node> aNodeIndex) const;
+
+    Owned<gltf::Scene> get(gltf::Index<gltf::Scene> aSceneIndex);
     Const_Owned<gltf::Scene> get(gltf::Index<gltf::Scene> aSceneIndex) const;
+
+    Owned<gltf::Animation> get(gltf::Index<gltf::Animation> aAnimationIndex);
     Const_Owned<gltf::Animation> get(gltf::Index<gltf::Animation> aAnimationIndex) const;
 
     filesystem::path getPathFor(gltf::Uri aFileUri) const;

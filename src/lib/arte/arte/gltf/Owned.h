@@ -67,11 +67,102 @@ namespace gltf {
 
 
 template <class T_element>
+class Const_Owned;
+
+
+template <class T_element>
+class Owned
+{
+    friend class Gltf;
+    friend class Const_Owned<T_element>;
+
+public:
+    Owned(Gltf & aGltf, T_element & aElement, gltf::Index<T_element> aIndex);
+
+    operator T_element &()
+    { return mElement; }
+
+    T_element * operator->()
+    {
+        return &mElement;
+    }
+
+    T_element & operator*()
+    {
+        return mElement;
+    }
+
+    gltf::Index<T_element> id() const
+    {
+        return mIndex;
+    }
+
+    template <class T_indexed>
+    Owned<T_indexed> get(gltf::Index<T_indexed> aIndex);
+
+    template <class T_indexed>
+    Owned<T_indexed> get(gltf::Index<T_indexed> T_element::* aDataMember)
+    {
+        return get(mElement.*aDataMember);
+    }
+
+    template <class T_indexed>
+    Owned<T_indexed> get(std::optional<gltf::Index<T_indexed>> T_element::* aDataMember)
+    {
+        return get(*(mElement.*aDataMember));
+    }
+
+    template <class T_member>
+    std::vector<Owned<T_member>> 
+    iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector)
+    {
+        std::vector<Owned<T_member>> result;
+        for (gltf::Index<T_member> index : mElement.*aMemberIndexVector)
+        {
+            result.emplace_back(mOwningGltf.get(index));
+        }
+        return result;
+    }
+
+    // TODO make lazy iteration
+    template <class T_member>
+    std::vector<Owned<T_member>> iterate(std::vector<T_member> T_element::* aMemberVector)
+    {
+        std::vector<Owned<T_member>> result;
+        for (std::size_t id = 0; id != (mElement.*aMemberVector).size(); ++id)
+        {
+            result.emplace_back(mOwningGltf, (mElement.*aMemberVector)[id], id);
+        }
+        return result;
+    }
+
+    filesystem::path getFilePath(gltf::Uri T_element::* aMemberUri) const
+    {
+        return mOwningGltf.getPathFor(mElement.*aMemberUri);
+    }
+
+    filesystem::path getFilePath(std::optional<gltf::Uri> T_element::* aMemberUri) const
+    {
+        return mOwningGltf.getPathFor(*(mElement.*aMemberUri));
+    }
+
+
+private:
+    Gltf & mOwningGltf;
+    T_element & mElement; 
+    gltf::Index<T_element> mIndex;
+};
+
+
+
+template <class T_element>
 class Const_Owned
 {
     friend class Gltf;
 
 public:
+    /*implicit*/Const_Owned(Owned<T_element> aOwned);
+
     Const_Owned(const Gltf & aGltf, const T_element & aElement, gltf::Index<T_element> aIndex);
 
     operator const T_element &() const
@@ -177,6 +268,27 @@ namespace gltf
 
      
 } // namespace gltf
+
+
+template <class T_element>
+Owned<T_element>::Owned(Gltf & aGltf, T_element & aElement, gltf::Index<T_element> aIndex) :
+    mOwningGltf{aGltf},
+    mElement{aElement},
+    mIndex{aIndex}
+{}
+
+
+template <class T_element>
+template <class T_indexed>
+Owned<T_indexed> Owned<T_element>::get(gltf::Index<T_indexed> aIndex)
+{
+    return mOwningGltf.get(aIndex);
+}
+
+template <class T_element>
+Const_Owned<T_element>::Const_Owned(Owned<T_element> aOwned) :
+    Const_Owned{aOwned.mOwningGltf, aOwned.mElement, aOwned.mIndex}
+{}
 
 
 template <class T_element>

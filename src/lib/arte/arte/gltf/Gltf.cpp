@@ -389,6 +389,15 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
 }
 
 
+std::optional<Owned<gltf::Scene>> Gltf::getDefaultScene()
+{
+    if (mDefaultScene)
+    {
+        return get(*mDefaultScene);
+    }
+    return std::nullopt;
+}
+
 std::optional<Const_Owned<gltf::Scene>> Gltf::getDefaultScene() const
 {
     if (mDefaultScene)
@@ -398,6 +407,16 @@ std::optional<Const_Owned<gltf::Scene>> Gltf::getDefaultScene() const
     return std::nullopt;
 }
 
+
+std::vector<Owned<gltf::Animation>> Gltf::getAnimations()
+{
+    std::vector<Owned<gltf::Animation>> result;
+    for (std::size_t id = 0; id != mAnimations.size(); ++id)
+    {
+        result.emplace_back(*this, mAnimations[id], id);
+    }
+    return result;
+}
 
 std::vector<Const_Owned<gltf::Animation>> Gltf::getAnimations() const
 {
@@ -410,11 +429,21 @@ std::vector<Const_Owned<gltf::Animation>> Gltf::getAnimations() const
 }
 
 
+Owned<gltf::Accessor> Gltf::get(gltf::Index<gltf::Accessor> aAccessorIndex)
+{
+    return {*this, mAccessors.at(aAccessorIndex), aAccessorIndex};
+}
+
 Const_Owned<gltf::Accessor> Gltf::get(gltf::Index<gltf::Accessor> aAccessorIndex) const
 {
     return {*this, mAccessors.at(aAccessorIndex), aAccessorIndex};
 }
 
+
+Owned<gltf::Buffer> Gltf::get(gltf::Index<gltf::Buffer> aBufferIndex)
+{
+    return {*this, mBuffers.at(aBufferIndex), aBufferIndex};
+}
 
 Const_Owned<gltf::Buffer> Gltf::get(gltf::Index<gltf::Buffer> aBufferIndex) const
 {
@@ -422,11 +451,21 @@ Const_Owned<gltf::Buffer> Gltf::get(gltf::Index<gltf::Buffer> aBufferIndex) cons
 }
 
 
+Owned<gltf::BufferView> Gltf::get(gltf::Index<gltf::BufferView> aBufferViewIndex)
+{
+    return {*this, mBufferViews.at(aBufferViewIndex), aBufferViewIndex};
+}
+
 Const_Owned<gltf::BufferView> Gltf::get(gltf::Index<gltf::BufferView> aBufferViewIndex) const
 {
     return {*this, mBufferViews.at(aBufferViewIndex), aBufferViewIndex};
 }
 
+
+Owned<gltf::Mesh> Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex)
+{
+    return {*this, mMeshes.at(aMeshIndex), aMeshIndex};
+}
 
 Const_Owned<gltf::Mesh> Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
 {
@@ -434,17 +473,32 @@ Const_Owned<gltf::Mesh> Gltf::get(gltf::Index<gltf::Mesh> aMeshIndex) const
 }
 
 
+Owned<Node> Gltf::get(gltf::Index<gltf::Node> aNodeIndex)
+{
+    return {*this, mNodes.at(aNodeIndex), aNodeIndex};
+}
+
 Const_Owned<Node> Gltf::get(gltf::Index<gltf::Node> aNodeIndex) const
 {
     return {*this, mNodes.at(aNodeIndex), aNodeIndex};
 }
 
 
+Owned<gltf::Scene> Gltf::get(gltf::Index<gltf::Scene> aSceneIndex)
+{
+    return {*this, mScenes.at(aSceneIndex), aSceneIndex};
+}
+
 Const_Owned<gltf::Scene> Gltf::get(gltf::Index<gltf::Scene> aSceneIndex) const
 {
     return {*this, mScenes.at(aSceneIndex), aSceneIndex};
 }
 
+
+Owned<gltf::Animation> Gltf::get(gltf::Index<gltf::Animation> aAnimationIndex)
+{
+    return {*this, mAnimations.at(aAnimationIndex), aAnimationIndex};
+}
 
 Const_Owned<gltf::Animation> Gltf::get(gltf::Index<gltf::Animation> aAnimationIndex) const
 {

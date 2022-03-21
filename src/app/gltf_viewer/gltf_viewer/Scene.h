@@ -45,7 +45,7 @@ void clearInstances(MeshRepository & aRepository)
 template <class T_nodeRange>
 void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aNodes)
 {
-    for (arte::Const_Owned<arte::gltf::Node> node : aNodes)
+    for (arte::Owned<arte::gltf::Node> node : aNodes)
     {
         if(node->mesh && !aRepository.contains(*node->mesh))
         {
@@ -62,7 +62,7 @@ void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aN
 template <class T_animationRange>
 void populateAnimationRepository(AnimationRepository & aRepository, const T_animationRange & aAnimations)
 {
-    for (arte::Const_Owned<arte::gltf::Animation> animation : aAnimations)
+    for (arte::Owned<arte::gltf::Animation> animation : aAnimations)
     {
         aRepository.push_back(prepare(animation));
     }
@@ -71,15 +71,15 @@ void populateAnimationRepository(AnimationRepository & aRepository, const T_anim
 
 struct Scene
 {
-    Scene(std::shared_ptr<arte::Gltf> aGltf,
-          arte::Const_Owned<arte::gltf::Scene> aScene,
+    Scene(arte::Gltf aGltf,
+          arte::gltf::Index<arte::gltf::Scene> aSceneIndex,
           std::shared_ptr<graphics::AppInterface> aAppInterface) :
         gltf{std::move(aGltf)},
-        scene{aScene},
+        scene{gltf.get(aSceneIndex)},
         appInterface{std::move(aAppInterface)}
     {
-        populateMeshRepository(indexToMeshes, aScene.iterate(&arte::gltf::Scene::nodes));
-        populateAnimationRepository(animations, gltf->getAnimations());
+        populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
+        populateAnimationRepository(animations, gltf.getAnimations());
         if (!animations.empty())
         {
             activeAnimation = &animations.front();
@@ -135,7 +135,7 @@ struct Scene
     // * update the node (animation)
     // * queue its mesh instance
     // * traverse the node children
-    void update(arte::Const_Owned<arte::gltf::Node> aNode,
+    void update(arte::Owned<arte::gltf::Node> aNode,
                 const graphics::Timer & aTimer,
                 math::AffineMatrix<4, float> aParentTransform = 
                     math::AffineMatrix<4, float>::Identity())
@@ -176,7 +176,7 @@ struct Scene
 
 
     std::optional<Animation::NodeChannel>
-    getAnimationChannel(arte::Const_Owned<arte::gltf::Node> aNode)
+    getAnimationChannel(arte::Owned<arte::gltf::Node> aNode)
     {
         if(activeAnimation != nullptr)
         {
@@ -259,8 +259,8 @@ struct Scene
         Line,
     };
 
-    std::shared_ptr<arte::Gltf> gltf;
-    const arte::Const_Owned<arte::gltf::Scene> & scene;
+    arte::Gltf gltf;
+    arte::Owned<arte::gltf::Scene> scene;
     MeshRepository indexToMeshes;
     AnimationRepository animations;
     Animation * activeAnimation{nullptr};

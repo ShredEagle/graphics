@@ -65,15 +65,15 @@ int main(int argc, const char * argv[])
 
         po::variables_map arguments = handleCommandLineArguments(argc, argv);
 
-        auto gltf = std::make_shared<arte::Gltf>(arguments["gltf-path"].as<std::string>());
+        arte::Gltf gltf{arguments["gltf-path"].as<std::string>()};
 
-        arte::Const_Owned<arte::gltf::Scene> gltfScene = [&]()
+        arte::gltf::Index<arte::gltf::Scene> gltfSceneIndex = [&]()
         {
-            if (auto defaultScene = gltf->getDefaultScene())
+            if (auto defaultScene = gltf.getDefaultScene())
             {
                 auto scene = *defaultScene;
                 ADLOG(gltfviewer::gPrepareLogger, info)("Rendering default scene: {}.", *scene);
-                return scene;
+                return scene.id();
             }
             throw std::logic_error{"Viewer expects a default scene"};
         }();
@@ -82,7 +82,7 @@ int main(int argc, const char * argv[])
         ApplicationGlfw application("glTF Viewer", gWindowSize);
 
         // Requires OpenGL context to call gl functions
-        Scene viewerScene{gltf, gltfScene, application.getAppInterface()};
+        Scene viewerScene{gltf, gltfSceneIndex, application.getAppInterface()};
 
         Timer timer{glfwGetTime(), 0.};
 
