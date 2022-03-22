@@ -34,7 +34,7 @@ using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>,
 using AnimationRepository = std::vector<Animation>;
 
 
-void clearInstances(MeshRepository & aRepository)
+inline void clearInstances(MeshRepository & aRepository)
 {
     for(auto & [index, mesh] : aRepository)
     {
@@ -88,9 +88,8 @@ struct Scene
             activeAnimation = &animations.front();
         }
 
-        const math::Box<GLfloat> aProjectedBox =
-            graphics::getViewVolume(appInterface->getWindowSize(), 2.f, 0.f, gViewedDepth);
-        renderer.setProjectionTransformation(math::trans3d::orthographicProjection(aProjectedBox));
+        initializePrograms();
+        renderer.changeProgram(shaderPrograms.at(currentProgram));
         
         // Not enabled by default OpenGL context.
         glEnable(GL_DEPTH_TEST);
@@ -103,6 +102,8 @@ struct Scene
         appInterface->registerCursorPositionCallback(
             std::bind(&Scene::callbackCursorPosition, this, _1, _2));
     }
+
+    void initializePrograms();
 
     void update(const graphics::Timer & aTimer)
     {
@@ -230,6 +231,13 @@ struct Scene
                 break;
             }
         }
+
+        else if (key == GLFW_KEY_P && action == GLFW_PRESS)
+        {
+            ++currentProgram;
+            currentProgram %= shaderPrograms.size();
+            renderer.changeProgram(shaderPrograms.at(currentProgram));
+        }
     }
 
     void callbackMouseButton(int button, int action, int mods, double xpos, double ypos)
@@ -274,9 +282,11 @@ struct Scene
     MeshRepository indexToMeshes;
     AnimationRepository animations;
     Animation * activeAnimation{nullptr};
-    Polar cameraPosition{2.f};
+    Polar cameraPosition{3.f};
     Renderer renderer;
     PolygonMode polygonMode{PolygonMode::Fill};
+    std::vector<std::shared_ptr<graphics::Program>> shaderPrograms;
+    std::size_t currentProgram{1};
     std::shared_ptr<graphics::AppInterface> appInterface;
     std::optional<math::Position<2, GLfloat>> previousDragPosition;
 

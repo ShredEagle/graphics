@@ -459,16 +459,16 @@ void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
 
 
 Renderer::Renderer() :
-    mProgram{graphics::makeLinkedProgram({
+    mProgram{std::make_shared<graphics::Program>(graphics::makeLinkedProgram({
         {GL_VERTEX_SHADER,   gltfviewer::gNaiveVertexShader},
         {GL_FRAGMENT_SHADER, gltfviewer::gNaiveFragmentShader},
-    })}
+    }))}
 {}
 
 
 void Renderer::render(const Mesh & aMesh) const
 {
-    graphics::bind_guard boundProgram{mProgram};
+    graphics::bind_guard boundProgram{*mProgram};
 
     for (const auto & primitive : aMesh.primitives)
     {
@@ -479,15 +479,20 @@ void Renderer::render(const Mesh & aMesh) const
 
 void Renderer::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
 {
-    setUniform(mProgram, "u_camera", aTransformation); 
+    setUniform(*mProgram, "u_camera", aTransformation); 
 }
 
 
 void Renderer::setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation)
 {
-    setUniform(mProgram, "u_projection", aTransformation); 
+    setUniform(*mProgram, "u_projection", aTransformation); 
 }
 
+
+void Renderer::changeProgram(std::shared_ptr<graphics::Program> aNewProgram)
+{
+    mProgram = std::move(aNewProgram);
+}
 
 } // namespace gltfviewer
 } // namespace ad 

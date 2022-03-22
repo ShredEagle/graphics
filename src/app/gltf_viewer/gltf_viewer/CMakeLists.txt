@@ -16,6 +16,7 @@ set(${TARGET_NAME}_SOURCES
     LoadBuffer.cpp
     Logging.cpp
     main.cpp
+    Scene.cpp
 )
 
 find_package(Boost REQUIRED COMPONENTS program_options)

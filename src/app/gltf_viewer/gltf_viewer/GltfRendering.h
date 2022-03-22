@@ -119,8 +119,10 @@ public:
 
     void render(const Mesh & aMesh) const;
 
+    void changeProgram(std::shared_ptr<graphics::Program> aNewProgram);
+
 private:
-    graphics::Program mProgram;
+    std::shared_ptr<graphics::Program> mProgram;
 };
 
 } // namespace gltfviewer
