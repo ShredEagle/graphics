@@ -250,8 +250,10 @@ struct Scene
             math::Position<2, GLfloat> cursorPosition{(GLfloat)xpos, (GLfloat)ypos};
             auto angularIncrements = (cursorPosition - *previousDragPosition).cwMul(gMouseControlFactor);
 
-            cameraPosition.azimuthal += Radian{angularIncrements.x()};
-            cameraPosition.polar += Radian{angularIncrements.y()};
+            // The viewed object should turn in the direction of the mouse,
+            // so the camera angles are changed in the opposite direction (hence the substractions).
+            cameraPosition.azimuthal -= Radian{angularIncrements.x()};
+            cameraPosition.polar -= Radian{angularIncrements.y()};
             cameraPosition.polar = std::max(Radian{0}, std::min(Radian{math::pi<GLfloat>}, cameraPosition.polar));
 
             previousDragPosition = cursorPosition;
