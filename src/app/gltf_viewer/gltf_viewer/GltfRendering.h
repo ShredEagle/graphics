@@ -94,7 +94,7 @@ struct MeshPrimitive
 struct Mesh
 {
     std::vector<MeshPrimitive> primitives;
-    InstanceList instances;
+    InstanceList gpuInstances;
 };
 
 

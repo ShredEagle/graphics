@@ -366,7 +366,7 @@ Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
     Mesh mesh;
     for (auto & primitive : aMesh.iterate(&arte::gltf::Mesh::primitives))     
     {
-        mesh.primitives.emplace_back(primitive, mesh.instances);
+        mesh.primitives.emplace_back(primitive, mesh.gpuInstances);
     }
     return mesh;
 }
@@ -472,7 +472,7 @@ void Renderer::render(const Mesh & aMesh) const
 
     for (const auto & primitive : aMesh.primitives)
     {
-        gltfviewer::render(primitive, aMesh.instances.size());
+        gltfviewer::render(primitive, aMesh.gpuInstances.size());
     }
 }
 

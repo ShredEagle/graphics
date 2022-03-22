@@ -3,6 +3,7 @@
 
 #include "GltfAnimation.h"
 #include "GltfRendering.h"
+#include "Logging.h"
 #include "Polar.h"
 
 #include <graphics/AppInterface.h>
@@ -42,6 +43,7 @@ void clearInstances(MeshRepository & aRepository)
 }
 
 
+/// \brief Associate a gltf::mesh index to a viewer's Mesh instance.
 template <class T_nodeRange>
 void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aNodes)
 {
@@ -59,6 +61,7 @@ void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aN
 }
 
 
+/// \brief Create viewer's Animation instances for each animation in the provided range.
 template <class T_animationRange>
 void populateAnimationRepository(AnimationRepository & aRepository, const T_animationRange & aAnimations)
 {
@@ -101,7 +104,8 @@ struct Scene
     void update(const graphics::Timer & aTimer)
     {
         updateCamera();
-        updateInstances(aTimer);
+        updateAnimation(aTimer);
+        updatesInstances();
     }
 
     void updateCamera()
@@ -116,40 +120,29 @@ struct Scene
                                          cameraPosition.getUpTangent()));
     }
 
-    void updateInstances(const graphics::Timer & aTimer)
+    void updateAnimation(const graphics::Timer & aTimer)
     {
-        clearInstances(indexToMeshes);
-        for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
+        if(activeAnimation != nullptr)
         {
-            update(node, aTimer);
-        }
-
-        for(auto & [index, mesh] : indexToMeshes)
-        {
-            // Update the VBO containing instance data with the client vector of instance data
-            mesh.mesh.instances.update(mesh.instances);
-        }
-    }
-
-    // Recursive function to:
-    // * update the node (animation)
-    // * queue its mesh instance
-    // * traverse the node children
-    void update(arte::Owned<arte::gltf::Node> aNode,
-                const graphics::Timer & aTimer,
-                math::AffineMatrix<4, float> aParentTransform = 
-                    math::AffineMatrix<4, float>::Identity())
-    {
-        math::AffineMatrix<4, float> modelTransform = [&]()
-        {
-            if(auto nodeChannels = getAnimationChannels(aNode))
+            Animation & animation = *activeAnimation;
+            for (const auto & [nodeIndex, nodeChannels] : animation.nodeToChannels)
             {
-                for (auto nodeChannel : *nodeChannels)
-                {
-                    arte::gltf::Node::TRS * trs = 
-                        std::get_if<arte::gltf::Node::TRS>(&aNode->transformation);
-                    assert(trs);
+                auto node = scene.get(nodeIndex);
+                arte::gltf::Node::TRS * trs = 
+                    std::get_if<arte::gltf::Node::TRS>(&node->transformation);
 
+                // TODO Ad 2022/03/22: I suspect it is legal to animate a channel for
+                // a node where it was not explicitly specified in the gltf.
+                if(trs == nullptr)
+                {
+                    ADLOG(gDrawLogger, critical)
+                         ("Unsupported: Node #{} animates a transformation channel, but did not specify any of TRS.",
+                          node.id());
+                    throw std::logic_error{"Animation on a node without any of TRS."};
+                }
+
+                for (auto nodeChannel : nodeChannels)
+                {
                     switch(nodeChannel.path)
                     {
                     case arte::gltf::Target::Path::Translation:
@@ -164,8 +157,32 @@ struct Scene
                     }
                 }
             }
-            return getLocalTransform(aNode);
-        }();
+        }
+    }
+
+    void updatesInstances()
+    {
+        clearInstances(indexToMeshes);
+        for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
+        {
+            updatesInstances(node);
+        }
+
+        for(auto & [index, pair] : indexToMeshes)
+        {
+            // Update the VBO containing instance data with the client vector of instance data
+            pair.mesh.gpuInstances.update(pair.instances);
+        }
+    }
+
+    // Recursive function to:
+    // * queue the mesh instance
+    // * traverse the node children
+    void updatesInstances(arte::Owned<arte::gltf::Node> aNode,
+                           math::AffineMatrix<4, float> aParentTransform = 
+                               math::AffineMatrix<4, float>::Identity())
+    {
+        math::AffineMatrix<4, float> modelTransform = getLocalTransform(aNode);
 
         if(aNode->mesh)
         {
@@ -174,24 +191,8 @@ struct Scene
 
         for (auto node : aNode.iterate(&arte::gltf::Node::children))
         {
-            update(node, aTimer, modelTransform);
+            updatesInstances(node, modelTransform);
         }
-    }
-
-
-    std::optional<std::vector<Animation::NodeChannel>>
-    getAnimationChannels(arte::Owned<arte::gltf::Node> aNode)
-    {
-        if(activeAnimation != nullptr)
-        {
-            Animation & animation = *activeAnimation;
-            if(auto found = animation.nodeToChannels.find(aNode.id());
-               found != animation.nodeToChannels.end())
-            {
-                return found->second;
-            }
-        }
-        return std::nullopt;
     }
 
 
