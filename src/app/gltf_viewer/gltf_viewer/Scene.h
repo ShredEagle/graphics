@@ -91,6 +91,9 @@ struct Scene
         const math::Box<GLfloat> aProjectedBox =
             graphics::getViewVolume(appInterface->getWindowSize(), 2.f, 0.f, gViewedDepth);
         renderer.setProjectionTransformation(math::trans3d::orthographicProjection(aProjectedBox));
+        
+        // Not enabled by default OpenGL context.
+        glEnable(GL_DEPTH_TEST);
 
         using namespace std::placeholders;
         appInterface->registerKeyCallback(
