@@ -18,7 +18,7 @@ public:
     AppInterface(std::function<void()> aCloseAppCallback);
 
     static void clear();
-    static void setClearColor(math::hdr::Rgb aClearColor);
+    static void setClearColor(math::hdr::Rgb_f aClearColor);
 
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;

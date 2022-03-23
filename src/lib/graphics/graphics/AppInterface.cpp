@@ -78,11 +78,11 @@ void AppInterface::clear()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 }
 
-void AppInterface::setClearColor(math::hdr::Rgb aClearColor)
+void AppInterface::setClearColor(math::hdr::Rgb_f aClearColor)
 {
-    glClearColor((GLfloat)aClearColor.r(),
-                 (GLfloat)aClearColor.g(),
-                 (GLfloat)aClearColor.b(),
+    glClearColor(aClearColor.r(),
+                 aClearColor.g(),
+                 aClearColor.b(),
                  1.f);
 }
 
