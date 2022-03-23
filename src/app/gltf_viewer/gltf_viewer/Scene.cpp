@@ -32,10 +32,10 @@ void Scene::initializePrograms()
                 {GL_FRAGMENT_SHADER, gltfviewer::gPhongFragmentShader},
             }));
         setUniform(*phong, "u_projection", projectionTransform); 
-        setUniform(*phong, "u_light.position_world", math::Vec<4, GLfloat>{-2.f, 3.f, 8.f, 1.f}); 
-        setUniform(*phong, "u_light.color", math::hdr::gWhite<GLfloat>/2.5f);
+        setUniform(*phong, "u_light.position_world", math::Vec<4, GLfloat>{-2.f, 1.f, 6.f, 1.f}); 
+        setUniform(*phong, "u_light.color", math::hdr::gWhite<GLfloat>/2.f);
         setUniformInt(*phong, "u_light.specularExponent", 1000);
-        setUniformFloat(*phong, "u_light.ambient", 0.3f);
+        setUniformFloat(*phong, "u_light.ambient", 0.4f);
         shaderPrograms.push_back(std::move(phong));
     }
 }

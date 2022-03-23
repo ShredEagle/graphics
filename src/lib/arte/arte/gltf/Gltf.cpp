@@ -15,44 +15,48 @@ using namespace gltf;
 
 namespace {
 
-constexpr const char * gTagAccessors        = "accessors";
-constexpr const char * gTagAnimations       = "animations";
-constexpr const char * gTagAttributes       = "attributes";
-constexpr const char * gTagBuffer           = "buffer";
-constexpr const char * gTagBuffers          = "buffers";
-constexpr const char * gTagBufferView       = "bufferView";
-constexpr const char * gTagBufferViews      = "bufferViews";
-constexpr const char * gTagByteLength       = "byteLength";
-constexpr const char * gTagByteOffset       = "byteOffset";
-constexpr const char * gTagByteStride       = "byteStride";
-constexpr const char * gTagChannels         = "channels";
-constexpr const char * gTagChildren         = "children";
-constexpr const char * gTagCount            = "count";
-constexpr const char * gTagComponentType    = "componentType";
-constexpr const char * gTagIndices          = "indices";
-constexpr const char * gTagInput            = "input";
-constexpr const char * gTagInterpolation    = "interpolation";
-constexpr const char * gTagMatrix           = "matrix";
-constexpr const char * gTagMesh             = "mesh";
-constexpr const char * gTagMeshes           = "meshes";
-constexpr const char * gTagMode             = "mode";
-constexpr const char * gTagName             = "name";
-constexpr const char * gTagNode             = "node";
-constexpr const char * gTagNodes            = "nodes";
-constexpr const char * gTagNormalized       = "normalized";
-constexpr const char * gTagOutput           = "output";
-constexpr const char * gTagPath             = "path";
-constexpr const char * gTagPrimitives       = "primitives";
-constexpr const char * gTagRotation         = "rotation";
-constexpr const char * gTagSampler          = "sampler";
-constexpr const char * gTagSamplers         = "samplers";
-constexpr const char * gTagScale            = "scale";
-constexpr const char * gTagScene            = "scene";
-constexpr const char * gTagScenes           = "scenes";
-constexpr const char * gTagTarget           = "target";
-constexpr const char * gTagTranslation      = "translation";
-constexpr const char * gTagType             = "type";
-constexpr const char * gTagUri              = "uri";
+constexpr const char * gTagAccessors            = "accessors";
+constexpr const char * gTagAnimations           = "animations";
+constexpr const char * gTagAttributes           = "attributes";
+constexpr const char * gTagBuffer               = "buffer";
+constexpr const char * gTagBuffers              = "buffers";
+constexpr const char * gTagBufferView           = "bufferView";
+constexpr const char * gTagBufferViews          = "bufferViews";
+constexpr const char * gTagByteLength           = "byteLength";
+constexpr const char * gTagByteOffset           = "byteOffset";
+constexpr const char * gTagByteStride           = "byteStride";
+constexpr const char * gTagChannels             = "channels";
+constexpr const char * gTagChildren             = "children";
+constexpr const char * gTagBaseColorFactor      = "baseColorFactor";
+constexpr const char * gTagCount                = "count";
+constexpr const char * gTagComponentType        = "componentType";
+constexpr const char * gTagIndices              = "indices";
+constexpr const char * gTagInput                = "input";
+constexpr const char * gTagInterpolation        = "interpolation";
+constexpr const char * gTagMaterial             = "material";
+constexpr const char * gTagMaterials            = "materials";
+constexpr const char * gTagMatrix               = "matrix";
+constexpr const char * gTagMesh                 = "mesh";
+constexpr const char * gTagMeshes               = "meshes";
+constexpr const char * gTagMode                 = "mode";
+constexpr const char * gTagName                 = "name";
+constexpr const char * gTagNode                 = "node";
+constexpr const char * gTagNodes                = "nodes";
+constexpr const char * gTagNormalized           = "normalized";
+constexpr const char * gTagOutput               = "output";
+constexpr const char * gTagPath                 = "path";
+constexpr const char * gTagPbrMetallicRoughness = "pbrMetallicRoughness";
+constexpr const char * gTagPrimitives           = "primitives";
+constexpr const char * gTagRotation             = "rotation";
+constexpr const char * gTagSampler              = "sampler";
+constexpr const char * gTagSamplers             = "samplers";
+constexpr const char * gTagScale                = "scale";
+constexpr const char * gTagScene                = "scene";
+constexpr const char * gTagScenes               = "scenes";
+constexpr const char * gTagTarget               = "target";
+constexpr const char * gTagTranslation          = "translation";
+constexpr const char * gTagType                 = "type";
+constexpr const char * gTagUri                  = "uri";
 
 } // namespace anonymous
 
@@ -154,6 +158,18 @@ std::optional<T_value> getOptional(Json aObject, T_tag && aTag)
 }
 
 
+template <class T_value, class T_tag>
+std::optional<T_value> loadOptional(Json aObject, T_tag && aTag)
+{
+    if (aObject.contains(std::forward<T_tag>(aTag)))
+    {
+        return load<T_value>(aObject.at(std::forward<T_tag>(aTag)));
+    }
+    return std::nullopt;
+}
+
+
+
 template <class T_key>
 Json getOptionalArray(const Json & aObject, T_key && aKey)
 {
@@ -168,6 +184,16 @@ void populateVector(const Json & aJson, std::vector<T_object> & aVector, T_tag &
     for (auto object : aJson.at(aTag))
     {
         aVector.push_back(load<T_object>(object));
+    }
+}
+
+
+template <class T_object, class T_tag>
+void populateVectorIfPresent(const Json & aJson, std::vector<T_object> & aVector, T_tag && aTag)
+{
+    if(aJson.contains(aTag))
+    {
+        populateVector(aJson, aVector, aTag);
     }
 }
 
@@ -234,6 +260,7 @@ Primitive load(const Json & aPrimitiveObject)
                 return result;
             }(),
         .indices = getOptional<Index<Accessor>>(aPrimitiveObject, gTagIndices),
+        .material = getOptional<Index<Material>>(aPrimitiveObject, gTagMaterial),
     };
 }
 
@@ -333,6 +360,26 @@ Sampler load(const Json & aJson)
 }
 
 
+template <>
+material::PbrMetallicRoughness load(const Json & aJson)
+{
+    return {
+        .baseColorFactor = 
+            aJson.value<math::hdr::Rgba<float>>(gTagBaseColorFactor,
+                                                math::hdr::Rgba<float>{math::hdr::gWhite<float>}),
+    };
+}
+
+template <>
+Material load(const Json & aJson)
+{
+    return {
+        .name = aJson.value(gTagName, ""),
+        .pbrMetallicRoughness = 
+            loadOptional<material::PbrMetallicRoughness>(aJson, gTagPbrMetallicRoughness),
+    };
+}   
+
 
 // 
 // Output operators
@@ -376,13 +423,11 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVector(json, mScenes, gTagScenes);
     populateVector(json, mNodes, gTagNodes);
     populateVector(json, mMeshes, gTagMeshes);
-    if(json.contains(gTagAnimations))
-    {
-        populateVector(json, mAnimations, gTagAnimations);
-    }
+    populateVectorIfPresent(json, mAnimations, gTagAnimations);
     populateVector(json, mBuffers, gTagBuffers);
     populateVector(json, mBufferViews, gTagBufferViews);
     populateVector(json, mAccessors, gTagAccessors);
+    populateVectorIfPresent(json, mMaterials, gTagMaterials);
 
     ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} animation(s), {} buffer(s).",
                              mScenes.size(), mNodes.size(), mMeshes.size(), mAnimations.size(), mBuffers.size());
@@ -503,6 +548,17 @@ Owned<gltf::Animation> Gltf::get(gltf::Index<gltf::Animation> aAnimationIndex)
 Const_Owned<gltf::Animation> Gltf::get(gltf::Index<gltf::Animation> aAnimationIndex) const
 {
     return {*this, mAnimations.at(aAnimationIndex), aAnimationIndex};
+}
+
+
+Owned<gltf::Material> Gltf::get(gltf::Index<gltf::Material> aMaterialIndex)
+{
+    return {*this, mMaterials.at(aMaterialIndex), aMaterialIndex};
+}
+
+Const_Owned<gltf::Material> Gltf::get(gltf::Index<gltf::Material> aMaterialIndex) const
+{
+    return {*this, mMaterials.at(aMaterialIndex), aMaterialIndex};
 }
 
 

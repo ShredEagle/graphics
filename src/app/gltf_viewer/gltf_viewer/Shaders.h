@@ -29,11 +29,13 @@ inline const GLchar* gNaiveVertexShader = R"#(
 inline const GLchar* gNaiveFragmentShader = R"#(
     #version 400
 
+    uniform vec4 u_baseColorFactor;
+
     out vec4 out_color;
 
     void main(void)
     {
-        out_color = vec4(0.8, 0.8, 0.8, 1.0);
+        out_color = u_baseColorFactor;
     }
 )#";
 
@@ -82,6 +84,7 @@ inline const GLchar* gPhongFragmentShader = R"#(
     in vec4 ex_position_view;
     in vec4 ex_normal_view;
 
+    uniform vec4 u_baseColorFactor;
     uniform Light u_light;
     uniform mat4 u_camera;
 
@@ -89,7 +92,7 @@ inline const GLchar* gPhongFragmentShader = R"#(
 
     void main(void)
     {
-        vec4 materialColor = vec4(0.8, 0.8, 0.8, 1.0);
+        vec4 materialColor = u_baseColorFactor;
 
         vec4 lightDirection_view = normalize(u_camera * u_light.position_world - ex_position_view);
         vec4 bisector_view = vec4(normalize(vec3(0., 0., 1.) + lightDirection_view.xyz), 0.);

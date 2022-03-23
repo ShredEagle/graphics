@@ -3,6 +3,7 @@
 
 #include "Owned.h"
 
+#include <math/Color.h>
 #include <math/Homogeneous.h>
 #include <math/Quaternion.h>
 
@@ -22,6 +23,22 @@ namespace arte {
 namespace gltf {
 
     using EnumType = unsigned int; // this seems to be GLenum type.
+
+    namespace material
+    {
+        struct PbrMetallicRoughness
+        {
+            math::hdr::Rgba<float> baseColorFactor{math::hdr::gWhite<float>};
+        };
+    } // namespace material
+
+    constexpr material::PbrMetallicRoughness gDefaultMaterial;
+
+    struct Material
+    {
+        std::string name;
+        std::optional<material::PbrMetallicRoughness> pbrMetallicRoughness;
+    };
 
     struct Accessor;
 
@@ -118,6 +135,7 @@ namespace gltf {
         EnumType mode;
         std::map<std::string, Index<Accessor>> attributes;
         std::optional<Index<Accessor>> indices;
+        std::optional<Index<Material>> material;
     };
 
     struct Mesh
@@ -189,6 +207,9 @@ public:
     Owned<gltf::Animation> get(gltf::Index<gltf::Animation> aAnimationIndex);
     Const_Owned<gltf::Animation> get(gltf::Index<gltf::Animation> aAnimationIndex) const;
 
+    Owned<gltf::Material> get(gltf::Index<gltf::Material> aMaterialIndex);
+    Const_Owned<gltf::Material> get(gltf::Index<gltf::Material> aMaterialIndex) const;
+
     filesystem::path getPathFor(gltf::Uri aFileUri) const;
 
 private:
@@ -204,6 +225,7 @@ private:
     std::vector<gltf::Buffer> mBuffers;
     std::vector<gltf::BufferView> mBufferViews;
     std::vector<gltf::Accessor> mAccessors;
+    std::vector<gltf::Material> mMaterials;
 };
 
 

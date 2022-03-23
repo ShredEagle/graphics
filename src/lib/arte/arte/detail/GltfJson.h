@@ -32,6 +32,21 @@ namespace nlohmann {
 
 
     template <>
+    struct adl_serializer<ad::math::hdr::Rgba<float>> 
+    {
+        static ad::math::hdr::Rgba<float> from_json(const Json & aJson)
+        {
+            return ad::math::hdr::Rgba<float>{
+                aJson.at(0).get<float>(),
+                aJson.at(1).get<float>(),
+                aJson.at(2).get<float>(),
+                aJson.at(3).get<float>(),
+            };
+        }
+    };
+
+
+    template <>
     struct adl_serializer<ad::math::Quaternion<float>> 
     {
         static ad::math::Quaternion<float> from_json(const Json & aJson)

@@ -62,6 +62,17 @@ private:
 };
 
 
+struct Material
+{
+    Material(arte::Const_Owned<arte::gltf::Material> aMaterial);
+
+    static arte::gltf::material::PbrMetallicRoughness 
+    GetPbr(arte::Const_Owned<arte::gltf::Material> aMaterial);
+
+    math::hdr::Rgba<GLfloat> baseColorFactor;
+};
+
+
 struct MeshPrimitive
 {
     MeshPrimitive(arte::Const_Owned<arte::gltf::Primitive> aPrimitive);
@@ -88,6 +99,8 @@ struct MeshPrimitive
     // several buffer views, for example.
     std::map<arte::gltf::Index<arte::gltf::BufferView>, ViewerVertexBuffer> vbos;
     std::optional<Indices> indices;
+
+    Material material;
 };
 
 

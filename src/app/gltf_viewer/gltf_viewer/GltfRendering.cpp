@@ -199,6 +199,31 @@ Indices::Indices(Const_Owned<gltf::Accessor> aAccessor) :
 {}
 
 
+void InstanceList::update(std::span<Instance> aInstances)
+{
+    {
+        graphics::bind_guard boundBuffer{mVbo};
+        // Orphan the previous buffer, if any
+        glBufferData(GL_ARRAY_BUFFER, aInstances.size_bytes(), NULL, GL_STREAM_DRAW);
+        // Copy value to new buffer
+        glBufferSubData(GL_ARRAY_BUFFER, 0, aInstances.size_bytes(), aInstances.data());
+    }
+    mInstanceCount = aInstances.size();
+}
+
+
+Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
+    baseColorFactor{GetPbr(aMaterial).baseColorFactor}
+{}
+
+
+arte::gltf::material::PbrMetallicRoughness 
+Material::GetPbr(arte::Const_Owned<arte::gltf::Material> aMaterial)
+{
+    return aMaterial->pbrMetallicRoughness.value_or(gltf::gDefaultMaterial);
+}
+
+
 const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::BufferView> aBufferView)
 {
     auto found = vbos.find(aBufferView.id());
@@ -219,21 +244,9 @@ const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::
 }
 
 
-void InstanceList::update(std::span<Instance> aInstances)
-{
-    {
-        graphics::bind_guard boundBuffer{mVbo};
-        // Orphan the previous buffer, if any
-        glBufferData(GL_ARRAY_BUFFER, aInstances.size_bytes(), NULL, GL_STREAM_DRAW);
-        // Copy value to new buffer
-        glBufferSubData(GL_ARRAY_BUFFER, 0, aInstances.size_bytes(), aInstances.data());
-    }
-    mInstanceCount = aInstances.size();
-}
-
-
 MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
-    drawMode{aPrimitive->mode}
+    drawMode{aPrimitive->mode},
+    material{aPrimitive.get(&gltf::Primitive::material)}
 {
     graphics::bind_guard boundVao{vao};
 
@@ -472,6 +485,7 @@ void Renderer::render(const Mesh & aMesh) const
 
     for (const auto & primitive : aMesh.primitives)
     {
+        setUniform(*mProgram, "u_baseColorFactor", primitive.material.baseColorFactor); 
         gltfviewer::render(primitive, aMesh.gpuInstances.size());
     }
 }
