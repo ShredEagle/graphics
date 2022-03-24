@@ -11,6 +11,7 @@
 #include <graphics/Timer.h>
 
 #include <boost/program_options.hpp>
+#include <boost/range/iterator_range.hpp>
 
 
 using namespace ad;
@@ -56,6 +57,33 @@ void initializeLogging()
 }
 
 
+filesystem::path pickFile(filesystem::path aUserPath)
+{
+    if(is_directory(aUserPath)) 
+    {
+        ADLOG(gltfviewer::gPrepareLogger, info)
+         ("User path '{}' is a folder, looking for the first gltf file.", aUserPath);
+
+        using boost::filesystem::directory_iterator;
+        for(auto & entry : boost::make_iterator_range(directory_iterator(aUserPath), {}))
+        {
+            if(extension(entry) == ".gltf")
+            {
+                ADLOG(gltfviewer::gPrepareLogger, debug)("Picking file '{}'.", entry);
+                return entry;
+            }
+        }
+    }
+    else if(is_regular_file(aUserPath))
+    {
+        return aUserPath;
+    }
+    ADLOG(gltfviewer::gPrepareLogger, critical)
+         ("User path '{}' could not be associated to a gltf file.", aUserPath);
+    throw std::runtime_error{"No input file."};
+}
+
+
 
 int main(int argc, const char * argv[])
 {
@@ -65,7 +93,7 @@ int main(int argc, const char * argv[])
 
         po::variables_map arguments = handleCommandLineArguments(argc, argv);
 
-        arte::Gltf gltf{arguments["gltf-path"].as<std::string>()};
+        arte::Gltf gltf{pickFile(arguments["gltf-path"].as<std::string>())};
 
         arte::gltf::Index<arte::gltf::Scene> gltfSceneIndex = [&]()
         {
