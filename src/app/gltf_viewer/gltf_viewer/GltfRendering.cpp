@@ -25,6 +25,7 @@ namespace gltfviewer {
 const std::map<std::string /*semantic*/, GLuint /*vertex attribute index*/> gSemanticToAttribute{
     {"POSITION", 0},
     {"NORMAL", 1},
+    {"TEXCOORD_0", 2}, // TODO Use the texCoord from TextureInfo
 };
 
 
@@ -214,7 +215,14 @@ void InstanceList::update(std::span<Instance> aInstances)
 
 Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
     baseColorFactor{GetPbr(aMaterial).baseColorFactor}
-{}
+{
+    gltf::material::PbrMetallicRoughness pbr = GetPbr(aMaterial);
+    if(pbr.baseColorTexture)
+    {
+        gltf::TextureInfo info = *pbr.baseColorTexture;
+        baseColorTexture = prepare(aMaterial.get<gltf::Texture>(info.index), info);
+    }
+}
 
 
 arte::gltf::material::PbrMetallicRoughness 
@@ -374,6 +382,45 @@ std::ostream & operator<<(std::ostream & aOut, const Mesh & aMesh)
 }
 
 
+std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture,
+                                           arte::gltf::TextureInfo aInfo)
+{
+    // TODO How should this value be decided?
+    constexpr GLint gMipMapLevels = 6;
+
+    auto image = aTexture.get(&gltf::Texture::source);
+
+    arte::Image<math::sdr::Rgba> textureData = loadImageData(image);
+
+    auto result = std::make_shared<graphics::Texture>(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, *result);
+
+    // Allocate texture storage
+    glTexStorage2D(
+        GL_TEXTURE_2D,
+        gMipMapLevels, 
+        GL_RGBA8, // TODO should it be SRGB8_ALPHA8?
+        textureData.width(),
+        textureData.height());
+
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        0,
+        0, 0,
+        textureData.width(), textureData.height(),
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        textureData.data()
+    );
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return result;
+}
+
+
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
 {
     Mesh mesh;
@@ -412,6 +459,7 @@ math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node & aNode)
 void render(const MeshPrimitive & aMeshPrimitive)
 {
     graphics::bind_guard boundVao{aMeshPrimitive.vao};
+
     if (aMeshPrimitive.indices)
     {
         ADLOG(gDrawLogger, trace)
@@ -440,6 +488,10 @@ void render(const MeshPrimitive & aMeshPrimitive)
 void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
 {
     graphics::bind_guard boundVao{aMeshPrimitive.vao};
+
+    glActiveTexture(GL_TEXTURE0 + Renderer::gTextureUnit);
+    glBindTexture(GL_TEXTURE_2D, *aMeshPrimitive.material.baseColorTexture);
+
     if (aMeshPrimitive.indices)
     {
         ADLOG(gDrawLogger, trace)
@@ -467,6 +519,8 @@ void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
             aMeshPrimitive.count,
             aInstanceCount);
     }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
@@ -482,6 +536,8 @@ Renderer::Renderer() :
 void Renderer::render(const Mesh & aMesh) const
 {
     graphics::bind_guard boundProgram{*mProgram};
+
+    setUniformInt(*mProgram, "u_baseColorTex", gTextureUnit); 
 
     for (const auto & primitive : aMesh.primitives)
     {

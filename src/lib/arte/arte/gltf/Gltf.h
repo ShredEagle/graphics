@@ -24,11 +24,43 @@ namespace gltf {
 
     using EnumType = unsigned int; // this seems to be GLenum type.
 
+    struct BufferView;
+
+    //struct Sampler
+    // TODO default sampler "When undefined, a sampler with repeat wrapping and auto filtering"
+
+    struct Image
+    {
+        enum class MimeType
+        {
+            ImageJpeg,
+            ImagePng,
+        };
+
+        std::string name;
+        std::variant<Uri, Index<BufferView>> dataSource; // correspond to either uri or bufferView.
+        std::optional<MimeType> mimeType;
+    };
+
+    struct Texture
+    {
+        std::string name;
+        std::optional<Index<Image>> source;
+        //std::optional<Index<Sampler>> sampler;
+    };
+
+    struct TextureInfo
+    {
+        Index<Texture> index;
+        unsigned int texCoord;
+    };
+
     namespace material
     {
         struct PbrMetallicRoughness
         {
             math::hdr::Rgba<float> baseColorFactor{math::hdr::gWhite<float>};
+            std::optional<TextureInfo> baseColorTexture;
         };
     } // namespace material
 
@@ -210,6 +242,12 @@ public:
     Owned<gltf::Material> get(gltf::Index<gltf::Material> aMaterialIndex);
     Const_Owned<gltf::Material> get(gltf::Index<gltf::Material> aMaterialIndex) const;
 
+    Owned<gltf::Image> get(gltf::Index<gltf::Image> aImageIndex);
+    Const_Owned<gltf::Image> get(gltf::Index<gltf::Image> aImageIndex) const;
+
+    Owned<gltf::Texture> get(gltf::Index<gltf::Texture> aTextureIndex);
+    Const_Owned<gltf::Texture> get(gltf::Index<gltf::Texture> aTextureIndex) const;
+
     filesystem::path getPathFor(gltf::Uri aFileUri) const;
 
 private:
@@ -226,6 +264,8 @@ private:
     std::vector<gltf::BufferView> mBufferViews;
     std::vector<gltf::Accessor> mAccessors;
     std::vector<gltf::Material> mMaterials;
+    std::vector<gltf::Image> mImages;
+    std::vector<gltf::Texture> mTextures;
 };
 
 

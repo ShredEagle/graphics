@@ -48,6 +48,7 @@ inline const GLchar* gPhongVertexShader = R"#(
 
     layout(location=0) in vec4 ve_position;
     layout(location=1) in vec3 ve_normal;
+    layout(location=2) in vec2 ve_baseColorUv;
 
     layout(location=8) in mat4 in_modelTransform;
 
@@ -56,6 +57,7 @@ inline const GLchar* gPhongVertexShader = R"#(
 
     out vec4 ex_position_view;
     out vec4 ex_normal_view;
+    out vec2 ex_baseColorUv;
 
     void main(void)
     {
@@ -64,6 +66,7 @@ inline const GLchar* gPhongVertexShader = R"#(
         ex_normal_view = vec4(
             normalize(transpose(inverse(mat3(modelViewTransform))) * ve_normal),
             0.);
+        ex_baseColorUv = ve_baseColorUv;
 
         gl_Position = u_projection * ex_position_view;
     }
@@ -83,16 +86,24 @@ inline const GLchar* gPhongFragmentShader = R"#(
 
     in vec4 ex_position_view;
     in vec4 ex_normal_view;
+    in vec2 ex_baseColorUv;
 
     uniform vec4 u_baseColorFactor;
     uniform Light u_light;
     uniform mat4 u_camera;
+    uniform sampler2D u_baseColorTex;
 
     out vec4 out_color;
 
+    vec3 sRgbToLinear(vec3 sRgb)
+    {
+        //see: http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+        return sRgb * (sRgb * (sRgb * 0.305306011 + 0.682171111) + 0.012522878);
+    }
+
     void main(void)
     {
-        vec4 materialColor = u_baseColorFactor;
+        vec4 materialColor = u_baseColorFactor * texture(u_baseColorTex, ex_baseColorUv);
 
         vec4 lightDirection_view = normalize(u_camera * u_light.position_world - ex_position_view);
         vec4 bisector_view = vec4(normalize(vec3(0., 0., 1.) + lightDirection_view.xyz), 0.);

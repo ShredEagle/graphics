@@ -8,6 +8,7 @@
 #include <renderer/VertexSpecification.h>
 
 #include <renderer/Shading.h>
+#include <renderer/Texture.h>
 
 #include <span>
 
@@ -70,6 +71,7 @@ struct Material
     GetPbr(arte::Const_Owned<arte::gltf::Material> aMaterial);
 
     math::hdr::Rgba<GLfloat> baseColorFactor;
+    std::shared_ptr<graphics::Texture> baseColorTexture;
 };
 
 
@@ -117,6 +119,9 @@ std::ostream & operator<<(std::ostream & aOut, const Mesh &);
 
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
+std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture,
+                                           arte::gltf::TextureInfo aInfo);
+
 
 math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node::TRS & aTRS);
 math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node & aNode);
@@ -133,6 +138,8 @@ public:
     void render(const Mesh & aMesh) const;
 
     void changeProgram(std::shared_ptr<graphics::Program> aNewProgram);
+
+    static const GLsizei gTextureUnit{0};
 
 private:
     std::shared_ptr<graphics::Program> mProgram;

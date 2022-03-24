@@ -136,6 +136,11 @@ public:
         return result;
     }
 
+    filesystem::path getFilePath(gltf::Uri aUri) const
+    {
+        return mOwningGltf.getPathFor(aUri);
+    }
+
     filesystem::path getFilePath(gltf::Uri T_element::* aMemberUri) const
     {
         return mOwningGltf.getPathFor(mElement.*aMemberUri);
@@ -220,6 +225,11 @@ public:
             result.emplace_back(mOwningGltf, (mElement.*aMemberVector)[id], id);
         }
         return result;
+    }
+
+    filesystem::path getFilePath(gltf::Uri aUri) const
+    {
+        return mOwningGltf.getPathFor(aUri);
     }
 
     filesystem::path getFilePath(gltf::Uri T_element::* aMemberUri) const

@@ -28,8 +28,11 @@ constexpr const char * gTagByteStride           = "byteStride";
 constexpr const char * gTagChannels             = "channels";
 constexpr const char * gTagChildren             = "children";
 constexpr const char * gTagBaseColorFactor      = "baseColorFactor";
+constexpr const char * gTagBaseColorTexture     = "baseColorTexture";
 constexpr const char * gTagCount                = "count";
 constexpr const char * gTagComponentType        = "componentType";
+constexpr const char * gTagImages               = "images";
+constexpr const char * gTagIndex                = "index";
 constexpr const char * gTagIndices              = "indices";
 constexpr const char * gTagInput                = "input";
 constexpr const char * gTagInterpolation        = "interpolation";
@@ -38,6 +41,7 @@ constexpr const char * gTagMaterials            = "materials";
 constexpr const char * gTagMatrix               = "matrix";
 constexpr const char * gTagMesh                 = "mesh";
 constexpr const char * gTagMeshes               = "meshes";
+constexpr const char * gTagMimeType             = "mimeType";
 constexpr const char * gTagMode                 = "mode";
 constexpr const char * gTagName                 = "name";
 constexpr const char * gTagNode                 = "node";
@@ -53,8 +57,11 @@ constexpr const char * gTagSamplers             = "samplers";
 constexpr const char * gTagScale                = "scale";
 constexpr const char * gTagScene                = "scene";
 constexpr const char * gTagScenes               = "scenes";
+constexpr const char * gTagSource               = "source";
 constexpr const char * gTagTarget               = "target";
 constexpr const char * gTagTranslation          = "translation";
+constexpr const char * gTagTexCoord             = "texCoord";
+constexpr const char * gTagTextures             = "textures";
 constexpr const char * gTagType                 = "type";
 constexpr const char * gTagUri                  = "uri";
 
@@ -123,6 +130,17 @@ const std::map<std::string, Sampler::Interpolation> gStringToSamplerInterpolatio
     {"LINEAR",      Sampler::Interpolation::Linear},
     {"STEP",        Sampler::Interpolation::Step},
     {"CUBICSPLINE", Sampler::Interpolation::CubicSpline},
+};
+
+
+const std::array<std::string, 2> gMimeTypeToString{
+    "image/jpeg",
+    "image/png",
+};
+
+const std::map<std::string, Image::MimeType> gStringToMimeType{
+    {"image/jpeg",  Image::MimeType::ImageJpeg},
+    {"image/png",  Image::MimeType::ImagePng},
 };
 
 
@@ -361,14 +379,27 @@ Sampler load(const Json & aJson)
 
 
 template <>
+TextureInfo load(const Json & aJson)
+{
+    return {
+        .index = aJson.at(gTagIndex).get<Index<Texture>>(),
+        .texCoord = aJson.value<unsigned int>(gTagTexCoord, 0),
+    };
+}
+
+
+template <>
 material::PbrMetallicRoughness load(const Json & aJson)
 {
     return {
         .baseColorFactor = 
             aJson.value<math::hdr::Rgba<float>>(gTagBaseColorFactor,
                                                 math::hdr::Rgba<float>{math::hdr::gWhite<float>}),
+        .baseColorTexture = 
+            loadOptional<TextureInfo>(aJson, gTagBaseColorTexture),
     };
 }
+
 
 template <>
 Material load(const Json & aJson)
@@ -378,6 +409,46 @@ Material load(const Json & aJson)
         .pbrMetallicRoughness = 
             loadOptional<material::PbrMetallicRoughness>(aJson, gTagPbrMetallicRoughness),
     };
+}   
+
+
+template <>
+Texture load(const Json & aJson)
+{
+    return {
+        .name = aJson.value(gTagName, ""),
+        .source = getOptional<Index<Image>>(aJson, gTagSource),
+        // TODO sampler
+    };
+}   
+
+
+template <>
+Image load(const Json & aJson)
+{
+    auto handleDataSource = [](const Json & aJson) -> std::variant<Uri, Index<BufferView>>
+    {
+        if (aJson.contains(gTagUri))
+        {
+            return Uri{aJson.at(gTagUri)};
+        }
+        else
+        {
+            return aJson.at(gTagBufferView).get<Index<BufferView>>();
+        }
+    };
+    
+    Image image{
+        .name = aJson.value(gTagName, ""),
+        .dataSource = handleDataSource(aJson),
+    };
+
+    if (aJson.contains(gTagMimeType))
+    {
+        image.mimeType = gStringToMimeType.at(aJson.at(gTagMimeType));
+    }
+
+    return image;
 }   
 
 
@@ -428,6 +499,8 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVector(json, mBufferViews, gTagBufferViews);
     populateVector(json, mAccessors, gTagAccessors);
     populateVectorIfPresent(json, mMaterials, gTagMaterials);
+    populateVectorIfPresent(json, mImages, gTagImages);
+    populateVectorIfPresent(json, mTextures, gTagTextures);
 
     ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} animation(s), {} buffer(s).",
                              mScenes.size(), mNodes.size(), mMeshes.size(), mAnimations.size(), mBuffers.size());
@@ -559,6 +632,28 @@ Owned<gltf::Material> Gltf::get(gltf::Index<gltf::Material> aMaterialIndex)
 Const_Owned<gltf::Material> Gltf::get(gltf::Index<gltf::Material> aMaterialIndex) const
 {
     return {*this, mMaterials.at(aMaterialIndex), aMaterialIndex};
+}
+
+
+Owned<gltf::Image> Gltf::get(gltf::Index<gltf::Image> aImageIndex)
+{
+    return {*this, mImages.at(aImageIndex), aImageIndex};
+}
+
+Const_Owned<gltf::Image> Gltf::get(gltf::Index<gltf::Image> aImageIndex) const
+{
+    return {*this, mImages.at(aImageIndex), aImageIndex};
+}
+
+
+Owned<gltf::Texture> Gltf::get(gltf::Index<gltf::Texture> aTextureIndex)
+{
+    return {*this, mTextures.at(aTextureIndex), aTextureIndex};
+}
+
+Const_Owned<gltf::Texture> Gltf::get(gltf::Index<gltf::Texture> aTextureIndex) const
+{
+    return {*this, mTextures.at(aTextureIndex), aTextureIndex};
 }
 
 
