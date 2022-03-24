@@ -186,7 +186,7 @@ struct Scene
                            math::AffineMatrix<4, float> aParentTransform = 
                                math::AffineMatrix<4, float>::Identity())
     {
-        math::AffineMatrix<4, float> modelTransform = getLocalTransform(aNode);
+        math::AffineMatrix<4, float> modelTransform = getLocalTransform(aNode) * aParentTransform;
 
         if(aNode->mesh)
         {
