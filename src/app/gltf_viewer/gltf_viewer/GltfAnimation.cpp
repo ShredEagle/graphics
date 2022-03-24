@@ -55,17 +55,17 @@ std::vector<T_value> loadAccessorData(arte::Const_Owned<arte::gltf::Accessor> aA
 
 
 template <class T_value>
-Keyframes<T_value> prepareKeyframes(arte::Const_Owned<arte::gltf::Sampler> aSampler)
+Keyframes<T_value> prepareKeyframes(arte::Const_Owned<arte::gltf::animation::Sampler> aSampler)
 {
     return {
-        .timestamps = loadAccessorData<GLfloat>(aSampler.get(&gltf::Sampler::input)),
-        .outputs = loadAccessorData<T_value>(aSampler.get(&gltf::Sampler::output)),
+        .timestamps = loadAccessorData<GLfloat>(aSampler.get(&gltf::animation::Sampler::input)),
+        .outputs = loadAccessorData<T_value>(aSampler.get(&gltf::animation::Sampler::output)),
     };
 }
 
 
 template <class T_value>
-std::shared_ptr<Sampler> selectInterpolation(arte::Const_Owned<arte::gltf::Sampler> aSampler)
+std::shared_ptr<Sampler> selectInterpolation(arte::Const_Owned<arte::gltf::animation::Sampler> aSampler)
 {
     switch(aSampler->interpolation)
     {
@@ -73,7 +73,7 @@ std::shared_ptr<Sampler> selectInterpolation(arte::Const_Owned<arte::gltf::Sampl
         throw std::logic_error{
             "Interpolation '" + to_string(aSampler->interpolation) + "' not supported."
         };
-    case gltf::Sampler::Interpolation::Linear:
+    case gltf::animation::Sampler::Interpolation::Linear:
         return std::make_shared<SamplerLinear<T_value>>(
             prepareKeyframes<T_value>(aSampler));
     }
@@ -81,10 +81,10 @@ std::shared_ptr<Sampler> selectInterpolation(arte::Const_Owned<arte::gltf::Sampl
 
 
 template <class T_componentType>
-std::shared_ptr<Sampler> selectValue(arte::Const_Owned<gltf::Sampler> aSampler)
+std::shared_ptr<Sampler> selectValue(arte::Const_Owned<gltf::animation::Sampler> aSampler)
 {
     using ElementType = gltf::Accessor::ElementType;
-    ElementType elementType = aSampler.get(&gltf::Sampler::output)->type;
+    ElementType elementType = aSampler.get(&gltf::animation::Sampler::output)->type;
     switch(elementType)
     {
     default:
@@ -101,9 +101,9 @@ std::shared_ptr<Sampler> selectValue(arte::Const_Owned<gltf::Sampler> aSampler)
 }
 
 
-std::shared_ptr<Sampler> selectComponent(arte::Const_Owned<gltf::Sampler> aSampler)
+std::shared_ptr<Sampler> selectComponent(arte::Const_Owned<gltf::animation::Sampler> aSampler)
 {
-    GLenum componentType = aSampler.get(&gltf::Sampler::output)->componentType;
+    GLenum componentType = aSampler.get(&gltf::animation::Sampler::output)->componentType;
     switch(componentType)
     {
     default:
@@ -119,7 +119,7 @@ std::shared_ptr<Sampler> selectComponent(arte::Const_Owned<gltf::Sampler> aSampl
 } // namespace preparing
 
 
-std::shared_ptr<Sampler> prepare(arte::Const_Owned<arte::gltf::Sampler> aSampler)
+std::shared_ptr<Sampler> prepare(arte::Const_Owned<arte::gltf::animation::Sampler> aSampler)
 {
     return preparing::selectComponent(aSampler);
 }

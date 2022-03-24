@@ -104,11 +104,11 @@ const std::array<std::string, 4> gTargetPathToString{
     "weights",
 };
 
-const std::map<std::string, Target::Path> gStringToTargetPath{
-    {"translation", Target::Path::Translation},
-    {"rotation",    Target::Path::Rotation},
-    {"scale",       Target::Path::Scale},
-    {"weights",     Target::Path::Weights},
+const std::map<std::string, animation::Target::Path> gStringToTargetPath{
+    {"translation", animation::Target::Path::Translation},
+    {"rotation",    animation::Target::Path::Rotation},
+    {"scale",       animation::Target::Path::Scale},
+    {"weights",     animation::Target::Path::Weights},
 };
 
 
@@ -119,17 +119,17 @@ const std::array<std::string, 3> gSamplerInterpolationToString{
 };
 
 
-std::string to_string(Sampler::Interpolation aInterpolation)
+std::string to_string(animation::Sampler::Interpolation aInterpolation)
 {
     std::size_t index = static_cast<std::size_t>(aInterpolation);
     assert(index < gSamplerInterpolationToString.size());
     return gSamplerInterpolationToString.at(index);
 }
 
-const std::map<std::string, Sampler::Interpolation> gStringToSamplerInterpolation{
-    {"LINEAR",      Sampler::Interpolation::Linear},
-    {"STEP",        Sampler::Interpolation::Step},
-    {"CUBICSPLINE", Sampler::Interpolation::CubicSpline},
+const std::map<std::string, animation::Sampler::Interpolation> gStringToSamplerInterpolation{
+    {"LINEAR",      animation::Sampler::Interpolation::Linear},
+    {"STEP",        animation::Sampler::Interpolation::Step},
+    {"CUBICSPLINE", animation::Sampler::Interpolation::CubicSpline},
 };
 
 
@@ -353,12 +353,12 @@ Animation load(const Json & aJson)
 
 
 template <>
-Channel load(const Json & aJson)
+animation::Channel load(const Json & aJson)
 {
     Json target = aJson.at(gTagTarget);
 
     return {
-        .sampler = aJson.at(gTagSampler).get<Index<Sampler>>(),
+        .sampler = aJson.at(gTagSampler).get<Index<animation::Sampler>>(),
         .target = {
             .node = getOptional<Index<Node>>(target, gTagNode),
             .path = gStringToTargetPath.at(target.at(gTagPath)),
@@ -368,7 +368,7 @@ Channel load(const Json & aJson)
 
 
 template <>
-Sampler load(const Json & aJson)
+animation::Sampler load(const Json & aJson)
 {
     return {
         .input = aJson.at(gTagInput).get<Index<Accessor>>(),

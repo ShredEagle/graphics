@@ -149,13 +149,13 @@ struct Scene
                 {
                     switch(nodeChannel.path)
                     {
-                    case arte::gltf::Target::Path::Translation:
+                    case arte::gltf::animation::Target::Path::Translation:
                         nodeChannel.sampler->interpolate(aTimer.time(), trs->translation);
                         break;
-                    case arte::gltf::Target::Path::Rotation:
+                    case arte::gltf::animation::Target::Path::Rotation:
                         nodeChannel.sampler->interpolate(aTimer.time(), trs->rotation);
                         break;
-                    case arte::gltf::Target::Path::Scale:
+                    case arte::gltf::animation::Target::Path::Scale:
                         nodeChannel.sampler->interpolate(aTimer.time(), trs->scale);
                         break;
                     }

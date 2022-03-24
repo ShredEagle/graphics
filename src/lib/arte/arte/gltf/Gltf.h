@@ -74,47 +74,51 @@ namespace gltf {
 
     struct Accessor;
 
-    struct Sampler
-    {
-        enum class Interpolation
-        {
-            Linear,
-            Step,
-            CubicSpline,
-        };
-
-        Index<Accessor> input;
-        Interpolation interpolation;
-        Index<Accessor> output;
-    };
-
     struct Node;
 
-    struct Target
-    {
-        enum class Path
+    namespace animation {
+
+        struct Sampler
         {
-            Translation,
-            Rotation,
-            Scale,
-            Weights,
+            enum class Interpolation
+            {
+                Linear,
+                Step,
+                CubicSpline,
+            };
+
+            Index<Accessor> input;
+            Interpolation interpolation;
+            Index<Accessor> output;
         };
 
-        std::optional<Index<Node>> node;
-        Path path;
-    };
+        struct Target
+        {
+            enum class Path
+            {
+                Translation,
+                Rotation,
+                Scale,
+                Weights,
+            };
 
-    struct Channel
-    {
-        Index<Sampler> sampler;
-        Target target;
-    };
+            std::optional<Index<Node>> node;
+            Path path;
+        };
+
+        struct Channel
+        {
+            Index<Sampler> sampler;
+            Target target;
+        };
+
+    } // namespace animation
 
     struct Animation
     {
         std::string name;
-        std::vector<Channel> channels;
-        std::vector<Sampler> samplers;
+        std::vector<animation::Channel> channels;
+        std::vector<animation::Sampler> samplers;
     };
 
     struct Buffer
@@ -204,7 +208,7 @@ namespace gltf {
 
 
 std::string to_string(gltf::Accessor::ElementType aElementType);
-std::string to_string(gltf::Sampler::Interpolation aInterpolation);
+std::string to_string(gltf::animation::Sampler::Interpolation aInterpolation);
 
 
 class Gltf

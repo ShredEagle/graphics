@@ -75,7 +75,7 @@ struct Animation
 {
     struct NodeChannel
     {
-        arte::gltf::Target::Path path;
+        arte::gltf::animation::Target::Path path;
         Sampler * sampler;
     };
 
