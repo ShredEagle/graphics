@@ -68,7 +68,7 @@ struct SamplerLinear : public Sampler
 };
 
 
-std::shared_ptr<Sampler> prepare(arte::Const_Owned<arte::gltf::Sampler> aSampler);
+std::shared_ptr<Sampler> prepare(arte::Const_Owned<arte::gltf::animation::Sampler> aSampler);
 
 
 struct Animation
