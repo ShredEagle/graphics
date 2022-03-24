@@ -94,7 +94,7 @@ loadImageFromBytes(std::span<std::byte> aBytes, arte::gltf::Image::MimeType aMim
     return Image::Read(
         gMimeToFormat.at(aMime),
         std::istrstream(reinterpret_cast<const char *>(aBytes.data()), aBytes.size()),
-        arte::ImageOrientation::InvertVerticalAxis);
+        arte::ImageOrientation::Unchanged);
 }
 
 
@@ -123,7 +123,7 @@ loadImageData(arte::Const_Owned<arte::gltf::Image> aImage)
         case arte::gltf::Uri::Type::File:
         {
             ADLOG(gPrepareLogger, trace)("Image #{} data is read from a file URI.", aImage.id());
-            return Image{aImage.getFilePath(*uri), arte::ImageOrientation::InvertVerticalAxis};
+            return Image{aImage.getFilePath(*uri), arte::ImageOrientation::Unchanged};
         }
         default:
             throw std::logic_error{"Invalid uri type."};
