@@ -220,7 +220,7 @@ Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
     if(pbr.baseColorTexture)
     {
         gltf::TextureInfo info = *pbr.baseColorTexture;
-        baseColorTexture = prepare(aMaterial.get<gltf::Texture>(info.index), info);
+        baseColorTexture = prepare(aMaterial.get<gltf::Texture>(info.index));
     }
 }
 
@@ -382,8 +382,7 @@ std::ostream & operator<<(std::ostream & aOut, const Mesh & aMesh)
 }
 
 
-std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture,
-                                           arte::gltf::TextureInfo aInfo)
+std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture)
 {
     // TODO How should this value be decided?
     constexpr GLint gMipMapLevels = 6;
@@ -415,6 +414,24 @@ std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture
 
     glGenerateMipmap(GL_TEXTURE_2D);
 
+    // Sampling parameters
+    {
+        const gltf::texture::Sampler & sampler = aTexture->sampler ? 
+            aTexture.get(&gltf::Texture::sampler)
+            : gltf::texture::gDefaultSampler;
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sampler.wrapS);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, sampler.wrapT);
+        if (sampler.magFilter)
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, *sampler.magFilter);
+        }
+        if (sampler.minFilter)
+        {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, *sampler.minFilter);
+        }
+    }
+   
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return result;

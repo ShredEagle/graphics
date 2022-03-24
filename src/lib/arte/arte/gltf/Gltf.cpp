@@ -36,12 +36,14 @@ constexpr const char * gTagIndex                = "index";
 constexpr const char * gTagIndices              = "indices";
 constexpr const char * gTagInput                = "input";
 constexpr const char * gTagInterpolation        = "interpolation";
+constexpr const char * gTagMagFilter            = "magFilter";
 constexpr const char * gTagMaterial             = "material";
 constexpr const char * gTagMaterials            = "materials";
 constexpr const char * gTagMatrix               = "matrix";
 constexpr const char * gTagMesh                 = "mesh";
 constexpr const char * gTagMeshes               = "meshes";
 constexpr const char * gTagMimeType             = "mimeType";
+constexpr const char * gTagMinFilter            = "minFilter";
 constexpr const char * gTagMode                 = "mode";
 constexpr const char * gTagName                 = "name";
 constexpr const char * gTagNode                 = "node";
@@ -64,6 +66,8 @@ constexpr const char * gTagTexCoord             = "texCoord";
 constexpr const char * gTagTextures             = "textures";
 constexpr const char * gTagType                 = "type";
 constexpr const char * gTagUri                  = "uri";
+constexpr const char * gTagWrapS                = "wrapS";
+constexpr const char * gTagWrapT                = "wrapT";
 
 } // namespace anonymous
 
@@ -418,7 +422,7 @@ Texture load(const Json & aJson)
     return {
         .name = aJson.value(gTagName, ""),
         .source = getOptional<Index<Image>>(aJson, gTagSource),
-        // TODO sampler
+        .sampler = getOptional<Index<texture::Sampler>>(aJson, gTagSampler),
     };
 }   
 
@@ -449,6 +453,19 @@ Image load(const Json & aJson)
     }
 
     return image;
+}   
+
+
+template <>
+texture::Sampler load(const Json & aJson)
+{
+    return {
+        .name = aJson.value(gTagName, ""),
+        .magFilter = getOptional<EnumType>(aJson, gTagMagFilter),
+        .minFilter = getOptional<EnumType>(aJson, gTagMinFilter),
+        .wrapS = aJson.value(gTagWrapS, texture::gDefaultSampler.wrapS),
+        .wrapT = aJson.value(gTagWrapT, texture::gDefaultSampler.wrapT),
+    };
 }   
 
 
@@ -501,6 +518,7 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVectorIfPresent(json, mMaterials, gTagMaterials);
     populateVectorIfPresent(json, mImages, gTagImages);
     populateVectorIfPresent(json, mTextures, gTagTextures);
+    populateVectorIfPresent(json, mSamplers, gTagSamplers);
 
     ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} animation(s), {} buffer(s).",
                              mScenes.size(), mNodes.size(), mMeshes.size(), mAnimations.size(), mBuffers.size());
@@ -654,6 +672,17 @@ Owned<gltf::Texture> Gltf::get(gltf::Index<gltf::Texture> aTextureIndex)
 Const_Owned<gltf::Texture> Gltf::get(gltf::Index<gltf::Texture> aTextureIndex) const
 {
     return {*this, mTextures.at(aTextureIndex), aTextureIndex};
+}
+
+
+Owned<gltf::texture::Sampler> Gltf::get(gltf::Index<gltf::texture::Sampler> aSamplerIndex)
+{
+    return {*this, mSamplers.at(aSamplerIndex), aSamplerIndex};
+}
+
+Const_Owned<gltf::texture::Sampler> Gltf::get(gltf::Index<gltf::texture::Sampler> aSamplerIndex) const
+{
+    return {*this, mSamplers.at(aSamplerIndex), aSamplerIndex};
 }
 
 

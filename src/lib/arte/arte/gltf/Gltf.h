@@ -24,10 +24,22 @@ namespace gltf {
 
     using EnumType = unsigned int; // this seems to be GLenum type.
 
-    struct BufferView;
+    namespace texture
+    {
 
-    //struct Sampler
-    // TODO default sampler "When undefined, a sampler with repeat wrapping and auto filtering"
+        struct Sampler
+        {
+            std::string name;
+            std::optional<EnumType> magFilter;
+            std::optional<EnumType> minFilter;
+            EnumType wrapS{10497};
+            EnumType wrapT{10497};
+        };
+
+        const Sampler gDefaultSampler;
+    } // namespace texture
+
+    struct BufferView;
 
     struct Image
     {
@@ -46,7 +58,7 @@ namespace gltf {
     {
         std::string name;
         std::optional<Index<Image>> source;
-        //std::optional<Index<Sampler>> sampler;
+        std::optional<Index<texture::Sampler>> sampler;
     };
 
     struct TextureInfo
@@ -252,6 +264,9 @@ public:
     Owned<gltf::Texture> get(gltf::Index<gltf::Texture> aTextureIndex);
     Const_Owned<gltf::Texture> get(gltf::Index<gltf::Texture> aTextureIndex) const;
 
+    Owned<gltf::texture::Sampler> get(gltf::Index<gltf::texture::Sampler> aSamplerIndex);
+    Const_Owned<gltf::texture::Sampler> get(gltf::Index<gltf::texture::Sampler> aSamplerIndex) const;
+
     filesystem::path getPathFor(gltf::Uri aFileUri) const;
 
 private:
@@ -270,6 +285,7 @@ private:
     std::vector<gltf::Material> mMaterials;
     std::vector<gltf::Image> mImages;
     std::vector<gltf::Texture> mTextures;
+    std::vector<gltf::texture::Sampler> mSamplers;
 };
 
 

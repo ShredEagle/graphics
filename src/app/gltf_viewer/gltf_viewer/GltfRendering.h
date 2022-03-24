@@ -119,8 +119,7 @@ std::ostream & operator<<(std::ostream & aOut, const Mesh &);
 
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
-std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture,
-                                           arte::gltf::TextureInfo aInfo);
+std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture);
 
 
 math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node::TRS & aTRS);
