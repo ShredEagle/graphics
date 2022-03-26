@@ -40,6 +40,14 @@ struct Polar
             return (above.toCartesian() - toCartesian()).normalize();
         }
     }
+
+    /// \brief Get the counter-clockwise tanget 
+    /// (i.e. tangent to the right if looking toward the origin)
+    math::Vec<3, GLfloat> getCCWTangent() const
+    {
+        math::Vec<3, GLfloat> towardOrigin = -toCartesian().as<math::Vec>();
+        return towardOrigin.cross(getUpTangent());
+    }
 };
 
 

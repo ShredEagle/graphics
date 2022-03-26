@@ -5,17 +5,14 @@
 #include "GltfRendering.h"
 #include "Logging.h"
 #include "Polar.h"
+#include "Camera.h"
 
 #include <graphics/AppInterface.h>
-#include <graphics/CameraUtilities.h>
 #include <graphics/Timer.h>
 
 #include <renderer/Uniforms.h>
 
 #include <math/Box.h>
-
-// Dirty include, to get the GLFW input definitions
-#include <GLFW/glfw3.h>
 
 
 namespace ad {
@@ -107,22 +104,11 @@ struct Scene
 
     void update(const graphics::Timer & aTimer)
     {
-        updateCamera();
+        renderer.setCameraTransformation(camera.update());
         updateAnimation(aTimer);
         updatesInstances();
     }
 
-    void updateCamera()
-    {
-        const math::Position<3, GLfloat> cameraCartesian = cameraPosition.toCartesian();
-        ADLOG(gDrawLogger, trace)("Camera position {}.", cameraCartesian);
-
-        math::Vec<3, GLfloat> gazeDirection = gGazePoint - cameraCartesian;
-        renderer.setCameraTransformation(
-            graphics::getCameraTransform(cameraCartesian,
-                                         gazeDirection,
-                                         cameraPosition.getUpTangent()));
-    }
 
     void updateAnimation(const graphics::Timer & aTimer)
     {
@@ -240,35 +226,14 @@ struct Scene
         }
     }
 
-    void callbackMouseButton(int button, int action, int mods, double xpos, double ypos)
-    {
-        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        {
-            previousDragPosition = math::Position<2, GLfloat>{(GLfloat)xpos, (GLfloat)ypos};
-        }
-        else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-        {
-            previousDragPosition = std::nullopt;
-        }
-    }
-
     void callbackCursorPosition(double xpos, double ypos)
     {
-        using Radian = math::Radian<GLfloat>;
-        // top-left corner origin
-        if (previousDragPosition)
-        {
-            math::Position<2, GLfloat> cursorPosition{(GLfloat)xpos, (GLfloat)ypos};
-            auto angularIncrements = (cursorPosition - *previousDragPosition).cwMul(gMouseControlFactor);
+        camera.callbackCursorPosition(xpos, ypos);
+    }
 
-            // The viewed object should turn in the direction of the mouse,
-            // so the camera angles are changed in the opposite direction (hence the substractions).
-            cameraPosition.azimuthal -= Radian{angularIncrements.x()};
-            cameraPosition.polar -= Radian{angularIncrements.y()};
-            cameraPosition.polar = std::max(Radian{0}, std::min(Radian{math::pi<GLfloat>}, cameraPosition.polar));
-
-            previousDragPosition = cursorPosition;
-        }
+    void callbackMouseButton(int button, int action, int mods, double xpos, double ypos)
+    {
+        camera.callbackMouseButton(button, action, mods, xpos, ypos);
     }
 
     enum class PolygonMode
@@ -282,16 +247,13 @@ struct Scene
     MeshRepository indexToMeshes;
     AnimationRepository animations;
     Animation * activeAnimation{nullptr};
-    Polar cameraPosition{3.f};
     Renderer renderer;
     PolygonMode polygonMode{PolygonMode::Fill};
     std::vector<std::shared_ptr<graphics::Program>> shaderPrograms;
     std::size_t currentProgram{1};
     std::shared_ptr<graphics::AppInterface> appInterface;
-    std::optional<math::Position<2, GLfloat>> previousDragPosition;
+    UserCamera camera;
 
-    static constexpr math::Position<3, GLfloat> gGazePoint{0.f, 0.f, 0.f};
-    static constexpr math::Vec<2, GLfloat> gMouseControlFactor{1/700.f, 1/700.f};
     static constexpr GLfloat gViewedDepth = 10000;
 };
 
