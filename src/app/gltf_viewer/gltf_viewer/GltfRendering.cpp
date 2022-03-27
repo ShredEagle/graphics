@@ -213,6 +213,48 @@ void InstanceList::update(std::span<Instance> aInstances)
 }
 
 
+std::shared_ptr<graphics::Texture> loadGlTexture(arte::Image<math::sdr::Rgba> aTextureData, GLint aMipMapLevels)
+{
+    auto result = std::make_shared<graphics::Texture>(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, *result);
+
+    // Allocate texture storage
+    glTexStorage2D(
+        GL_TEXTURE_2D,
+        aMipMapLevels, 
+        GL_RGBA8, // TODO should it be SRGB8_ALPHA8?
+        aTextureData.width(),
+        aTextureData.height());
+
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        0,
+        0, 0,
+        aTextureData.width(), aTextureData.height(),
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        aTextureData.data()
+    );
+
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return result;
+}
+
+
+std::shared_ptr<graphics::Texture> Material::DefaultTexture()
+{
+    static std::shared_ptr<graphics::Texture> defaultTexture = []()
+    {
+        arte::Image<math::sdr::Rgba> whitePixel{{1, 1}, math::sdr::gWhite};
+        return loadGlTexture(whitePixel, 1);
+    }();
+    return defaultTexture;
+}
+
+
 Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
     baseColorFactor{GetPbr(aMaterial).baseColorFactor}
 {
@@ -221,6 +263,10 @@ Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
     {
         gltf::TextureInfo info = *pbr.baseColorTexture;
         baseColorTexture = prepare(aMaterial.get<gltf::Texture>(info.index));
+    }
+    else
+    {
+        baseColorTexture = DefaultTexture();
     }
 }
 
@@ -388,31 +434,8 @@ std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture
     constexpr GLint gMipMapLevels = 6;
 
     auto image = aTexture.get(&gltf::Texture::source);
-
-    arte::Image<math::sdr::Rgba> textureData = loadImageData(image);
-
-    auto result = std::make_shared<graphics::Texture>(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, *result);
-
-    // Allocate texture storage
-    glTexStorage2D(
-        GL_TEXTURE_2D,
-        gMipMapLevels, 
-        GL_RGBA8, // TODO should it be SRGB8_ALPHA8?
-        textureData.width(),
-        textureData.height());
-
-    glTexSubImage2D(
-        GL_TEXTURE_2D,
-        0,
-        0, 0,
-        textureData.width(), textureData.height(),
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        textureData.data()
-    );
-
-    glGenerateMipmap(GL_TEXTURE_2D);
+    std::shared_ptr<graphics::Texture> result{loadGlTexture(loadImageData(image), gMipMapLevels)};
+    graphics::bind_guard boundTexture{*result};
 
     // Sampling parameters
     {
@@ -431,8 +454,6 @@ std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, *sampler.minFilter);
         }
     }
-   
-    glBindTexture(GL_TEXTURE_2D, 0);
 
     return result;
 }

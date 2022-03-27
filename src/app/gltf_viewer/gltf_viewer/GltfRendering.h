@@ -72,6 +72,8 @@ struct Material
 
     math::hdr::Rgba<GLfloat> baseColorFactor;
     std::shared_ptr<graphics::Texture> baseColorTexture;
+
+    static std::shared_ptr<graphics::Texture> DefaultTexture();
 };
 
 
