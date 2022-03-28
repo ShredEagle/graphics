@@ -118,7 +118,7 @@ inline math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
         math::Position<3, GLfloat>{
             -size.width() / 2.f,
             -size.height() / 2.f,
-            aNearPlaneZ},
+            aNearPlaneZ - aDepth},
         size,
     };
 }

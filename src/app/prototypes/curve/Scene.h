@@ -172,7 +172,7 @@ inline void Scene::render(const Size2<int> aRenderSize)
 {
     math::AffineMatrix<4, GLfloat> orthographic =
         math::trans3d::orthographicProjection<GLfloat>({
-                   {-1.f, -1.f, 1.f},
+                   {-1.f, -1.f, -1.f},
                    {2.f * math::getRatio<GLfloat>(aRenderSize), 2.f, 2.f},
                });
 
