@@ -38,18 +38,18 @@ Image<T_pixelFormat>::Image(const Image & aRhs) :
 
 
 template <class T_pixelFormat>
+Image<T_pixelFormat>::Image(const filesystem::path & aImageFile,
+                            ImageOrientation aOrientation) :
+    Image{LoadFile(aImageFile, aOrientation)}
+{}
+
+
+template <class T_pixelFormat>
 Image<T_pixelFormat> & Image<T_pixelFormat>::operator=(const Image & aRhs)
 {
     *this = Image{aRhs};
     return *this;
 }
-
-
-template <class T_pixelFormat>
-Image<T_pixelFormat>::Image(const filesystem::path & aImageFile,
-                            ImageOrientation aOrientation) :
-    Image{LoadFile(aImageFile, aOrientation)}
-{}
 
 
 template <>
@@ -155,9 +155,9 @@ template <class T_pixelFormat>
 Image<T_pixelFormat> Image<T_pixelFormat>::LoadFile(const filesystem::path & aImageFile,
                                                     ImageOrientation aOrientation)
 {
-    return Read(from_extension(aImageFile.extension()),
-                std::ifstream{aImageFile.string(), std::ios_base::in | std::ios_base::binary},
-                aOrientation);
+    std::ifstream input{aImageFile.string(), std::ios_base::in | std::ios_base::binary};
+    assert(input);
+    return Read(from_extension(aImageFile.extension()), input, aOrientation);
 }
 
 
