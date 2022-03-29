@@ -9,6 +9,7 @@ set(${TARGET_NAME}_HEADERS
     Polar.h
     Scene.h
     Shaders.h
+    Url.h
 )
 
 set(${TARGET_NAME}_SOURCES

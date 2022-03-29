@@ -1,6 +1,7 @@
 #include "LoadBuffer.h"
 
 #include "Logging.h"
+#include "Url.h"
 
 #include <handy/Base64.h>
 
@@ -65,7 +66,7 @@ std::vector<std::byte> loadBufferData(arte::Const_Owned<arte::gltf::Buffer> aBuf
     {
         ADLOG(gPrepareLogger, trace)("Buffer #{} data is read from file {}.", aBuffer.id(), uri.string);
         return loadInputStream(
-            std::ifstream{aBuffer.getFilePath(&arte::gltf::Buffer::uri).string(),
+            std::ifstream{decodeUrl(aBuffer.getFilePath(&arte::gltf::Buffer::uri).string()),
                           std::ios_base::in | std::ios_base::binary},
             aBuffer->byteLength, 
             uri.string);
@@ -123,7 +124,7 @@ loadImageData(arte::Const_Owned<arte::gltf::Image> aImage)
         case arte::gltf::Uri::Type::File:
         {
             ADLOG(gPrepareLogger, trace)("Image #{} data is read from a file URI.", aImage.id());
-            return Image{aImage.getFilePath(*uri), arte::ImageOrientation::Unchanged};
+            return Image{decodeUrl(aImage.getFilePath(*uri).string()), arte::ImageOrientation::Unchanged};
         }
         default:
             throw std::logic_error{"Invalid uri type."};
