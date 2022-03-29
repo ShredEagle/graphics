@@ -45,6 +45,23 @@ void Scene::initializePrograms()
 }
 
 
+void Scene::setProjectionHeight(GLfloat aHeight)
+{
+    const math::Box<GLfloat> projectedBox =
+        graphics::getViewVolumeRightHanded(appInterface->getWindowSize(), aHeight, gViewedDepth, 2*gViewedDepth);
+    math::Matrix<4, 4, float> projectionTransform = 
+        math::trans3d::orthographicProjection(projectedBox)
+        * math::trans3d::scale(1.f, 1.f, -1.f); // OpenGL clipping space is left handed.
+
+    for (auto & program : shaderPrograms)
+    {
+        setUniform(*program, "u_projection", projectionTransform); 
+    }
+
+    currentProjectionHeight = aHeight;
+}
+
+
 //
 // Bounding Box
 //

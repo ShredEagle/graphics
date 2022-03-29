@@ -100,6 +100,7 @@ struct Scene
              ("Centering camera on {}, scene bounding box is {}.",
               sceneBounds->center(), *sceneBounds);
         camera.setOrigin(sceneBounds->center());
+        setProjectionHeight(sceneBounds->height() * gViewportHeightFactor);
 
 
         using namespace std::placeholders;
@@ -109,6 +110,8 @@ struct Scene
             std::bind(&Scene::callbackMouseButton, this, _1, _2, _3, _4, _5));
         appInterface->registerCursorPositionCallback(
             std::bind(&Scene::callbackCursorPosition, this, _1, _2));
+        appInterface->registerScrollCallback(
+            std::bind(&Scene::callbackScroll, this, _1, _2));
     }
 
     std::optional<math::Box<GLfloat>>
@@ -119,6 +122,8 @@ struct Scene
                     = math::AffineMatrix<4, float>::Identity()) const;
 
     void initializePrograms();
+
+    void setProjectionHeight(GLfloat aHeight);
 
     void update(const graphics::Timer & aTimer)
     {
@@ -254,6 +259,11 @@ struct Scene
         camera.callbackMouseButton(button, action, mods, xpos, ypos);
     }
 
+    void callbackScroll(double xoffset, double yoffset)
+    {
+        setProjectionHeight(currentProjectionHeight * (1 - yoffset * gScrollFactor));
+    }
+
     enum class PolygonMode
     {
         Fill,
@@ -271,8 +281,11 @@ struct Scene
     std::size_t currentProgram{1};
     std::shared_ptr<graphics::AppInterface> appInterface;
     UserCamera camera;
+    GLfloat currentProjectionHeight;
 
     static constexpr GLfloat gViewedDepth = 10000;
+    static constexpr GLfloat gViewportHeightFactor = 1.6f;
+    static constexpr GLfloat gScrollFactor = 0.05;
 };
 
 } // namespace gltfviewer
