@@ -104,10 +104,10 @@ inline math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResol
 }
 
 
-inline math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
-                                 GLfloat aBufferHeight,   
-                                 GLfloat aNearPlaneZ,
-                                 GLfloat aDepth)
+inline math::Box<GLfloat> getViewVolumeRightHanded(math::Size<2, int> aRenderResolution,
+                                                   GLfloat aBufferHeight,   
+                                                   GLfloat aNearPlaneZ,
+                                                   GLfloat aDepth)
 {
     math::Size<3, GLfloat> size{
         math::makeSizeFromHeight(aBufferHeight, math::getRatio<GLfloat>(aRenderResolution)),

@@ -7,12 +7,16 @@ namespace ad {
 namespace gltfviewer {
 
 
+//
+// Programs
+//
 void Scene::initializePrograms()
 {
     const math::Box<GLfloat> projectedBox =
-        //graphics::getViewVolume(appInterface->getWindowSize(), 2.f, 0, gViewedDepth);
-        graphics::getViewVolume(appInterface->getWindowSize(), 2.f, -gViewedDepth, -gViewedDepth);
-    math::Matrix<4, 4, float> projectionTransform = math::trans3d::orthographicProjection(projectedBox);
+        graphics::getViewVolumeRightHanded(appInterface->getWindowSize(), 2.f, 0, gViewedDepth);
+    math::Matrix<4, 4, float> projectionTransform = 
+        math::trans3d::orthographicProjection(projectedBox)
+        * math::trans3d::scale(1.f, 1.f, -1.f); // OpenGL clipping space is left handed.
     //projectionTransform = math::trans3d::perspective(2.f, -2.f) * projectionTransform;
 
     {
