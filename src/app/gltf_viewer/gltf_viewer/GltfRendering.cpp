@@ -71,41 +71,55 @@ Const_Owned<gltf::BufferView> checkedBufferView(Const_Owned<gltf::Accessor> aAcc
 
 
 template <class T_buffer>
+constexpr GLenum associateTarget()
+{
+    if constexpr(std::is_same_v<T_buffer, graphics::VertexBufferObject>)
+    {
+        return(GL_ARRAY_BUFFER);
+    }
+    else if constexpr(std::is_same_v<T_buffer, graphics::IndexBufferObject>)
+    {
+        return(GL_ELEMENT_ARRAY_BUFFER);
+    }
+}
+
+
+template <class T_buffer>
 T_buffer prepareBuffer_impl(Const_Owned<gltf::BufferView> aBufferView)
 {
     T_buffer buffer;
 
-    if (!aBufferView->target)
+    GLenum target = [&]()
     {
-        ADLOG(gPrepareLogger, critical)
-             ("Buffer view #{} does not have target defined.", aBufferView.id());
-        throw std::logic_error{"Buffer view was expected to have a target."};
-    }
+        if (!aBufferView->target)
+        {
+            GLenum infered = associateTarget<T_buffer>();
+            ADLOG(gPrepareLogger, warn)
+                 ("Buffer view #{} does not have target defined. Infering {}.",
+                  aBufferView.id(), infered);
+            return infered;
+        }
+        else
+        {
+            assert(*aBufferView->target == associateTarget<T_buffer>());
+            return *aBufferView->target;
+        }
+    }();
 
-    // Sanity check, that the target in the buffer view matches the type of GL buffer.
-    if constexpr(std::is_same_v<T_buffer, graphics::VertexBufferObject>)
-    {
-        assert(*aBufferView->target == GL_ARRAY_BUFFER);
-    }
-    else if constexpr(std::is_same_v<T_buffer, graphics::IndexBufferObject>)
-    {
-        assert(*aBufferView->target == GL_ELEMENT_ARRAY_BUFFER);
-    }
-
-    glBindBuffer(*aBufferView->target, buffer);
-    glBufferData(*aBufferView->target,
+    glBindBuffer(target, buffer);
+    glBufferData(target,
                  aBufferView->byteLength,
                  // TODO might be even better to only load in main memory the part of the buffer starting
                  // at aBufferView->byteOffset (and also limit the length there, actually).
                  loadBufferData(aBufferView.get(&gltf::BufferView::buffer)).data() 
                     + aBufferView->byteOffset,
                  GL_STATIC_DRAW);
-    glBindBuffer(*aBufferView->target, 0);
+    glBindBuffer(target, 0);
 
     ADLOG(gPrepareLogger, debug)
          ("Loaded {} bytes in target {}, offset in source buffer is {} bytes.",
           aBufferView->byteLength,
-          *aBufferView->target,
+          target,
           aBufferView->byteOffset);
 
     return buffer;
