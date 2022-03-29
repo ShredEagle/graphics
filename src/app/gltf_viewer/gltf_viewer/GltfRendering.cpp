@@ -322,8 +322,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
 
         const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(checkedBufferView(accessor));
 
-        // TODO Have control whether analysis takes place
-        analyzeAccessor(accessor);
+        if (gDumpBuffersContent) analyzeAccessor(accessor);
 
         if (auto found = gSemanticToAttribute.find(semantic);
             found != gSemanticToAttribute.end())
@@ -368,8 +367,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
         indices = Indices{indicesAccessor};
         count = indicesAccessor->count;
 
-        // TODO Have control whether analysis takes place
-        analyzeAccessor(indicesAccessor);
+        if (gDumpBuffersContent) analyzeAccessor(indicesAccessor);
     }
 }
 

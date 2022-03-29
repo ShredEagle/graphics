@@ -17,6 +17,10 @@ namespace ad {
 namespace gltfviewer {
 
 
+// TODO Ad 2022/03/29: Implement a better control on buffer dumping, accessible via UI.
+constexpr bool gDumpBuffersContent = false;
+
+
 struct Indices
 {
     Indices(arte::Const_Owned<arte::gltf::Accessor> aAccessor);
