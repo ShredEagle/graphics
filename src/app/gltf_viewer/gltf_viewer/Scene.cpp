@@ -13,7 +13,7 @@ namespace gltfviewer {
 void Scene::initializePrograms()
 {
     const math::Box<GLfloat> projectedBox =
-        graphics::getViewVolumeRightHanded(appInterface->getWindowSize(), 2.f, 0, gViewedDepth);
+        graphics::getViewVolumeRightHanded(appInterface->getWindowSize(), 2.f, gViewedDepth, 2*gViewedDepth);
     math::Matrix<4, 4, float> projectionTransform = 
         math::trans3d::orthographicProjection(projectedBox)
         * math::trans3d::scale(1.f, 1.f, -1.f); // OpenGL clipping space is left handed.

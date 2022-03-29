@@ -16,6 +16,8 @@ using namespace gltf;
 namespace {
 
 constexpr const char * gTagAccessors            = "accessors";
+constexpr const char * gTagAlphaMode            = "alphaMode";
+constexpr const char * gTagAlphaCutoff          = "alphaCutoff";
 constexpr const char * gTagAnimations           = "animations";
 constexpr const char * gTagAttributes           = "attributes";
 constexpr const char * gTagBuffer               = "buffer";
@@ -31,6 +33,7 @@ constexpr const char * gTagBaseColorFactor      = "baseColorFactor";
 constexpr const char * gTagBaseColorTexture     = "baseColorTexture";
 constexpr const char * gTagCount                = "count";
 constexpr const char * gTagComponentType        = "componentType";
+constexpr const char * gTagDoubleSided          = "doubleSided";
 constexpr const char * gTagImages               = "images";
 constexpr const char * gTagIndex                = "index";
 constexpr const char * gTagIndices              = "indices";
@@ -147,6 +150,13 @@ const std::array<std::string, 2> gMimeTypeToString{
 const std::map<std::string, Image::MimeType> gStringToMimeType{
     {"image/jpeg",  Image::MimeType::ImageJpeg},
     {"image/png",  Image::MimeType::ImagePng},
+};
+
+
+const std::map<std::string, Material::AlphaMode> gStringToAlphaMode{
+    {"OPAQUE",  Material::AlphaMode::Opaque},
+    {"MASK",    Material::AlphaMode::Mask},
+    {"BLEND",   Material::AlphaMode::Blend},
 };
 
 
@@ -443,11 +453,20 @@ material::PbrMetallicRoughness load(const Json & aJson)
 template <>
 Material load(const Json & aJson)
 {
-    return {
+    Material result{
         .name = aJson.value(gTagName, ""),
         .pbrMetallicRoughness = 
             loadOptional<material::PbrMetallicRoughness>(aJson, gTagPbrMetallicRoughness),
+        .alphaCutoff = getOptional<float>(aJson, gTagAlphaCutoff),
+        .doubleSided = aJson.value(gTagDoubleSided, gDefaultMaterial.doubleSided),
     };
+
+    if(aJson.contains(gTagAlphaMode))
+    {
+        result.alphaMode = gStringToAlphaMode.at(aJson.at(gTagAlphaMode).get<std::string>());
+    }
+
+    return result;
 }   
 
 

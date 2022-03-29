@@ -11,6 +11,7 @@
 #include <renderer/Shading.h>
 #include <renderer/Texture.h>
 
+#include <set>
 #include <span>
 
 
@@ -77,6 +78,9 @@ struct Material
 
     math::hdr::Rgba<GLfloat> baseColorFactor;
     std::shared_ptr<graphics::Texture> baseColorTexture;
+    arte::gltf::Material::AlphaMode alphaMode;
+    bool doubleSided;
+
 
     static std::shared_ptr<graphics::Texture> DefaultTexture();
 };
@@ -90,6 +94,9 @@ struct MeshPrimitive
     const ViewerVertexBuffer & prepareVertexBuffer(arte::Const_Owned<arte::gltf::BufferView> aBufferView);
 
     void associateInstanceBuffer(const InstanceList & aInstances);
+
+    /// \brief Returns true if this mesh primitive has vertex color provided.
+    bool providesColor() const;
 
     // NOTE Ad 2022/03/04: I wanted to use this occasion to brush-up knowledge of OpenGL functions.
     // So instead of using the abstractions in render libraries, do most of the calls directly.
@@ -108,6 +115,7 @@ struct MeshPrimitive
     // several buffer views, for example.
     std::map<arte::gltf::Index<arte::gltf::BufferView>, ViewerVertexBuffer> vbos;
     std::optional<Indices> indices;
+    std::set<GLuint> providedAttributes;
 
     Material material;
     math::Box<GLfloat> boundingBox{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};

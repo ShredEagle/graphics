@@ -26,6 +26,7 @@ const std::map<std::string /*semantic*/, GLuint /*vertex attribute index*/> gSem
     {"POSITION", 0},
     {"NORMAL", 1},
     {"TEXCOORD_0", 2}, // TODO Use the texCoord from TextureInfo
+    {"COLOR_0", 3},
 };
 
 
@@ -270,7 +271,9 @@ std::shared_ptr<graphics::Texture> Material::DefaultTexture()
 
 
 Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
-    baseColorFactor{GetPbr(aMaterial).baseColorFactor}
+    baseColorFactor{GetPbr(aMaterial).baseColorFactor},
+    alphaMode{aMaterial->alphaMode},
+    doubleSided{aMaterial->doubleSided}
 {
     gltf::material::PbrMetallicRoughness pbr = GetPbr(aMaterial);
     if(pbr.baseColorTexture)
@@ -381,6 +384,8 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
                      ("Mesh primitive #{} has bounding box {}.", aPrimitive.id(), boundingBox);
             }
 
+            providedAttributes.insert(found->second);
+
             ADLOG(gPrepareLogger, debug)
                  ("Attached semantic '{}' to vertex attribute {}."
                   " Source data elements have {} components of type {}."
@@ -434,6 +439,12 @@ void MeshPrimitive::associateInstanceBuffer(const InstanceList & aInstances)
         glVertexAttribDivisor(attributeIndex, 1);
     }
 }
+
+
+bool MeshPrimitive::providesColor() const
+{
+    return providedAttributes.contains(gSemanticToAttribute.at("COLOR_0"));
+};
 
 
 std::ostream & operator<<(std::ostream & aOut, const MeshPrimitive & aPrimitive)
@@ -569,8 +580,28 @@ void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
 {
     graphics::bind_guard boundVao{aMeshPrimitive.vao};
 
+    const auto & material = aMeshPrimitive.material;
+
+    // Culling
+    if (material.doubleSided) glDisable(GL_CULL_FACE);
+    else glEnable(GL_CULL_FACE);
+
+    // Alpha mode
+    switch(material.alphaMode)
+    {
+    case gltf::Material::AlphaMode::Opaque:
+        glDisable(GL_BLEND);
+        break;
+    case gltf::Material::AlphaMode::Blend:
+        glEnable(GL_BLEND);
+        break;
+    case gltf::Material::AlphaMode::Mask:
+        ADLOG(gDrawLogger, critical)("Not supported: mask alpha mode.");
+        throw std::logic_error{"Mask alpha mode not implemented."};
+    }
+
     glActiveTexture(GL_TEXTURE0 + Renderer::gTextureUnit);
-    glBindTexture(GL_TEXTURE_2D, *aMeshPrimitive.material.baseColorTexture);
+    glBindTexture(GL_TEXTURE_2D, *material.baseColorTexture);
 
     if (aMeshPrimitive.indices)
     {
@@ -622,6 +653,13 @@ void Renderer::render(const Mesh & aMesh) const
     for (const auto & primitive : aMesh.primitives)
     {
         setUniform(*mProgram, "u_baseColorFactor", primitive.material.baseColorFactor); 
+
+        // If the vertex color are not provided for the primitive, the default value (black)
+        // will be used in the shaders. It must be offset to white.
+        auto vertexColorOffset = primitive.providesColor() ?
+            math::hdr::Rgba_f{0.f, 0.f, 0.f, 0.f} : math::hdr::Rgba_f{1.f, 1.f, 1.f, 0.f};
+        setUniform(*mProgram, "u_vertexColorOffset", vertexColorOffset); 
+
         gltfviewer::render(primitive, aMesh.gpuInstances.size());
     }
 }

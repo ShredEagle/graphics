@@ -80,8 +80,18 @@ namespace gltf {
 
     struct Material
     {
+        enum class AlphaMode
+        {
+            Opaque,
+            Mask,
+            Blend,
+        };
+
         std::string name;
         std::optional<material::PbrMetallicRoughness> pbrMetallicRoughness;
+        AlphaMode alphaMode{AlphaMode::Opaque};
+        std::optional<float> alphaCutoff;
+        bool doubleSided{false};
     };
 
     const Material gDefaultMaterial;
