@@ -347,6 +347,26 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
                                   reinterpret_cast<void *>(accessor->byteOffset)
                                   );
 
+            if (semantic == "POSITION")
+            {
+                if (!accessor->bounds)
+                {
+                    throw std::logic_error{"Position's accessor MUST have bounds."};
+                }
+                // By the spec, position MUST be a VEC3 of float.
+                auto & bounds = std::get<gltf::Accessor::MinMax<float>>(*accessor->bounds);
+
+                math::Position<3, GLfloat> min{bounds.min[0], bounds.min[1], bounds.min[2]};
+                math::Position<3, GLfloat> max{bounds.max[0], bounds.max[1], bounds.max[2]};
+                boundingBox = {
+                    min,
+                    (max - min).as<math::Size>(),
+                };
+
+                ADLOG(gPrepareLogger, debug)
+                     ("Mesh primitive #{} has bounding box {}.", aPrimitive.id(), boundingBox);
+            }
+
             ADLOG(gPrepareLogger, debug)
                  ("Attached semantic '{}' to vertex attribute {}."
                   " Source data elements have {} components of type {}."
@@ -460,9 +480,19 @@ std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture
 Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
 {
     Mesh mesh;
-    for (auto & primitive : aMesh.iterate(&arte::gltf::Mesh::primitives))     
+
+    auto primitives = aMesh.iterate(&arte::gltf::Mesh::primitives);
+    auto primitiveIt = primitives.begin();
+    
+    // Note: the first iteration is taken out of the loop
+    // because we do not want to unite with the zero bounding box initially in mesh.
+    mesh.primitives.emplace_back(*primitiveIt, mesh.gpuInstances);
+    mesh.boundingBox = mesh.primitives.back().boundingBox;
+
+    for (++primitiveIt; primitiveIt != primitives.end(); ++primitiveIt)     
     {
-        mesh.primitives.emplace_back(primitive, mesh.gpuInstances);
+        mesh.primitives.emplace_back(*primitiveIt, mesh.gpuInstances);
+        mesh.boundingBox.uniteAssign(mesh.primitives.back().boundingBox);
     }
     return mesh;
 }

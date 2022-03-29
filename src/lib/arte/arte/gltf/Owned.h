@@ -82,6 +82,11 @@ public:
     operator T_element &()
     { return mElement; }
 
+    Const_Owned<T_element> asConst() const
+    {
+        return *this;
+    }
+
     T_element * operator->()
     {
         return &mElement;

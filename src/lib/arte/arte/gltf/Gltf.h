@@ -165,6 +165,17 @@ namespace gltf {
             Mat4,
         };
 
+        template <class T_stored>
+        struct MinMax
+        {
+            using Store_t = std::vector<T_stored>; 
+
+            Store_t min;
+            Store_t max;
+        };
+
+        using Bounds_t = std::variant<MinMax<float>, MinMax<int>, MinMax<unsigned int>>;
+
         std::string name;
         // When absent, the accessor must be initialized with zeros 
         // (which can be overrided by sparse or extensions)
@@ -174,7 +185,7 @@ namespace gltf {
         EnumType componentType;
         bool normalized;
         std::size_t count;
-        // TODO Handle min-max
+        std::optional<Bounds_t> bounds;
         // TODO Handle sparse
     };
 

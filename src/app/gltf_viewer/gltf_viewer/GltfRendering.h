@@ -3,6 +3,7 @@
 
 #include <arte/gltf/Gltf.h>
 
+#include <math/Box.h>
 #include <math/Homogeneous.h>
 
 #include <renderer/VertexSpecification.h>
@@ -109,12 +110,14 @@ struct MeshPrimitive
     std::optional<Indices> indices;
 
     Material material;
+    math::Box<GLfloat> boundingBox{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
 };
 
 
 struct Mesh
 {
     std::vector<MeshPrimitive> primitives;
+    math::Box<GLfloat> boundingBox{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
     InstanceList gpuInstances;
 };
 

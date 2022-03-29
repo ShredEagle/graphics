@@ -91,6 +91,17 @@ struct Scene
         // Not enabled by default OpenGL context.
         glEnable(GL_DEPTH_TEST);
 
+        auto sceneBounds = getBoundingBox(scene);
+        if (!sceneBounds)
+        {
+            throw std::logic_error{"Scene does not contain bounded geometry to render."};
+        }
+        ADLOG(gPrepareLogger, info)
+             ("Centering camera on {}, scene bounding box is {}.",
+              sceneBounds->center(), *sceneBounds);
+        camera.setOrigin(sceneBounds->center());
+
+
         using namespace std::placeholders;
         appInterface->registerKeyCallback(
             std::bind(&Scene::callbackKeyboard, this, _1, _2, _3, _4));
@@ -99,6 +110,13 @@ struct Scene
         appInterface->registerCursorPositionCallback(
             std::bind(&Scene::callbackCursorPosition, this, _1, _2));
     }
+
+    std::optional<math::Box<GLfloat>>
+    getBoundingBox(arte::Const_Owned<arte::gltf::Scene> aScene) const;
+    std::optional<math::Box<GLfloat>>
+    getBoundingBox(arte::Const_Owned<arte::gltf::Node> aNode,
+                   math::AffineMatrix<4, float> aParentTransform 
+                    = math::AffineMatrix<4, float>::Identity()) const;
 
     void initializePrograms();
 

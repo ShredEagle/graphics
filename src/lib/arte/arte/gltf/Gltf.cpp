@@ -40,9 +40,11 @@ constexpr const char * gTagMagFilter            = "magFilter";
 constexpr const char * gTagMaterial             = "material";
 constexpr const char * gTagMaterials            = "materials";
 constexpr const char * gTagMatrix               = "matrix";
+constexpr const char * gTagMax                  = "max";
 constexpr const char * gTagMesh                 = "mesh";
 constexpr const char * gTagMeshes               = "meshes";
 constexpr const char * gTagMimeType             = "mimeType";
+constexpr const char * gTagMin                  = "min";
 constexpr const char * gTagMinFilter            = "minFilter";
 constexpr const char * gTagMode                 = "mode";
 constexpr const char * gTagName                 = "name";
@@ -327,10 +329,19 @@ BufferView load(const Json & aJson)
 }
 
 
+template <class T_stored>
+Accessor::MinMax<T_stored> makeMinMax(const Json & aJson)
+{
+    return {
+        .min = aJson.at(gTagMin).get<std::vector<T_stored>>(),
+        .max = aJson.at(gTagMax).get<std::vector<T_stored>>(),
+    };
+}
+
 template <>
 Accessor load(const Json & aJson)
 {
-    return Accessor{
+    Accessor result{
         .name = aJson.value(gTagName, ""),
         .bufferView = getOptional<Index<BufferView>>(aJson, gTagBufferView),
         .byteOffset = aJson.value<std::size_t>(gTagByteOffset, 0),
@@ -339,6 +350,30 @@ Accessor load(const Json & aJson)
         .normalized = aJson.value(gTagNormalized, false),
         .count = aJson.at(gTagCount),
     };
+
+
+    // Note: As arte is an upstream of renderer (which currently defines the gl loader includes)
+    // we do not have an "easy" access to OpenGL symbols and enumerators from here.
+    if (aJson.contains(gTagMax))
+    {
+        switch(result.componentType)
+        {
+        case 5120: // GL_BYTE
+        case 5122: // GL_SHORT
+            result.bounds = makeMinMax<int>(aJson);
+            break;
+        case 5121: // GL_UNSIGNED_BYTE
+        case 5123: // GL_UNSIGNED_SHORT
+        case 5125: // GL_UNSIGNED_INT
+            result.bounds = makeMinMax<unsigned int>(aJson);
+            break;
+        case 5126: // GL_FLOAT
+            result.bounds = makeMinMax<float>(aJson);
+            break;
+        }
+    }
+
+    return result;
 }
 
 
