@@ -21,6 +21,9 @@ public:
     void callbackCursorPosition(double xpos, double ypos);
     void callbackMouseButton(int button, int action, int mods, double xpos, double ypos);
 
+    void setOrigin(math::Position<3, GLfloat> aNewOrigin)
+    { mPolarOrigin = aNewOrigin; }
+
 private:
     enum class ControlMode
     {
@@ -74,8 +77,8 @@ inline void UserCamera::callbackCursorPosition(double xpos, double ypos)
     {
         auto dragVector{cursorPosition - mPreviousDragPosition};
         dragVector.cwMulAssign(gMouseControlFactor);
-        mPolarOrigin -= dragVector.x() * mPosition.getCCWTangent() 
-                        - dragVector.y() * mPosition.getUpTangent();
+        mPolarOrigin -= dragVector.x() * mPosition.getCCWTangent().normalize() 
+                        - dragVector.y() * mPosition.getUpTangent().normalize();
         break;
     }
     }
