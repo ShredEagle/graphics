@@ -74,15 +74,17 @@ namespace gltf {
             math::hdr::Rgba<float> baseColorFactor{math::hdr::gWhite<float>};
             std::optional<TextureInfo> baseColorTexture;
         };
-    } // namespace material
 
-    constexpr material::PbrMetallicRoughness gDefaultMaterial;
+        constexpr material::PbrMetallicRoughness gDefaultPbr;
+    } // namespace material
 
     struct Material
     {
         std::string name;
         std::optional<material::PbrMetallicRoughness> pbrMetallicRoughness;
     };
+
+    const Material gDefaultMaterial;
 
     struct Accessor;
 

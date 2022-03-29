@@ -288,7 +288,7 @@ Material::Material(arte::Const_Owned<arte::gltf::Material> aMaterial) :
 arte::gltf::material::PbrMetallicRoughness 
 Material::GetPbr(arte::Const_Owned<arte::gltf::Material> aMaterial)
 {
-    return aMaterial->pbrMetallicRoughness.value_or(gltf::gDefaultMaterial);
+    return aMaterial->pbrMetallicRoughness.value_or(gltf::material::gDefaultPbr);
 }
 
 
@@ -314,7 +314,7 @@ const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::
 
 MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
     drawMode{aPrimitive->mode},
-    material{aPrimitive.get(&gltf::Primitive::material)}
+    material{aPrimitive.value_or(&gltf::Primitive::material, gltf::gDefaultMaterial)}
 {
     graphics::bind_guard boundVao{vao};
 

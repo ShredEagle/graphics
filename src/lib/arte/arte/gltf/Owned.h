@@ -208,6 +208,21 @@ public:
         return get(*(mElement.*aDataMember));
     }
 
+    // Note: This is hackish
+    // The function pretends the default element is part of the owning gltf, and give is the maximal id.
+    template <class T_indexed>
+    Const_Owned<T_indexed> value_or(std::optional<gltf::Index<T_indexed>> T_element::* aDataMember, const T_indexed & aDefaultElement) const
+    {
+        if (auto member = mElement.*aDataMember)
+        {
+            return get(*member);
+        }
+        else
+        {
+            return {mOwningGltf, aDefaultElement, std::numeric_limits<std::size_t>::max()};
+        }
+    }
+
     template <class T_member>
     std::vector<Const_Owned<T_member>> 
     iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector) const
