@@ -36,10 +36,13 @@ void Scene::initializePrograms()
                 {GL_FRAGMENT_SHADER, gltfviewer::gPhongFragmentShader},
             }));
         setUniform(*phong, "u_projection", projectionTransform); 
-        setUniform(*phong, "u_light.position_world", math::Vec<4, GLfloat>{-2.f, 1.f, 6.f, 1.f}); 
-        setUniform(*phong, "u_light.color", math::hdr::gWhite<GLfloat>/2.f);
-        setUniformInt(*phong, "u_light.specularExponent", 1000);
-        setUniformFloat(*phong, "u_light.ambient", 0.4f);
+        setUniform(*phong, "u_light.position_world", math::Vec<4, GLfloat>{-100.f, 100.f, 1000.f, 1.f}); 
+        setUniform(*phong, "u_light.color", math::hdr::gWhite<GLfloat>);
+        setUniformInt(*phong, "u_light.specularExponent", 100);
+        // Ideally, I suspect the sum should be 1
+        setUniformFloat(*phong, "u_light.diffuse", 0.3f);
+        setUniformFloat(*phong, "u_light.specular", 0.35f);
+        setUniformFloat(*phong, "u_light.ambient", 0.45f);
         shaderPrograms.push_back(std::move(phong));
     }
 }

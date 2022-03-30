@@ -85,6 +85,8 @@ inline const GLchar* gPhongFragmentShader = R"#(
         vec4 position_world;
         vec3 color;
         int specularExponent;
+        float diffuse;
+        float specular;
         float ambient;
     };
 
@@ -119,15 +121,16 @@ inline const GLchar* gPhongFragmentShader = R"#(
         // Use the same color for all lighting components (diffuse, specular and ambient).
         out_color = vec4(
             materialColor.xyz * u_light.color
-                * ( max(0., dot(ex_normal_view, lightDirection_view)) // diffuse
-                    + max(0., pow(dot(ex_normal_view, bisector_view), u_light.specularExponent)) // specular
+                * ( max(0., dot(ex_normal_view, lightDirection_view)) * u_light.diffuse  // diffuse
+                    + max(0., pow(dot(ex_normal_view, bisector_view), u_light.specularExponent)) * u_light.ambient // specular
                     + u_light.ambient // ambient
                    )
             ,
             materialColor.w);
             //1.);
 
-        //out_color = vec4(ex_color.w, 0., 0., 1.f);
+        //out_color = ex_normal_view;
+        //out_color = materialColor;
     }
 )#";
 
