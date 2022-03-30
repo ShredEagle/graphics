@@ -12,20 +12,12 @@ namespace gltfviewer {
 //
 void Scene::initializePrograms()
 {
-    const math::Box<GLfloat> projectedBox =
-        graphics::getViewVolumeRightHanded(appInterface->getWindowSize(), 2.f, gViewedDepth, 2*gViewedDepth);
-    math::Matrix<4, 4, float> projectionTransform = 
-        math::trans3d::orthographicProjection(projectedBox)
-        * math::trans3d::scale(1.f, 1.f, -1.f); // OpenGL clipping space is left handed.
-    //projectionTransform = math::trans3d::perspective(2.f, -2.f) * projectionTransform;
-
     {
         auto naive = std::make_shared<graphics::Program>(
             graphics::makeLinkedProgram({
                 {GL_VERTEX_SHADER,   gltfviewer::gNaiveVertexShader},
                 {GL_FRAGMENT_SHADER, gltfviewer::gNaiveFragmentShader},
             }));
-        setUniform(*naive, "u_projection", projectionTransform); 
         shaderPrograms.push_back(std::move(naive));
     }
 
@@ -35,7 +27,6 @@ void Scene::initializePrograms()
                 {GL_VERTEX_SHADER,   gltfviewer::gPhongVertexShader},
                 {GL_FRAGMENT_SHADER, gltfviewer::gPhongFragmentShader},
             }));
-        setUniform(*phong, "u_projection", projectionTransform); 
         setUniform(*phong, "u_light.position_world", math::Vec<4, GLfloat>{-100.f, 100.f, 1000.f, 1.f}); 
         setUniform(*phong, "u_light.color", math::hdr::gWhite<GLfloat>);
         setUniformInt(*phong, "u_light.specularExponent", 100);
@@ -48,20 +39,12 @@ void Scene::initializePrograms()
 }
 
 
-void Scene::setProjectionHeight(GLfloat aHeight)
+void Scene::setProjection(const math::Matrix<4, 4, float> & aProjectionTransform)
 {
-    const math::Box<GLfloat> projectedBox =
-        graphics::getViewVolumeRightHanded(appInterface->getWindowSize(), aHeight, gViewedDepth, 2*gViewedDepth);
-    math::Matrix<4, 4, float> projectionTransform = 
-        math::trans3d::orthographicProjection(projectedBox)
-        * math::trans3d::scale(1.f, 1.f, -1.f); // OpenGL clipping space is left handed.
-
     for (auto & program : shaderPrograms)
     {
-        setUniform(*program, "u_projection", projectionTransform); 
+        setUniform(*program, "u_projection", aProjectionTransform); 
     }
-
-    currentProjectionHeight = aHeight;
 }
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include <graphics/AppInterface.h>
 #include <graphics/CameraUtilities.h>
 
 #include <renderer/GL_Loader.h>
@@ -16,6 +17,10 @@ namespace gltfviewer {
 class UserCamera
 {
 public:
+    UserCamera(std::shared_ptr<graphics::AppInterface> aAppInterface) :
+        mAppInterface{std::move(aAppInterface)}
+    {}
+
     math::AffineMatrix<4, GLfloat> update();
 
     void callbackCursorPosition(double xpos, double ypos);
@@ -23,6 +28,9 @@ public:
 
     void setOrigin(math::Position<3, GLfloat> aNewOrigin)
     { mPolarOrigin = aNewOrigin; }
+
+    math::Matrix<4, 4, float> setViewedHeight(GLfloat aHeight);
+    math::Matrix<4, 4, float> multiplyViewedHeight(GLfloat aFactor);
 
 private:
     enum class ControlMode
@@ -32,13 +40,16 @@ private:
         Pan,
     };
 
+    std::shared_ptr<graphics::AppInterface> mAppInterface;
     Polar mPosition{3.f};
     math::Position<3, GLfloat> mPolarOrigin{0.f, 0.f, 0.f};
     ControlMode mControlMode;
     math::Position<2, GLfloat> mPreviousDragPosition{0.f, 0.f};
+    GLfloat mCurrentProjectionHeight;
 
     static constexpr math::Position<3, GLfloat> gGazePoint{0.f, 0.f, 0.f};
     static constexpr math::Vec<2, GLfloat> gMouseControlFactor{1/700.f, 1/700.f};
+    static constexpr GLfloat gViewedDepth = 10000;
 };
 
 
@@ -106,6 +117,25 @@ inline void UserCamera::callbackMouseButton(int button, int action, int mods, do
     {
         mControlMode = ControlMode::None;
     }
+}
+
+
+inline math::Matrix<4, 4, float> UserCamera::setViewedHeight(GLfloat aHeight)
+{
+    mCurrentProjectionHeight = aHeight;
+    const math::Box<GLfloat> projectedBox =
+        graphics::getViewVolumeRightHanded(mAppInterface->getWindowSize(), mCurrentProjectionHeight, gViewedDepth, 2*gViewedDepth);
+    math::Matrix<4, 4, float> projectionTransform = 
+        math::trans3d::orthographicProjection(projectedBox)
+        * math::trans3d::scale(1.f, 1.f, -1.f); // OpenGL clipping space is left handed.
+
+    return projectionTransform;
+}
+
+
+inline math::Matrix<4, 4, float> UserCamera::multiplyViewedHeight(GLfloat aFactor)
+{
+    return setViewedHeight(mCurrentProjectionHeight * aFactor);
 }
 
 

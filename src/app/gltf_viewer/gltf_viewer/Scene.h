@@ -76,7 +76,8 @@ struct Scene
           std::shared_ptr<graphics::AppInterface> aAppInterface) :
         gltf{std::move(aGltf)},
         scene{gltf.get(aSceneIndex)},
-        appInterface{std::move(aAppInterface)}
+        appInterface{std::move(aAppInterface)},
+        camera{appInterface}
     {
         populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
         populateAnimationRepository(animations, gltf.getAnimations());
@@ -100,7 +101,7 @@ struct Scene
              ("Centering camera on {}, scene bounding box is {}.",
               sceneBounds->center(), *sceneBounds);
         camera.setOrigin(sceneBounds->center());
-        setProjectionHeight(sceneBounds->height() * gViewportHeightFactor);
+        setProjection(camera.setViewedHeight(sceneBounds->height() * gViewportHeightFactor));
 
 
         using namespace std::placeholders;
@@ -123,7 +124,7 @@ struct Scene
 
     void initializePrograms();
 
-    void setProjectionHeight(GLfloat aHeight);
+    void setProjection(const math::Matrix<4, 4, float> & aProjectionTransform);
 
     void update(const graphics::Timer & aTimer)
     {
@@ -261,7 +262,7 @@ struct Scene
 
     void callbackScroll(double xoffset, double yoffset)
     {
-        setProjectionHeight(currentProjectionHeight * (1 - yoffset * gScrollFactor));
+        setProjection(camera.multiplyViewedHeight(1 - yoffset * gScrollFactor));
     }
 
     enum class PolygonMode
@@ -281,9 +282,7 @@ struct Scene
     std::size_t currentProgram{1};
     std::shared_ptr<graphics::AppInterface> appInterface;
     UserCamera camera;
-    GLfloat currentProjectionHeight;
 
-    static constexpr GLfloat gViewedDepth = 10000;
     static constexpr GLfloat gViewportHeightFactor = 1.6f;
     static constexpr GLfloat gScrollFactor = 0.05;
 };
