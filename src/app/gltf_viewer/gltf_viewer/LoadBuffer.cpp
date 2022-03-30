@@ -19,16 +19,18 @@ std::vector<std::byte> loadInputStream(std::istream && aInput, std::size_t aByte
 
     std::vector<std::byte> result(aByteLength);
     std::size_t remainingBytes = aByteLength;
-    
+
+    char * destination = reinterpret_cast<char *>(result.data());
     while (remainingBytes)
     {
         std::size_t readSize = std::min(remainingBytes, gChunkSize);
-        if (!aInput.read(reinterpret_cast<char *>(result.data()), readSize).good())
+        if (!aInput.read(destination, readSize).good())
         {
             throw std::runtime_error{"Problem reading '" + aStreamId + "': "
                 // If stream is not good(), yet converts to 'true', it means only eofbit is set.
                 + (aInput ? "stream truncacted." : "read error.")};
         }
+        destination += readSize;
         remainingBytes -= readSize;
     }
     return result;
