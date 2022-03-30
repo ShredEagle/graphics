@@ -87,7 +87,7 @@ inline void UserCamera::callbackCursorPosition(double xpos, double ypos)
     case ControlMode::Pan:
     {
         auto dragVector{cursorPosition - mPreviousDragPosition};
-        dragVector.cwMulAssign(gMouseControlFactor);
+        dragVector *= mCurrentProjectionHeight / mAppInterface->getWindowSize().height();
         mPolarOrigin -= dragVector.x() * mPosition.getCCWTangent().normalize() 
                         - dragVector.y() * mPosition.getUpTangent().normalize();
         break;
