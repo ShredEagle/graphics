@@ -88,10 +88,28 @@ struct Material
 
 struct MeshPrimitive
 {
+    // Note: Handles caching of sparse accessors.
+    // If an accessor is sparse, we cannot reuse any existing buffer for the underlying buffer view.
+    // We treat a each sparse accessor as unique from the perspective of the buffer cache.
+    // Different non-sparse accessors pointing to the same BufferView will still share the same cached buffer.
+    class BufferId
+    {
+    public:
+        BufferId(arte::Const_Owned<arte::gltf::BufferView> aBufferView,
+                 arte::Const_Owned<arte::gltf::Accessor> aAccessor);
+
+        bool operator<(const BufferId & aRhs) const;
+
+    private:
+        arte::gltf::Index<arte::gltf::BufferView> mBufferView;
+        arte::gltf::Index<arte::gltf::Accessor> mAccessor{
+            std::numeric_limits<arte::gltf::Index<arte::gltf::Accessor>::Value_t>::max()};
+    };
+
     MeshPrimitive(arte::Const_Owned<arte::gltf::Primitive> aPrimitive);
     MeshPrimitive(arte::Const_Owned<arte::gltf::Primitive> aPrimitive, const InstanceList & aInstances);
 
-    const ViewerVertexBuffer & prepareVertexBuffer(arte::Const_Owned<arte::gltf::BufferView> aBufferView);
+    const ViewerVertexBuffer & prepareVertexBuffer(arte::Const_Owned<arte::gltf::Accessor> aAccessor);
 
     void associateInstanceBuffer(const InstanceList & aInstances);
 
@@ -113,7 +131,7 @@ struct MeshPrimitive
     //   contains vertex attributes and indices, accessed via different buffer views.
     // This will not be foolproof, as I suspect interleaving can be achieved via
     // several buffer views, for example.
-    std::map<arte::gltf::Index<arte::gltf::BufferView>, ViewerVertexBuffer> vbos;
+    std::map<BufferId, ViewerVertexBuffer> vbos;
     std::optional<Indices> indices;
     std::set<GLuint> providedAttributes;
 

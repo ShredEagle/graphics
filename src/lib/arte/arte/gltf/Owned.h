@@ -76,6 +76,8 @@ class Owned
     friend class Gltf;
     friend class Const_Owned<T_element>;
 
+    static constexpr auto gInvalidIndex = std::numeric_limits<gltf::Index<T_element>::Value_t>::max();
+
 public:
     Owned(Gltf & aGltf, T_element & aElement, gltf::Index<T_element> aIndex);
 
@@ -99,7 +101,20 @@ public:
 
     gltf::Index<T_element> id() const
     {
+        assert(mIndex != gInvalidIndex);
         return mIndex;
+    }
+
+    template <class T_member>
+    Owned<T_member> get(T_member T_element::* aDataMember)
+    {
+        return {mOwningGltf, mElement.*aDataMember, gInvalidIndex};
+    }
+
+    template <class T_member>
+    Owned<T_member> get(std::optional<T_member> T_element::* aDataMember)
+    {
+        return {mOwningGltf, *(mElement.*aDataMember), gInvalidIndex};
     }
 
     template <class T_indexed>
@@ -116,6 +131,12 @@ public:
     {
         return get(*(mElement.*aDataMember));
     }
+
+    // Note: Not provided at the moment in the non-const Owned.
+    // It is unclear whether the default value should be provided as const (breaking the return type) 
+    // or not (breaking the usual expectations regarding a default value).
+    //template <class T_indexed>
+    //Owned<T_indexed> value_or(std::optional<gltf::Index<T_indexed>> T_element::* aDataMember, const? T_indexed & aDefaultElement) const
 
     template <class T_member>
     std::vector<Owned<T_member>> 
@@ -170,6 +191,8 @@ class Const_Owned
 {
     friend class Gltf;
 
+    static constexpr auto gInvalidIndex = std::numeric_limits<gltf::Index<T_element>::Value_t>::max();
+
 public:
     /*implicit*/Const_Owned(Owned<T_element> aOwned);
 
@@ -190,7 +213,20 @@ public:
 
     gltf::Index<T_element> id() const
     {
+        assert(mIndex != gInvalidIndex);
         return mIndex;
+    }
+
+    template <class T_member>
+    Const_Owned<T_member> get(T_member T_element::* aDataMember) const
+    {
+        return {mOwningGltf, mElement.*aDataMember, gInvalidIndex};
+    }
+
+    template <class T_member>
+    Const_Owned<T_member> get(std::optional<T_member> T_element::* aDataMember) const
+    {
+        return {mOwningGltf, *(mElement.*aDataMember), gInvalidIndex};
     }
 
     template <class T_indexed>
@@ -209,7 +245,7 @@ public:
     }
 
     // Note: This is hackish
-    // The function pretends the default element is part of the owning gltf, and give is the maximal id.
+    // The function pretends the default element is part of the owning gltf, and give it the invalid id.
     template <class T_indexed>
     Const_Owned<T_indexed> value_or(std::optional<gltf::Index<T_indexed>> T_element::* aDataMember, const T_indexed & aDefaultElement) const
     {
@@ -219,7 +255,7 @@ public:
         }
         else
         {
-            return {mOwningGltf, aDefaultElement, std::numeric_limits<std::size_t>::max()};
+            return {mOwningGltf, aDefaultElement, gInvalidIndex};
         }
     }
 

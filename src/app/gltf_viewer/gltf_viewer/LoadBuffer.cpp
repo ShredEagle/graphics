@@ -1,5 +1,6 @@
 #include "LoadBuffer.h"
 
+#include "DataLayout.h"
 #include "Logging.h"
 #include "Url.h"
 
@@ -8,9 +9,24 @@
 #include <span>
 #include <strstream>
 
+#include <renderer/GL_Loader.h>
+
 
 namespace ad {
 namespace gltfviewer {
+
+
+arte::Const_Owned<arte::gltf::BufferView> 
+checkedBufferView(arte::Const_Owned<arte::gltf::Accessor> aAccessor)
+{
+    if (!aAccessor->bufferView)
+    {
+        ADLOG(gPrepareLogger, critical)
+             ("Unsupported: Accessor #{} does not have a buffer view associated.", aAccessor.id());
+        throw std::logic_error{"Accessor was expected to have a buffer view."};
+    }
+    return aAccessor.get(&arte::gltf::Accessor::bufferView);
+}
 
 
 std::vector<std::byte> loadInputStream(std::istream && aInput, std::size_t aByteLength, const std::string & aStreamId)
@@ -76,6 +92,80 @@ std::vector<std::byte> loadBufferData(arte::Const_Owned<arte::gltf::Buffer> aBuf
     default:
         throw std::logic_error{"Invalid uri type."};
     }
+}
+
+
+// Note: not part of the public interface for the moment
+// I am afraid users will be confused whether the buffer view offset is applied.
+std::vector<std::byte> loadBufferData(arte::Const_Owned<arte::gltf::BufferView> aBufferView)
+{
+    return loadBufferData(aBufferView.get(&arte::gltf::BufferView::buffer));
+}
+
+
+template <class T_component>
+std::vector<GLuint> copyIndices(const std::byte * aFirst, std::size_t aCount)
+{
+    const T_component * first = reinterpret_cast<const T_component *>(aFirst);
+    std::vector<GLuint> result;
+    std::copy(first, first + aCount, std::back_inserter(result));
+    return result;
+}
+
+/// \brief Converts all potential indice types to the largest representation.
+std::vector<GLuint>
+loadIndices(arte::Const_Owned<arte::gltf::accessor::Indices> aIndices, std::size_t aCount)
+{
+    auto bufferView = aIndices.get(&arte::gltf::accessor::Indices::bufferView);
+    std::vector<std::byte> buffer = loadBufferData(bufferView);
+
+    std::byte * first = buffer.data() + bufferView->byteOffset + aIndices->byteOffset;
+    switch(aIndices->componentType)
+    {
+    case GL_UNSIGNED_BYTE:
+        return copyIndices<GLubyte>(first, aCount);
+    case GL_UNSIGNED_SHORT:
+        return copyIndices<GLushort>(first, aCount);
+    case GL_UNSIGNED_INT:
+        return copyIndices<GLuint>(first, aCount);
+    }
+}
+
+
+std::vector<std::byte> 
+loadBufferData(arte::Const_Owned<arte::gltf::Accessor> aAccessor)
+{
+    auto dataBufferView = checkedBufferView(aAccessor);
+    std::vector<std::byte> bufferData = loadBufferData(dataBufferView);
+
+    if(aAccessor->sparse)
+    {
+        auto sparse = aAccessor.get(&arte::gltf::Accessor::sparse);
+        std::vector<GLuint> indices =
+            loadIndices(sparse.get(&arte::gltf::accessor::Sparse::indices), sparse->count);
+
+        auto values = sparse.get(&arte::gltf::accessor::Sparse::values);
+        auto valuesBufferView = values.get(&arte::gltf::accessor::Values::bufferView);
+        std::vector<std::byte> differenceBuffer = loadBufferData(valuesBufferView);
+        const std::byte * difference = 
+            differenceBuffer.data() + valuesBufferView->byteOffset + values->byteOffset;
+
+        std::byte * element = 
+            bufferData.data() + dataBufferView->byteOffset + aAccessor->byteOffset;
+        const std::size_t elementSize = 
+            gElementTypeToLayout.at(aAccessor->type).byteSize(aAccessor->componentType);
+
+        std::size_t iteration = 0;
+        for (auto modifiedIndex : indices)
+        {
+            std::copy(difference + iteration * elementSize,
+                      difference + (iteration + 1) * elementSize,  
+                      element + modifiedIndex * elementSize);
+            ++iteration;
+        }
+    }
+
+    return bufferData;
 }
 
 

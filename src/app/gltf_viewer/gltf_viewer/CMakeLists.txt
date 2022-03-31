@@ -2,6 +2,7 @@ set(TARGET_NAME gltf_viewer)
 
 set(${TARGET_NAME}_HEADERS
     Camera.h
+    DataLayout.h
     GltfAnimation.h
     GltfRendering.h
     LoadBuffer.h

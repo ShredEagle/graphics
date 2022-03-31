@@ -1,5 +1,6 @@
 #include "GltfRendering.h"
 
+#include "DataLayout.h"
 #include "LoadBuffer.h"
 #include "Logging.h"
 #include "Shaders.h"
@@ -33,44 +34,9 @@ const std::map<std::string /*semantic*/, GLuint /*vertex attribute index*/> gSem
 /// \brief First attribute index available for per-instance attributes.
 constexpr GLuint gInstanceAttributeIndex = 8;
 
-struct VertexAttributeLayout
-{
-    GLint componentsPerAttribute;
-    std::size_t occupiedAttributes{1}; // For matrices types, will be the number of columns.
-
-    std::size_t totalComponents() const
-    { return componentsPerAttribute * occupiedAttributes; }
-};
-
-using ElementType = gltf::Accessor::ElementType;
-
-const std::map<gltf::Accessor::ElementType, VertexAttributeLayout> gElementTypeToLayout{
-    {ElementType::Scalar, {1}},    
-    {ElementType::Vec2,   {2}},    
-    {ElementType::Vec3,   {3}},    
-    {ElementType::Vec4,   {4}},    
-    {ElementType::Mat2,   {2, 2}},    
-    {ElementType::Mat3,   {3, 3}},    
-    {ElementType::Mat4,   {4, 4}},    
-};
-
-
 //
 // Helper functions
 //
-/// \brief Returns the buffer view associated to the accessor, or throw if there is none.
-Const_Owned<gltf::BufferView> checkedBufferView(Const_Owned<gltf::Accessor> aAccessor)
-{
-    if (!aAccessor->bufferView)
-    {
-        ADLOG(gPrepareLogger, critical)
-             ("Unsupported: Accessor #{} does not have a buffer view associated.", aAccessor.id());
-        throw std::logic_error{"Accessor was expected to have a buffer view."};
-    }
-    return aAccessor.get(&gltf::Accessor::bufferView);
-}
-
-
 template <class T_buffer>
 constexpr GLenum associateTarget()
 {
@@ -86,42 +52,43 @@ constexpr GLenum associateTarget()
 
 
 template <class T_buffer>
-T_buffer prepareBuffer_impl(Const_Owned<gltf::BufferView> aBufferView)
+T_buffer prepareBuffer_impl(Const_Owned<gltf::Accessor> aAccessor)
 {
     T_buffer buffer;
+    auto bufferView = checkedBufferView(aAccessor);
 
     GLenum target = [&]()
     {
-        if (!aBufferView->target)
+        if (!bufferView->target)
         {
             GLenum infered = associateTarget<T_buffer>();
             ADLOG(gPrepareLogger, warn)
                  ("Buffer view #{} does not have target defined. Infering {}.",
-                  aBufferView.id(), infered);
+                  bufferView.id(), infered);
             return infered;
         }
         else
         {
-            assert(*aBufferView->target == associateTarget<T_buffer>());
-            return *aBufferView->target;
+            assert(*bufferView->target == associateTarget<T_buffer>());
+            return *bufferView->target;
         }
     }();
 
     glBindBuffer(target, buffer);
     glBufferData(target,
-                 aBufferView->byteLength,
+                 bufferView->byteLength,
                  // TODO might be even better to only load in main memory the part of the buffer starting
-                 // at aBufferView->byteOffset (and also limit the length there, actually).
-                 loadBufferData(aBufferView.get(&gltf::BufferView::buffer)).data() 
-                    + aBufferView->byteOffset,
+                 // at bufferView->byteOffset (and also limit the length there, actually).
+                 loadBufferData(aAccessor).data() 
+                    + bufferView->byteOffset,
                  GL_STATIC_DRAW);
     glBindBuffer(target, 0);
 
     ADLOG(gPrepareLogger, debug)
          ("Loaded {} bytes in target {}, offset in source buffer is {} bytes.",
-          aBufferView->byteLength,
+          bufferView->byteLength,
           target,
-          aBufferView->byteOffset);
+          bufferView->byteOffset);
 
     return buffer;
 }
@@ -153,23 +120,23 @@ void outputElements(std::ostream & aOut,
 
 template <class T_component>
 void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
-                  Const_Owned<gltf::BufferView> aBufferView,
                   const std::vector<std::byte> & aBytes)
 {
+    auto bufferView = checkedBufferView(aAccessor);
     VertexAttributeLayout layout = gElementTypeToLayout.at(aAccessor->type);
 
     // If there is no explicit stride, the vertex attribute elements are tightly packed
     // i.e. the stride, in term of components, is the number of components in one element.
     std::size_t componentStride = layout.totalComponents();
-    if (aBufferView->byteStride)
+    if (bufferView->byteStride)
     {
-        auto stride = *aBufferView->byteStride;
+        auto stride = *bufferView->byteStride;
         assert(stride % sizeof(T_component) == 0);
         componentStride = stride / sizeof(T_component);
     }
 
     std::span<const T_component> span{
-        reinterpret_cast<const T_component *>(aBytes.data() + aBufferView->byteOffset + aAccessor->byteOffset), 
+        reinterpret_cast<const T_component *>(aBytes.data() + bufferView->byteOffset + aAccessor->byteOffset), 
         // All the components, but not more (i.e. no "stride padding" after the last component)
         componentStride * (aAccessor->count - 1) + layout.totalComponents()
     };
@@ -182,9 +149,7 @@ void analyze_impl(Const_Owned<gltf::Accessor> aAccessor,
 
 void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 {
-    auto bufferView = checkedBufferView(aAccessor);
-
-    std::vector<std::byte> bytes = loadBufferData(bufferView.get(&gltf::BufferView::buffer));
+    std::vector<std::byte> bytes = loadBufferData(aAccessor);
 
     switch(aAccessor->componentType)
     {
@@ -194,12 +159,12 @@ void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
         return;
     case GL_UNSIGNED_SHORT:
     {
-        analyze_impl<GLshort>(aAccessor, bufferView, bytes);
+        analyze_impl<GLshort>(aAccessor, bytes);
         break;
     }
     case GL_FLOAT:
     {
-        analyze_impl<GLfloat>(aAccessor, bufferView, bytes);
+        analyze_impl<GLfloat>(aAccessor, bytes);
         break;
     }
     }
@@ -211,7 +176,7 @@ void analyzeAccessor(Const_Owned<gltf::Accessor> aAccessor)
 Indices::Indices(Const_Owned<gltf::Accessor> aAccessor) :
     componentType{aAccessor->componentType},
     byteOffset{aAccessor->byteOffset},
-    ibo{prepareBuffer_impl<graphics::IndexBufferObject>(checkedBufferView(aAccessor))}
+    ibo{prepareBuffer_impl<graphics::IndexBufferObject>(aAccessor)}
 {}
 
 
@@ -295,22 +260,42 @@ Material::GetPbr(arte::Const_Owned<arte::gltf::Material> aMaterial)
 }
 
 
-const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::BufferView> aBufferView)
+MeshPrimitive::BufferId::BufferId(arte::Const_Owned<arte::gltf::BufferView> aBufferView,
+                                  arte::Const_Owned<arte::gltf::Accessor> aAccessor) :
+    mBufferView{aBufferView.id()}
 {
-    auto found = vbos.find(aBufferView.id());
-    if (found == vbos.end())
+    // Only if the accessor is sparse should its index be used to differentiate buffers.
+    if(aAccessor->sparse)
     {
-        auto vertexBuffer = prepareBuffer_impl<graphics::VertexBufferObject>(aBufferView);
-        auto inserted = 
-            vbos.emplace(aBufferView.id(),
-                         ViewerVertexBuffer{
-                            std::move(vertexBuffer), 
-                            aBufferView->byteStride ? (GLsizei)*aBufferView->byteStride : 0});
-        return inserted.first->second;
+        mAccessor = aAccessor.id();
+    }
+}
+
+
+bool MeshPrimitive::BufferId::operator<(const BufferId & aRhs) const
+{
+    return mBufferView < aRhs.mBufferView
+        || (mBufferView == aRhs.mBufferView && mAccessor < aRhs.mAccessor);
+}
+
+
+const ViewerVertexBuffer & MeshPrimitive::prepareVertexBuffer(Const_Owned<gltf::Accessor> aAccessor)
+{
+    auto bufferView = checkedBufferView(aAccessor);
+    if (auto found = vbos.find(BufferId{bufferView, aAccessor});
+        found != vbos.end())
+    {
+        return found->second;
     }
     else
     {
-        return found->second;
+        auto vertexBuffer = prepareBuffer_impl<graphics::VertexBufferObject>(aAccessor);
+        auto inserted = 
+            vbos.emplace(BufferId{bufferView, aAccessor},
+                         ViewerVertexBuffer{
+                            std::move(vertexBuffer), 
+                            bufferView->byteStride ? (GLsizei)*bufferView->byteStride : 0});
+        return inserted.first->second;
     }
 }
 
@@ -337,7 +322,7 @@ MeshPrimitive::MeshPrimitive(Const_Owned<gltf::Primitive> aPrimitive) :
             continue;
         }
 
-        const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(checkedBufferView(accessor));
+        const ViewerVertexBuffer & vertexBuffer = prepareVertexBuffer(accessor);
 
         if (gDumpBuffersContent) analyzeAccessor(accessor);
 

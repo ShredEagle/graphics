@@ -164,6 +164,29 @@ namespace gltf {
         std::optional<EnumType> target;
     };
 
+    namespace accessor {
+        struct Indices
+        {
+            Index<BufferView> bufferView;
+            std::size_t byteOffset;
+            EnumType componentType;
+        };
+
+        struct Values
+        {
+            Index<BufferView> bufferView;
+            std::size_t byteOffset;
+        };
+
+        struct Sparse
+        {
+            std::size_t count;
+            Indices indices;
+            Values values;
+        };
+
+    } // namespace accessor
+
     struct Accessor
     {
         enum class ElementType
@@ -198,7 +221,7 @@ namespace gltf {
         bool normalized;
         std::size_t count;
         std::optional<Bounds_t> bounds;
-        // TODO Handle sparse
+        std::optional<accessor::Sparse> sparse;
     };
 
     struct Primitive

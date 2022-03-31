@@ -65,12 +65,14 @@ constexpr const char * gTagScale                = "scale";
 constexpr const char * gTagScene                = "scene";
 constexpr const char * gTagScenes               = "scenes";
 constexpr const char * gTagSource               = "source";
+constexpr const char * gTagSparse               = "sparse";
 constexpr const char * gTagTarget               = "target";
 constexpr const char * gTagTranslation          = "translation";
 constexpr const char * gTagTexCoord             = "texCoord";
 constexpr const char * gTagTextures             = "textures";
 constexpr const char * gTagType                 = "type";
 constexpr const char * gTagUri                  = "uri";
+constexpr const char * gTagValues               = "values";
 constexpr const char * gTagWrapS                = "wrapS";
 constexpr const char * gTagWrapT                = "wrapT";
 
@@ -339,6 +341,34 @@ BufferView load(const Json & aJson)
 }
 
 
+template <>
+accessor::Sparse load(const Json & aJson)
+{
+    auto indicesLoader = [](const Json & aJson) -> accessor::Indices
+    {
+        return {
+            .bufferView = aJson.at(gTagBufferView).get<Index<BufferView>>(),
+            .byteOffset = aJson.value<std::size_t>(gTagByteOffset, 0),
+            .componentType = aJson.at(gTagComponentType),
+        };
+    };
+
+    auto valuesLoader = [](const Json & aJson) -> accessor::Values
+    {
+        return {
+            .bufferView = aJson.at(gTagBufferView).get<Index<BufferView>>(),
+            .byteOffset = aJson.value<std::size_t>(gTagByteOffset, 0),
+        };
+    };
+
+    return {
+        .count = aJson.at(gTagCount),
+        .indices = indicesLoader(aJson.at(gTagIndices)),
+        .values = valuesLoader(aJson.at(gTagValues)),
+    };
+}
+
+
 template <class T_stored>
 Accessor::MinMax<T_stored> makeMinMax(const Json & aJson)
 {
@@ -347,6 +377,7 @@ Accessor::MinMax<T_stored> makeMinMax(const Json & aJson)
         .max = aJson.at(gTagMax).get<std::vector<T_stored>>(),
     };
 }
+
 
 template <>
 Accessor load(const Json & aJson)
@@ -359,8 +390,8 @@ Accessor load(const Json & aJson)
         .componentType = aJson.at(gTagComponentType),
         .normalized = aJson.value(gTagNormalized, false),
         .count = aJson.at(gTagCount),
+        .sparse = loadOptional<accessor::Sparse>(aJson, gTagSparse),
     };
-
 
     // Note: As arte is an upstream of renderer (which currently defines the gl loader includes)
     // we do not have an "easy" access to OpenGL symbols and enumerators from here.
