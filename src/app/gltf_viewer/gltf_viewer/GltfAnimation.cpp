@@ -41,8 +41,7 @@ std::vector<T_value> loadAccessorData(arte::Const_Owned<arte::gltf::Accessor> aA
 
     // TODO Ad 2022/03/15 This can probably be optimized to work without a copy
     // by only loading the accessor bytes (in case of no-stride).
-    std::vector<std::byte> completeBuffer = 
-        loadBufferData(bufferView.get(&gltf::BufferView::buffer));
+    std::vector<std::byte> completeBuffer = loadBufferData(aAccessor);
 
     std::vector<T_value> result;
     result.reserve(aAccessor->count);
@@ -129,9 +128,11 @@ Animation prepare(arte::Const_Owned<arte::gltf::Animation> aAnimation)
 {
     Animation result;
 
-    for (auto sampler : aAnimation.iterate(&gltf::Animation::samplers))
+    for (auto gltfSampler : aAnimation.iterate(&gltf::Animation::samplers))
     {
-        result.samplers.push_back(prepare(sampler));
+        std::shared_ptr<Sampler> sampler = prepare(gltfSampler);
+        result.duration = std::max(result.duration, sampler->getDuration());
+        result.samplers.push_back(std::move(sampler));
     }
 
     for (auto channel : aAnimation.iterate(&gltf::Animation::channels))
@@ -150,9 +151,57 @@ Animation prepare(arte::Const_Owned<arte::gltf::Animation> aAnimation)
             }
         );
     }
+
+    ADLOG(gPrepareLogger, debug)
+         ("Loader animation #{}, total time {}s.", aAnimation.id(), result.duration);
     return result;
 }
 
+
+void Animation::updateScene(Time_t aTimepoint, arte::Owned<arte::gltf::Scene> aTargetScene) const
+{
+    switch(playMode)
+    {
+        case Mode::Repeat:
+            aTimepoint = std::fmod(aTimepoint, duration);
+            break;
+        case Mode::Once:
+        { /*do nothing*/ }
+    }
+
+    for (const auto & [nodeIndex, nodeChannels] : nodeToChannels)
+    {
+        auto node = aTargetScene.get(nodeIndex);
+        arte::gltf::Node::TRS * trs = 
+            std::get_if<arte::gltf::Node::TRS>(&node->transformation);
+
+        // TODO Ad 2022/03/22: I suspect it is legal to animate a channel for
+        // a node where it was not explicitly specified in the gltf.
+        if(trs == nullptr)
+        {
+            ADLOG(gDrawLogger, critical)
+                 ("Unsupported: Node #{} animates a transformation channel, but did not specify any of TRS.",
+                  node.id());
+            throw std::logic_error{"Animation on a node without any of TRS."};
+        }
+
+        for (auto nodeChannel : nodeChannels)
+        {
+            switch(nodeChannel.path)
+            {
+            case arte::gltf::animation::Target::Path::Translation:
+                nodeChannel.sampler->interpolate(aTimepoint, trs->translation);
+                break;
+            case arte::gltf::animation::Target::Path::Rotation:
+                nodeChannel.sampler->interpolate(aTimepoint, trs->rotation);
+                break;
+            case arte::gltf::animation::Target::Path::Scale:
+                nodeChannel.sampler->interpolate(aTimepoint, trs->scale);
+                break;
+            }
+        }
+    }
+}
 
 } // namespace gltfviewer
 } // namespace ad

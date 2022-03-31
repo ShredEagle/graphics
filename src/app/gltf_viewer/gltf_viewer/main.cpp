@@ -106,7 +106,7 @@ int main(int argc, const char * argv[])
             throw std::logic_error{"Viewer expects a default scene"};
         }();
 
-        constexpr Size2<int> gWindowSize{800, 600};
+        constexpr Size2<int> gWindowSize{1280, 1024};
         ApplicationGlfw application("glTF Viewer", gWindowSize);
 
         // Requires OpenGL context to call gl functions

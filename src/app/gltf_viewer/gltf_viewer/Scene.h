@@ -138,39 +138,7 @@ struct Scene
     {
         if(activeAnimation != nullptr)
         {
-            Animation & animation = *activeAnimation;
-            for (const auto & [nodeIndex, nodeChannels] : animation.nodeToChannels)
-            {
-                auto node = scene.get(nodeIndex);
-                arte::gltf::Node::TRS * trs = 
-                    std::get_if<arte::gltf::Node::TRS>(&node->transformation);
-
-                // TODO Ad 2022/03/22: I suspect it is legal to animate a channel for
-                // a node where it was not explicitly specified in the gltf.
-                if(trs == nullptr)
-                {
-                    ADLOG(gDrawLogger, critical)
-                         ("Unsupported: Node #{} animates a transformation channel, but did not specify any of TRS.",
-                          node.id());
-                    throw std::logic_error{"Animation on a node without any of TRS."};
-                }
-
-                for (auto nodeChannel : nodeChannels)
-                {
-                    switch(nodeChannel.path)
-                    {
-                    case arte::gltf::animation::Target::Path::Translation:
-                        nodeChannel.sampler->interpolate(aTimer.time(), trs->translation);
-                        break;
-                    case arte::gltf::animation::Target::Path::Rotation:
-                        nodeChannel.sampler->interpolate(aTimer.time(), trs->rotation);
-                        break;
-                    case arte::gltf::animation::Target::Path::Scale:
-                        nodeChannel.sampler->interpolate(aTimer.time(), trs->scale);
-                        break;
-                    }
-                }
-            }
+            activeAnimation->updateScene(aTimer.time(), scene);
         }
     }
 

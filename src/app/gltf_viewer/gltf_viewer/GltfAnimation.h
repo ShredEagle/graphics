@@ -50,6 +50,8 @@ struct Sampler
     { throw std::logic_error{__func__ + std::string{" not available, type error."}}; }
 
     virtual void output(std::ostream & aOut) const = 0;
+
+    virtual Time_t getDuration() const = 0;
 };
 
 
@@ -63,6 +65,9 @@ struct SamplerLinear : public Sampler
     void interpolate(Time_t aTimepoint, T_value & aDestination) const override;
 
     void output(std::ostream & aOut) const override;
+
+    Time_t getDuration() const override
+    { return keyframes.timestamps.back(); }
 
     Keyframes<T_value> keyframes;
 };
@@ -79,11 +84,22 @@ struct Animation
         Sampler * sampler;
     };
 
+    enum class Mode
+    {
+        Once,
+        Repeat,
+    };
+
+    void updateScene(Time_t aTimepoint, arte::Owned<arte::gltf::Scene> aTargetScene) const;
+
     std::vector<std::shared_ptr<Sampler>> samplers;
     // > Within one animation, each target (a combination of a node and a path)
     // > MUST NOT be used more than once.
     std::map<arte::gltf::Index<arte::gltf::Node>, 
              std::vector<NodeChannel>> nodeToChannels;
+
+    Mode playMode{Mode::Repeat};
+    Time_t duration{0};
 };
 
 
@@ -148,15 +164,12 @@ Keyframes<T_value>::getBounds(Time_t aTimepoint) const
 template <class T_value>
 void SamplerLinear<T_value>::interpolate(Time_t aTimepoint, T_value & aDestination) const
 {
-    // Implement repeat
-    Time_t time = std::fmod(aTimepoint, keyframes.timestamps.back());
-
-    auto [firstBound, optionalBound] = keyframes.getBounds(time);
+    auto [firstBound, optionalBound] = keyframes.getBounds(aTimepoint);
 
     if(optionalBound)
     {
         GLfloat interpolationParam = 
-            (time - firstBound.time) / (optionalBound->time - firstBound.time);
+            (aTimepoint - firstBound.time) / (optionalBound->time - firstBound.time);
 
         if constexpr (std::is_same_v<math::Quaternion<GLfloat>, T_value>)
         {
