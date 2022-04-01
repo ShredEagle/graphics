@@ -94,7 +94,7 @@ inline const GLchar* gTrivialColorVertexShader = R"#(
     layout(location=0) in vec2  in_VertexPosition;
     layout(location=1) in vec3  in_VertexColor;
 
-    out vec3 ex_Color;
+    out vec4 ex_Color;
 
     uniform mat3 camera;
     uniform mat3 projection;
@@ -116,6 +116,20 @@ inline const GLchar* gTrivialFragmentShader = R"#(
     void main(void)
     {
         out_Color = vec4(ex_Color, 1.);
+    }
+)#";
+
+
+// TODO Ad 2022/04/01: Replace the non-opacity version with this one
+inline const GLchar* gTrivialFragmentShaderOpacity = R"#(
+    #version 400
+
+    in vec4 ex_Color;
+    out vec4 out_Color;
+
+    void main(void)
+    {
+        out_Color = ex_Color;
     }
 )#";
 
@@ -142,36 +156,43 @@ inline const GLchar* gTrivialColorTransformVertexShader = R"#(
 )#";
 
 
-//
-// Draw Line
-//
-inline const GLchar* gSolidColorLineVertexShader = R"#(
-    #version 400
+namespace drawline {
 
-    layout(location=0) in vec2  in_VertexPosition;
-    layout(location=1) in vec2  in_origin;
-    layout(location=2) in vec2  in_end;
-    layout(location=3) in float in_width;
-    layout(location=4) in vec3  in_InstanceColor;
+    inline const GLchar* gSolidColorLineVertexShader = R"#(
+        #version 400
 
-    out vec3 ex_Color;
+        layout(location=0) in vec2  ve_position;
 
-    uniform ivec2 in_BufferResolution;
-    
-    out vec2 ex_UV;
+        layout(location=1) in vec4  in_origin;
+        layout(location=2) in vec4  in_end;
+        layout(location=3) in float in_width_screen;
+        layout(location=4) in vec4  in_color;
 
-    void main(void)
-    {
-        vec2 direction = in_end - in_origin;
-        vec2 orthogonalVec = normalize(vec2(direction.y, -direction.x));
-        vec2 bufferSpacePosition = in_origin + in_VertexPosition.y * direction + in_width / 2 * orthogonalVec - in_width * in_VertexPosition.x * orthogonalVec;
-        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        uniform mat4 u_view;
+        uniform mat4 u_projection;
+        uniform ivec2 in_BufferResolution;
 
-        ex_Color = in_InstanceColor;
-    }
-)#";
+        out vec4 ex_Color;
+        
+        void main(void)
+        {
+            vec4 origin_view = u_view * in_origin;
+            vec4 direction_view = u_view * (in_end - in_origin);
 
+            // Project the normal on view plane by discarding Z, and rotate by 90° CCW.
+            vec4 normal_view = vec4(-direction_view.y, direction_view.x, 0., 0.);
+            // We need the normal (normalized) in clip space, because the width is given in screen space.
+            vec2 normal_clip = normalize(vec2(u_projection * normal_view));
+            vec4 halfWidth_clip = vec4((in_width_screen * normal_clip / in_BufferResolution), 0., 0.);
+
+            gl_Position = u_projection * (origin_view + ve_position.x * direction_view)
+                          + ve_position.y * halfWidth_clip;
+
+            ex_Color = in_color;
+        }
+    )#";
+
+} // namespace drawline
 
 inline const GLchar* gPassthroughVertexShader = R"#(
 #version 400

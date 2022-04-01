@@ -3,6 +3,7 @@ set(TARGET_NAME gltf_viewer)
 set(${TARGET_NAME}_HEADERS
     Camera.h
     DataLayout.h
+    DebugDrawer.h
     GltfAnimation.h
     GltfRendering.h
     LoadBuffer.h
@@ -14,6 +15,7 @@ set(${TARGET_NAME}_HEADERS
 )
 
 set(${TARGET_NAME}_SOURCES
+    DebugDrawer.cpp
     GltfAnimation.cpp
     GltfRendering.cpp
     LoadBuffer.cpp
