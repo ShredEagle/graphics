@@ -39,6 +39,8 @@ constexpr const char * gTagIndex                = "index";
 constexpr const char * gTagIndices              = "indices";
 constexpr const char * gTagInput                = "input";
 constexpr const char * gTagInterpolation        = "interpolation";
+constexpr const char * gTagInverseBindMatrices  = "inverseBindMatrices";
+constexpr const char * gTagJoints               = "joints";
 constexpr const char * gTagMagFilter            = "magFilter";
 constexpr const char * gTagMaterial             = "material";
 constexpr const char * gTagMaterials            = "materials";
@@ -64,6 +66,9 @@ constexpr const char * gTagSamplers             = "samplers";
 constexpr const char * gTagScale                = "scale";
 constexpr const char * gTagScene                = "scene";
 constexpr const char * gTagScenes               = "scenes";
+constexpr const char * gTagSkeleton             = "skeleton";
+constexpr const char * gTagSkin                 = "skin";
+constexpr const char * gTagSkins                = "skins";
 constexpr const char * gTagSource               = "source";
 constexpr const char * gTagSparse               = "sparse";
 constexpr const char * gTagTarget               = "target";
@@ -277,6 +282,7 @@ Node load(const Json & aNodeObject)
         .children = makeIndicesVector<Index<Node>>(getOptionalArray(aNodeObject, gTagChildren)),
         .transformation = handleTransformation(aNodeObject),
         .mesh = getOptional<Index<Mesh>>(aNodeObject, gTagMesh),
+        .skin = getOptional<Index<Skin>>(aNodeObject, gTagSkin),
     };
 }
 
@@ -554,6 +560,18 @@ texture::Sampler load(const Json & aJson)
 }   
 
 
+template <>
+Skin load(const Json & aJson)
+{
+    return {
+        .name = aJson.value(gTagName, ""),
+        .inverseBindMatrices = getOptional<Index<Accessor>>(aJson, gTagInverseBindMatrices),
+        .skeleton = getOptional<Index<Node>>(aJson, gTagSkeleton),
+        .joints = makeIndicesVector<Index<Node>>(getOptionalArray(aJson, gTagJoints)),
+    };
+}
+
+
 // 
 // Output operators
 // 
@@ -604,9 +622,10 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVectorIfPresent(json, mImages, gTagImages);
     populateVectorIfPresent(json, mTextures, gTagTextures);
     populateVectorIfPresent(json, mSamplers, gTagSamplers);
+    populateVectorIfPresent(json, mSkins, gTagSkins);
 
-    ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} animation(s), {} buffer(s).",
-                             mScenes.size(), mNodes.size(), mMeshes.size(), mAnimations.size(), mBuffers.size());
+    ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} material(s), {} animation(s), {} skin(s), {} buffer(s).",
+                             mScenes.size(), mNodes.size(), mMeshes.size(), mMaterials.size(), mAnimations.size(), mSkins.size(), mBuffers.size());
 }
 
 
@@ -768,6 +787,17 @@ Owned<gltf::texture::Sampler> Gltf::get(gltf::Index<gltf::texture::Sampler> aSam
 Const_Owned<gltf::texture::Sampler> Gltf::get(gltf::Index<gltf::texture::Sampler> aSamplerIndex) const
 {
     return {*this, mSamplers.at(aSamplerIndex), aSamplerIndex};
+}
+
+
+Owned<gltf::Skin> Gltf::get(gltf::Index<gltf::Skin> aSkinIndex)
+{
+    return {*this, mSkins.at(aSkinIndex), aSkinIndex};
+}
+
+Const_Owned<gltf::Skin> Gltf::get(gltf::Index<gltf::Skin> aSkinIndex) const
+{
+    return {*this, mSkins.at(aSkinIndex), aSkinIndex};
 }
 
 

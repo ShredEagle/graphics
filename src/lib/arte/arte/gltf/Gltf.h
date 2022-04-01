@@ -24,6 +24,17 @@ namespace gltf {
 
     using EnumType = unsigned int; // this seems to be GLenum type.
 
+    struct Accessor;
+    struct Node;
+
+    struct Skin
+    {
+        std::string name;
+        std::optional<Index<Accessor>> inverseBindMatrices;
+        std::optional<Index<Node>> skeleton;
+        std::vector<Index<Node>> joints;
+    };
+
     namespace texture
     {
 
@@ -95,10 +106,6 @@ namespace gltf {
     };
 
     const Material gDefaultMaterial;
-
-    struct Accessor;
-
-    struct Node;
 
     namespace animation {
 
@@ -250,8 +257,8 @@ namespace gltf {
         std::string name;
         std::vector<Index<Node>> children;
         std::variant<Matrix, TRS> transformation;
-        // TODO Handle non-mesh nodes
         std::optional<Index<Mesh>> mesh;
+        std::optional<Index<Skin>> skin;
     };
 
     struct Scene
@@ -313,6 +320,9 @@ public:
     Owned<gltf::texture::Sampler> get(gltf::Index<gltf::texture::Sampler> aSamplerIndex);
     Const_Owned<gltf::texture::Sampler> get(gltf::Index<gltf::texture::Sampler> aSamplerIndex) const;
 
+    Owned<gltf::Skin> get(gltf::Index<gltf::Skin> aSkinIndex);
+    Const_Owned<gltf::Skin> get(gltf::Index<gltf::Skin> aSkinIndex) const;
+
     filesystem::path getPathFor(gltf::Uri aFileUri) const;
 
 private:
@@ -332,6 +342,7 @@ private:
     std::vector<gltf::Image> mImages;
     std::vector<gltf::Texture> mTextures;
     std::vector<gltf::texture::Sampler> mSamplers;
+    std::vector<gltf::Skin> mSkins;
 };
 
 
