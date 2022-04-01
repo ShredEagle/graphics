@@ -16,5 +16,13 @@ inline int getMaxTextureSize()
 }
 
 
+inline bool isEnabled(GLenum aTestedFeature)
+{
+    GLboolean result;
+    glGetBooleanv(aTestedFeature, &result);
+    return result;
+}
+
+
 } // namespace graphics
 } // namespace ad

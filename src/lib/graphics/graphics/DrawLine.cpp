@@ -95,8 +95,7 @@ void DrawLine::render() const
 {
     activate(mDrawContext);
 
-    // TODO proper scoped handling
-    glDisable(GL_DEPTH_TEST);
+    auto scopedDepthTest = graphics::scopeDepthTest(false);
 
     //
     // Stream vertex attributes
@@ -113,8 +112,6 @@ void DrawLine::render() const
                           0,
                           gVerticesCount,
                           static_cast<GLsizei>(mInstances.size()));
-
-    glEnable(GL_DEPTH_TEST);
 }
 
 

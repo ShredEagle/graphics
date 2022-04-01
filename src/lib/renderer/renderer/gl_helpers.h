@@ -3,6 +3,7 @@
 #include <handy/Guard.h>
 
 #include "GL_Loader.h"
+#include "Query.h"
 
 namespace ad {
 namespace graphics {
@@ -37,6 +38,22 @@ public:
 private:
     Guard mGuard;
 };
+
+
+inline Guard scopeDepthTest(bool aEnable)
+{
+    bool wasEnabled = isEnabled(GL_DEPTH_TEST);
+
+    auto handler = [](bool enable)
+    {
+        if(enable) glEnable(GL_DEPTH_TEST);
+        else glDisable(GL_DEPTH_TEST);
+    };
+    handler(aEnable);
+
+    return Guard{ std::bind(handler, wasEnabled) };
+}
+
 
 } // namespace graphics
 } // namespace ad
