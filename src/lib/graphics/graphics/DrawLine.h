@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "AppInterface.h"
 #include "commons.h"
 
 #include <renderer/Drawing.h>
@@ -18,7 +19,7 @@ private:
     using InstanceData = std::vector<Line>;
 
 public:
-    DrawLine(Size2<int> aRenderResolution);
+    DrawLine(std::shared_ptr<AppInterface> aAppInterface);
 
     /// \brief Remove all shapes that were previously added.
     ///
@@ -31,11 +32,12 @@ public:
     void render() const;
 
 private:
-    void setBufferResolution(Size2<int> aNewResolution);
+    void setWindowResolution(Size2<int> aNewResolution);
 
 private:
     DrawContext mDrawContext;
     InstanceData mInstances;
+    std::shared_ptr<AppInterface::SizeListener> mListenWindowSize;
 };
 
 

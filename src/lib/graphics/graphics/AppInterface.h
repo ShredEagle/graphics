@@ -23,6 +23,8 @@ public:
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;
 
+    [[nodiscard]] std::shared_ptr<SizeListener> listenWindowResize(SizeListener aListener);
+
     [[nodiscard]] std::shared_ptr<SizeListener> listenFramebufferResize(SizeListener aListener);
 
     void requestCloseApplication(); 
@@ -75,6 +77,7 @@ private:
     bool mWindowIsMinimized{false};
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
+    Subject<SizeListener> mWindowSizeSubject;
     Subject<SizeListener> mFramebufferSizeSubject;
     std::function<void()> mCloseAppCallback;
     std::function<void(int, int, int, int)> mKeyboardCallback;
@@ -93,6 +96,14 @@ inline const Size2<int> & AppInterface::getWindowSize() const
 inline const Size2<int> & AppInterface::getFramebufferSize() const
 {
     return mFramebufferSize;
+}
+
+
+inline std::shared_ptr<AppInterface::SizeListener> AppInterface::listenWindowResize(SizeListener aListener)
+{
+    auto result = std::make_shared<SizeListener>(std::move(aListener));
+    mWindowSizeSubject.mObservers.emplace_back(result);
+    return result;
 }
 
 

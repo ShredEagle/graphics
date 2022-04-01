@@ -62,13 +62,15 @@ namespace
 } // anonymous namespace
 
 
-DrawLine::DrawLine(Size2<int> aRenderResolution) :
+DrawLine::DrawLine(std::shared_ptr<AppInterface> aAppInterface) :
     mDrawContext{
         make_VertexSpecification(),
         make_Program()
-    }
+    },
+    mListenWindowSize{aAppInterface->listenWindowResize(
+        std::bind(&DrawLine::setWindowResolution, this, std::placeholders::_1))}
 {
-    setBufferResolution(aRenderResolution);
+    setWindowResolution(aAppInterface->getWindowSize());
 }
 
 
@@ -106,7 +108,7 @@ void DrawLine::render() const
 }
 
 
-void DrawLine::setBufferResolution(Size2<int> aNewResolution)
+void DrawLine::setWindowResolution(Size2<int> aNewResolution)
 {
     GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
     glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());

@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "DebugDrawer.h"
 #include "GltfAnimation.h"
 #include "GltfRendering.h"
 #include "Logging.h"
@@ -77,7 +78,8 @@ struct Scene
         gltf{std::move(aGltf)},
         scene{gltf.get(aSceneIndex)},
         appInterface{std::move(aAppInterface)},
-        camera{appInterface}
+        camera{appInterface},
+        debugDrawer{appInterface}
     {
         populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
         populateAnimationRepository(animations, gltf.getAnimations());
@@ -131,6 +133,10 @@ struct Scene
         renderer.setCameraTransformation(camera.update());
         updateAnimation(aTimer);
         updatesInstances();
+
+        // TODO remove
+        //debugDrawer.addLine({{0.f, 0.f, 0.f}, {100.f, 100.f, 0.f}, 10});
+        debugDrawer.addLine({{100.f, 100.f, 0.f}, {0.f, 0.f, 0.f}, 10});
     }
 
 
@@ -185,6 +191,8 @@ struct Scene
         {
             renderer.render(mesh.mesh);
         }
+
+        debugDrawer.render();
     }
 
 
@@ -250,6 +258,7 @@ struct Scene
     std::size_t currentProgram{1};
     std::shared_ptr<graphics::AppInterface> appInterface;
     UserCamera camera;
+    DebugDrawer debugDrawer;
 
     static constexpr GLfloat gViewportHeightFactor = 1.6f;
     static constexpr GLfloat gScrollFactor = 0.05;
