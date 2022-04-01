@@ -142,36 +142,40 @@ inline const GLchar* gTrivialColorTransformVertexShader = R"#(
 )#";
 
 
-//
-// Draw Line
-//
-inline const GLchar* gSolidColorLineVertexShader = R"#(
-    #version 400
+namespace drawline {
 
-    layout(location=0) in vec2  in_VertexPosition;
-    layout(location=1) in vec2  in_origin;
-    layout(location=2) in vec2  in_end;
-    layout(location=3) in float in_width;
-    layout(location=4) in vec3  in_InstanceColor;
+    inline const GLchar* gSolidColorLineVertexShader = R"#(
+        #version 400
 
-    out vec3 ex_Color;
+        layout(location=0) in vec2  in_VertexPosition;
+        layout(location=1) in vec2  in_origin;
+        layout(location=2) in vec2  in_end;
+        layout(location=3) in float in_width;
+//TODO Vec4
+        layout(location=4) in vec3  in_InstanceColor;
 
-    uniform ivec2 in_BufferResolution;
-    
-    out vec2 ex_UV;
+        out vec3 ex_Color;
 
-    void main(void)
-    {
-        vec2 direction = in_end - in_origin;
-        vec2 orthogonalVec = normalize(vec2(direction.y, -direction.x));
-        vec2 bufferSpacePosition = in_origin + in_VertexPosition.y * direction + in_width / 2 * orthogonalVec - in_width * in_VertexPosition.x * orthogonalVec;
-        gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
-                           0.0, 1.0);
+        uniform ivec2 in_BufferResolution;
+        
+        out vec2 ex_UV;
 
-        ex_Color = in_InstanceColor;
-    }
-)#";
+        void main(void)
+        {
+            vec2 direction = in_end - in_origin;
+            vec2 orthogonalVec = normalize(vec2(-direction.y, direction.x));
+            vec2 bufferSpacePosition = 
+                in_origin 
+                + in_VertexPosition.x * direction 
+                + in_width * in_VertexPosition.y * orthogonalVec;
+            gl_Position = vec4(2 * bufferSpacePosition / in_BufferResolution - vec2(1.0, 1.0),
+                               0.0, 1.0);
 
+            ex_Color = in_InstanceColor;
+        }
+    )#";
+
+} // namespace drawline
 
 inline const GLchar* gPassthroughVertexShader = R"#(
 #version 400

@@ -43,10 +43,10 @@ private:
 
 struct DrawLine::Line
 {
-    Position2<GLint> mOrigin;
-    Position2<GLint> mEnd;
-    GLfloat width;
-    Color mColor;
+    Position3<GLfloat> mOrigin;
+    Position3<GLfloat> mEnd;
+    GLfloat mWidth_screen{2.f};
+    Color mColor{math::sdr::gWhite};
 };
 
 } // namespace graphics

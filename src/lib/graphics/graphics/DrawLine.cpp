@@ -27,20 +27,20 @@ namespace
 
     constexpr std::size_t gVerticesCount = 4;
     constexpr VertexData gVertices[gVerticesCount]{
-        {{0.0f, 0.0f}},
-        {{0.0f, 1.0f}},
-        {{1.0f, 0.0f}},
-        {{1.0f, 1.0f}},
+        {{0.0f,  0.5f}},
+        {{0.0f, -0.5f}},
+        {{1.0f,  0.5f}},
+        {{1.0f, -0.5f}},
     };
 
     //
     // Per instance data
     //
     constexpr AttributeDescriptionList gInstanceDescription{
-        { 1,                                  2, offsetof(DrawLine::Line, mOrigin),     MappedGL<GLint>::enumerator},
-        { 2,                                  2, offsetof(DrawLine::Line, mEnd),        MappedGL<GLint>::enumerator},
-        { 3,                                  1, offsetof(DrawLine::Line, width),        MappedGL<GLfloat>::enumerator},
-        {{4, Attribute::Access::Float, true}, 3, offsetof(DrawLine::Line, mColor),      MappedGL<GLubyte>::enumerator},
+        { 1,                                  3, offsetof(DrawLine::Line, mOrigin),       MappedGL<GLfloat>::enumerator},
+        { 2,                                  3, offsetof(DrawLine::Line, mEnd),          MappedGL<GLfloat>::enumerator},
+        { 3,                                  1, offsetof(DrawLine::Line, mWidth_screen), MappedGL<GLfloat>::enumerator},
+        {{4, Attribute::Access::Float, true}, 3, offsetof(DrawLine::Line, mColor),        MappedGL<GLubyte>::enumerator},
     };
 
     VertexSpecification make_VertexSpecification()
@@ -54,7 +54,7 @@ namespace
     Program make_Program()
     {
         return makeLinkedProgram({
-                  {GL_VERTEX_SHADER, gSolidColorLineVertexShader},
+                  {GL_VERTEX_SHADER, drawline::gSolidColorLineVertexShader},
                   {GL_FRAGMENT_SHADER, gTrivialFragmentShader},
                });
     }
