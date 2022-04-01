@@ -45,6 +45,7 @@ void Scene::setProjection(const math::Matrix<4, 4, float> & aProjectionTransform
     {
         setUniform(*program, "u_projection", aProjectionTransform); 
     }
+    debugDrawer.setProjectionTransformation(aProjectionTransform);
 }
 
 

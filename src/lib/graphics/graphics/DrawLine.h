@@ -4,6 +4,8 @@
 #include "AppInterface.h"
 #include "commons.h"
 
+#include <math/Homogeneous.h>
+
 #include <renderer/Drawing.h>
 
 
@@ -30,6 +32,9 @@ public:
 
     /// \brief Render all shapes that were added since the last call to `clearShapes()`.
     void render() const;
+
+    void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation);
 
 private:
     void setWindowResolution(Size2<int> aNewResolution);

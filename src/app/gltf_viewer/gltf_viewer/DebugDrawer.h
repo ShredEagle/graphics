@@ -20,6 +20,9 @@ public:
 
     void render() const;
 
+    void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation);
+
 private:
     // TODO unmute
     mutable graphics::DrawLine mDrawLine;

@@ -16,6 +16,18 @@ void DebugDrawer::render() const
     mDrawLine.clearShapes();
 }
     
+
+void DebugDrawer::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+{
+    mDrawLine.setCameraTransformation(aTransformation);
+}
+
+
+void DebugDrawer::setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation)
+{
+    mDrawLine.setProjectionTransformation(aTransformation);
+}
+
     
 } // namespace gltfviewer
 } // namespace ad

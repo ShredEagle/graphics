@@ -130,13 +130,15 @@ struct Scene
 
     void update(const graphics::Timer & aTimer)
     {
-        renderer.setCameraTransformation(camera.update());
+        auto view = camera.update();
+        renderer.setCameraTransformation(view);
+        debugDrawer.setCameraTransformation(view);
+
         updateAnimation(aTimer);
         updatesInstances();
 
         // TODO remove
-        //debugDrawer.addLine({{0.f, 0.f, 0.f}, {100.f, 100.f, 0.f}, 10});
-        debugDrawer.addLine({{100.f, 100.f, 0.f}, {0.f, 0.f, 0.f}, 10});
+        debugDrawer.addLine({{0.f, 0.f, 0.f}, {10.f, 0.f, 0.f}, 4});
     }
 
 
