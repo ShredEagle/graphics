@@ -1,12 +1,14 @@
 #pragma once
 
 
+#include "Camera.h"
 #include "DebugDrawer.h"
 #include "GltfAnimation.h"
 #include "GltfRendering.h"
 #include "Logging.h"
+#include "Mesh.h"
 #include "Polar.h"
-#include "Camera.h"
+#include "SkeletalAnimation.h"
 
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
@@ -26,9 +28,25 @@ struct MeshInstances
     std::vector<InstanceList::Instance> instances; 
 };
 
+//struct SkinnedInstance
+//{
+//    public:
+//        SkinnedInstance(arte::gltf::Index<arte::gltf::Mesh> aMeshId,
+//                        arte::gltf::Index<arte::gltf::Skin> aSkinId);
+//
+//        bool operator<(const SkinnedInstance & aRhs) const;
+//
+//    private:
+//        arte::gltf::Index<arte::gltf::Mesh> mMesh;
+//        arte::gltf::Index<arte::gltf::Skin> mSkin{
+//            std::numeric_limits<arte::gltf::Index<arte::gltf::Skin>::Value_t>::max()};
+//};
+//using InstanceRepository = std::map<SkinnedInstance, std::vector<InstanceList::Instance>>;
 
-using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>,
-                                MeshInstances>;
+// Associates a mesh index to a mesh loaded on the Gpu
+using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, MeshInstances>;
+using InstanceRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, std::vector<InstanceList::Instance>>;
+
 using AnimationRepository = std::vector<Animation>;
 
 
@@ -51,7 +69,7 @@ void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aN
         {
             auto [it, didInsert] = 
                 aRepository.emplace(*node->mesh,
-                                    MeshInstances{.mesh =prepare(node.get(&arte::gltf::Node::mesh))});
+                                    prepare(node.get(&arte::gltf::Node::mesh), node->skin.has_value()));
             ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second.mesh);
         }
         populateMeshRepository(aRepository, node.iterate(&arte::gltf::Node::children));
@@ -70,6 +88,12 @@ void populateAnimationRepository(AnimationRepository & aRepository, const T_anim
 }
 
 
+struct UserOptions
+{
+    bool showSkeletons{true};
+};
+
+
 struct Scene
 {
     Scene(arte::Gltf aGltf,
@@ -79,17 +103,15 @@ struct Scene
         scene{gltf.get(aSceneIndex)},
         appInterface{std::move(aAppInterface)},
         camera{appInterface},
+        /*TOSK*/skeleton{gltf.get(arte::gltf::Index<arte::gltf::Skin>{0})},
         debugDrawer{appInterface}
     {
-        populateMeshRepository(indexToMeshes, scene.iterate(&arte::gltf::Scene::nodes));
+        populateMeshRepository(indexToMesh, scene.iterate(&arte::gltf::Scene::nodes));
         populateAnimationRepository(animations, gltf.getAnimations());
         if (!animations.empty())
         {
             activeAnimation = &animations.front();
         }
-
-        initializePrograms();
-        renderer.changeProgram(shaderPrograms.at(currentProgram));
         
         // Not enabled by default OpenGL context.
         glEnable(GL_DEPTH_TEST);
@@ -137,6 +159,8 @@ struct Scene
         updateAnimation(aTimer);
         updatesInstances();
 
+        /*TOSK*/skeleton.updatePalette(nodeToJoint);
+
         // TODO remove
         debugDrawer.addLine({{0.f, 0.f, 0.f}, {10.f, 0.f, 0.f}, 4});
     }
@@ -152,13 +176,13 @@ struct Scene
 
     void updatesInstances()
     {
-        clearInstances(indexToMeshes);
+        clearInstances(indexToMesh);
         for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
         {
             updatesInstances(node);
         }
 
-        for(auto & [index, pair] : indexToMeshes)
+        for(auto & [index, pair] : indexToMesh)
         {
             // Update the VBO containing instance data with the client vector of instance data
             pair.mesh.gpuInstances.update(pair.instances);
@@ -176,7 +200,16 @@ struct Scene
 
         if(aNode->mesh)
         {
-            indexToMeshes.at(*aNode->mesh).instances.push_back({modelTransform});
+            indexToMesh.at(*aNode->mesh).instances.push_back({modelTransform});
+        }
+
+        if(aNode->usedAsJoint)
+        {
+            nodeToJoint.insert_or_assign(aNode.id(), Joint{modelTransform});
+
+            math::Position<4, GLfloat> origin{0.f, 0.f, 0.f, 1.f};
+            math::Position<4, GLfloat> end{0.f, 1.f, 0.f, 1.f};
+            debugDrawer.addLine({(origin * modelTransform).xyz(), (end * modelTransform).xyz(), 6, {255, 127, 0, 127}});
         }
 
         for (auto node : aNode.iterate(&arte::gltf::Node::children))
@@ -189,7 +222,7 @@ struct Scene
     void render() const
     {
         // TODO should it be optimized to only call when there is at least once instance?
-        for(const auto & [index, mesh] : indexToMeshes)
+        for(const auto & [index, mesh] : indexToMesh)
         {
             renderer.render(mesh.mesh);
         }
@@ -207,24 +240,7 @@ struct Scene
 
         else if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
         {
-            switch(polygonMode)
-            {
-            case PolygonMode::Fill:
-                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                polygonMode = PolygonMode::Line;
-                break;
-            case PolygonMode::Line:
-                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                polygonMode = PolygonMode::Fill;
-                break;
-            }
-        }
-
-        else if (key == GLFW_KEY_P && action == GLFW_PRESS)
-        {
-            ++currentProgram;
-            currentProgram %= shaderPrograms.size();
-            renderer.changeProgram(shaderPrograms.at(currentProgram));
+            renderer.togglePolygonMode();
         }
     }
 
@@ -243,23 +259,17 @@ struct Scene
         setProjection(camera.multiplyViewedHeight(1 - yoffset * gScrollFactor));
     }
 
-    enum class PolygonMode
-    {
-        Fill,
-        Line,
-    };
-
     arte::Gltf gltf;
     arte::Owned<arte::gltf::Scene> scene;
-    MeshRepository indexToMeshes;
+    MeshRepository indexToMesh;
     AnimationRepository animations;
     Animation * activeAnimation{nullptr};
+    JointRepository nodeToJoint;
+    /*TOSK*/Skeleton skeleton;
     Renderer renderer;
-    PolygonMode polygonMode{PolygonMode::Fill};
-    std::vector<std::shared_ptr<graphics::Program>> shaderPrograms;
-    std::size_t currentProgram{1};
     std::shared_ptr<graphics::AppInterface> appInterface;
     UserCamera camera;
+    UserOptions options;
     DebugDrawer debugDrawer;
 
     static constexpr GLfloat gViewportHeightFactor = 1.6f;

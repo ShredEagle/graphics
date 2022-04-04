@@ -2,6 +2,9 @@
 
 
 #include <math/Angle.h>
+#include <math/Vector.h>
+
+#include <renderer/GL_Loader.h>
 
 
 namespace ad {

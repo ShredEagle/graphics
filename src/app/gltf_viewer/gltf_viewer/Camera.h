@@ -1,6 +1,9 @@
 #pragma once
 
 
+#include "Logging.h"
+#include "Polar.h"
+
 #include <graphics/AppInterface.h>
 #include <graphics/CameraUtilities.h>
 

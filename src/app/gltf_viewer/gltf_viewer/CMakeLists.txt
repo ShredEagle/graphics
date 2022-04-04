@@ -8,9 +8,11 @@ set(${TARGET_NAME}_HEADERS
     GltfRendering.h
     LoadBuffer.h
     Logging.h
+    Mesh.h
     Polar.h
     Scene.h
     Shaders.h
+    SkeletalAnimation.h
     Url.h
 )
 
@@ -21,7 +23,9 @@ set(${TARGET_NAME}_SOURCES
     LoadBuffer.cpp
     Logging.cpp
     main.cpp
+    Mesh.cpp
     Scene.cpp
+    SkeletalAnimation.cpp
 )
 
 find_package(Boost REQUIRED COMPONENTS program_options)

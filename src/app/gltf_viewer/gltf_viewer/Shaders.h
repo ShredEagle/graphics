@@ -6,41 +6,6 @@ namespace gltfviewer {
 
 
 //
-// Naive (ambient only)
-//
-inline const GLchar* gNaiveVertexShader = R"#(
-    #version 400
-
-    layout(location=0) in vec4 ve_position;
-    layout(location=1) in vec3 ve_normal;
-
-    layout(location=8) in mat4 in_modelTransform;
-
-    uniform mat4 u_camera;
-    uniform mat4 u_projection;
-
-    void main(void)
-    {
-        gl_Position = u_projection * u_camera * in_modelTransform * ve_position;
-    }
-)#";
-
-
-inline const GLchar* gNaiveFragmentShader = R"#(
-    #version 400
-
-    uniform vec4 u_baseColorFactor;
-
-    out vec4 out_color;
-
-    void main(void)
-    {
-        out_color = u_baseColorFactor;
-    }
-)#";
-
-
-//
 // Phong shading(ambient, diffuse, specular)
 //
 inline const GLchar* gPhongVertexShader = R"#(
@@ -56,6 +21,45 @@ inline const GLchar* gPhongVertexShader = R"#(
     uniform mat4 u_camera;
     uniform mat4 u_projection;
     uniform vec4 u_vertexColorOffset;
+
+    out vec4 ex_position_view;
+    out vec4 ex_normal_view;
+    out vec2 ex_baseColorUv;
+    out vec4 ex_color;
+
+    void main(void)
+    {
+        mat4 modelViewTransform = u_camera * in_modelTransform;
+        ex_position_view = modelViewTransform * ve_position;
+        ex_normal_view = vec4(
+            normalize(transpose(inverse(mat3(modelViewTransform))) * ve_normal),
+            0.);
+        ex_baseColorUv = ve_baseColorUv;
+        ex_color = ve_color + u_vertexColorOffset;
+
+        gl_Position = u_projection * ex_position_view;
+    }
+)#";
+
+
+inline const GLchar* gSkeletalVertexShader = R"#(
+    #version 400
+
+    layout(location=0) in vec4 ve_position;
+    layout(location=1) in vec3 ve_normal;
+    layout(location=2) in vec2 ve_baseColorUv;
+    layout(location=3) in vec4 ve_color;
+
+    layout(location=8) in mat4 in_modelTransform;
+
+    uniform mat4 u_camera;
+    uniform mat4 u_projection;
+    uniform vec4 u_vertexColorOffset;
+
+    layout(std140) uniform MatrixPalette
+    {
+        mat4 joints[64];
+    };
 
     out vec4 ex_position_view;
     out vec4 ex_normal_view;
