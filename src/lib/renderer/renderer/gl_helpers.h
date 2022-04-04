@@ -40,14 +40,14 @@ private:
 };
 
 
-inline Guard scopeDepthTest(bool aEnable)
+inline Guard scopeFeature(GLenum aFeature, bool aEnable)
 {
-    bool wasEnabled = isEnabled(GL_DEPTH_TEST);
+    bool wasEnabled = isEnabled(aFeature);
 
-    auto handler = [](bool enable)
+    auto handler = [aFeature](bool enable)
     {
-        if(enable) glEnable(GL_DEPTH_TEST);
-        else glDisable(GL_DEPTH_TEST);
+        if(enable) glEnable(aFeature);
+        else glDisable(aFeature);
     };
     handler(aEnable);
 

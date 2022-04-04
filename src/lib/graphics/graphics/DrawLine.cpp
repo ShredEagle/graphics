@@ -95,7 +95,8 @@ void DrawLine::render() const
 {
     activate(mDrawContext);
 
-    auto scopedDepthTest = graphics::scopeDepthTest(false);
+    auto scopedDepthTest = graphics::scopeFeature(GL_DEPTH_TEST, false);
+    auto scopedBlend = graphics::scopeFeature(GL_BLEND, true);
 
     //
     // Stream vertex attributes
