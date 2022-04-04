@@ -259,6 +259,9 @@ namespace gltf {
         std::variant<Matrix, TRS> transformation;
         std::optional<Index<Mesh>> mesh;
         std::optional<Index<Skin>> skin;
+
+        // Custom member, not part of the gltf content
+        bool usedAsJoint{false};
     };
 
     struct Scene

@@ -218,23 +218,23 @@ Json getOptionalArray(const Json & aObject, T_key && aKey)
 }
 
 
-template <class T_object, class T_tag>
-void populateVector(const Json & aJson, std::vector<T_object> & aVector, T_tag && aTag)
+template <class T_object, class T_tag, class ... VT_args>
+void populateVector(const Json & aJson, std::vector<T_object> & aVector, T_tag && aTag, VT_args && ... vaArgs)
 {
     aVector.reserve(aJson.at(std::forward<T_tag>(aTag)).size());
     for (auto object : aJson.at(aTag))
     {
-        aVector.push_back(load<T_object>(object));
+        aVector.push_back(load<T_object>(object, std::forward<VT_args>(vaArgs)...));
     }
 }
 
 
-template <class T_object, class T_tag>
-void populateVectorIfPresent(const Json & aJson, std::vector<T_object> & aVector, T_tag && aTag)
+template <class T_object, class T_tag, class ... VT_args>
+void populateVectorIfPresent(const Json & aJson, std::vector<T_object> & aVector, T_tag && aTag, VT_args && ... vaArgs)
 {
     if(aJson.contains(aTag))
     {
-        populateVector(aJson, aVector, aTag);
+        populateVector(aJson, aVector, aTag, std::forward<VT_args>(vaArgs)...);
     }
 }
 
@@ -242,8 +242,8 @@ void populateVectorIfPresent(const Json & aJson, std::vector<T_object> & aVector
 //
 // Element loaders
 //
-template <class T_object>
-T_object load(const Json & aObjectJson);
+template <class T_object, class ... VT_args>
+T_object load(const Json & aObjectJson, VT_args && ... vaArgs);
 
 
 template <>
@@ -561,14 +561,21 @@ texture::Sampler load(const Json & aJson)
 
 
 template <>
-Skin load(const Json & aJson)
+Skin load(const Json & aJson, Gltf & aGltf)
 {
-    return {
+    Skin result{
         .name = aJson.value(gTagName, ""),
         .inverseBindMatrices = getOptional<Index<Accessor>>(aJson, gTagInverseBindMatrices),
         .skeleton = getOptional<Index<Node>>(aJson, gTagSkeleton),
         .joints = makeIndicesVector<Index<Node>>(getOptionalArray(aJson, gTagJoints)),
     };
+
+    for (auto joint : result.joints)
+    {
+        aGltf.get(joint)->usedAsJoint = true;
+    }
+
+    return result;
 }
 
 
@@ -622,7 +629,7 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVectorIfPresent(json, mImages, gTagImages);
     populateVectorIfPresent(json, mTextures, gTagTextures);
     populateVectorIfPresent(json, mSamplers, gTagSamplers);
-    populateVectorIfPresent(json, mSkins, gTagSkins);
+    populateVectorIfPresent(json, mSkins, gTagSkins, *this);
 
     ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} material(s), {} animation(s), {} skin(s), {} buffer(s).",
                              mScenes.size(), mNodes.size(), mMeshes.size(), mMaterials.size(), mAnimations.size(), mSkins.size(), mBuffers.size());
