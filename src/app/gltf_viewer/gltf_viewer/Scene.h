@@ -93,6 +93,18 @@ struct UserOptions
 };
 
 
+struct JointDrawer
+{
+    void pushJoint(const math::AffineMatrix<4, float> & aTransform);
+    void popJoint(const math::AffineMatrix<4, float> & aTransform);
+
+    DebugDrawer & debugDrawer;
+    UserOptions & options;
+    std::vector<std::pair<math::Position<3, GLfloat>, bool/*draw occurred*/>> jointStack;
+};
+
+
+
 struct Scene
 {
     Scene(arte::Gltf aGltf,
@@ -167,9 +179,10 @@ struct Scene
     void updatesInstances()
     {
         clearInstances(indexToMesh);
+        JointDrawer jointDrawer{.debugDrawer = debugDrawer, .options = options};
         for (auto node : scene.iterate(&arte::gltf::Scene::nodes))
         {
-            updatesInstances(node);
+            updatesInstances(node, jointDrawer);
         }
 
         for(auto & [_index, mesh] : indexToMesh)
@@ -184,10 +197,12 @@ struct Scene
         }
     }
 
+
     // Recursive function to:
     // * queue the mesh instance
     // * traverse the node children
     void updatesInstances(arte::Owned<arte::gltf::Node> aNode,
+                          JointDrawer & aJointDrawer,
                            math::AffineMatrix<4, float> aParentTransform = 
                                math::AffineMatrix<4, float>::Identity())
     {
@@ -197,7 +212,6 @@ struct Scene
         {
             if(aNode->skin)
             {
-                // TODO move this comment
                 indexToMesh.at(*aNode->mesh).skinInstances.push_back(*aNode->skin);
             }
             else
@@ -209,15 +223,17 @@ struct Scene
         if(aNode->usedAsJoint)
         {
             nodeToJoint.insert_or_assign(aNode.id(), Joint{modelTransform});
-
-            math::Position<4, GLfloat> origin{0.f, 0.f, 0.f, 1.f};
-            math::Position<4, GLfloat> end{0.f, 1.f, 0.f, 1.f};
-            debugDrawer.addLine({(origin * modelTransform).xyz(), (end * modelTransform).xyz(), 6, {255, 127, 0, 127}});
+            aJointDrawer.pushJoint(modelTransform);
         }
 
         for (auto node : aNode.iterate(&arte::gltf::Node::children))
         {
-            updatesInstances(node, modelTransform);
+            updatesInstances(node, aJointDrawer, modelTransform);
+        }
+
+        if(aNode->usedAsJoint)
+        {
+            aJointDrawer.popJoint(modelTransform);
         }
     }
 
