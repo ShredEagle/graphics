@@ -34,8 +34,15 @@ Skeleton::Skeleton(arte::Const_Owned<arte::gltf::Skin> aSkin) :
     assert(joints.size() <= 64);
 
     // TODO Ad 2022/04/01 Get rid of the useless copy.
-    std::vector<std::byte> raw = loadBufferData(aSkin.get(&arte::gltf::Skin::inverseBindMatrices));
-    auto matrix = reinterpret_cast<Matrix*>(raw.data());
+    auto inverseBindAccessor = aSkin.get(&arte::gltf::Skin::inverseBindMatrices);
+    // TODO Implement conversion for component types other than GL_FLOAT.
+    assert(inverseBindAccessor->componentType == GL_FLOAT 
+        && inverseBindAccessor->type == arte::gltf::Accessor::ElementType::Mat4);
+
+    std::vector<std::byte> raw = loadBufferData(inverseBindAccessor);
+    auto bufferView = inverseBindAccessor.get(&arte::gltf::Accessor::bufferView);
+    auto matrix = reinterpret_cast<Matrix*>(
+        raw.data() + inverseBindAccessor->byteOffset + bufferView->byteOffset);
     std::copy(matrix, matrix + aSkin->joints.size(), std::back_inserter(inverseBindMatrices));
 };
 
