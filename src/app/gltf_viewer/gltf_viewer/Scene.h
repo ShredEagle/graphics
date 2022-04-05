@@ -26,26 +26,13 @@ struct MeshInstances
 {
     Mesh mesh;
     std::vector<InstanceList::Instance> instances; 
+    std::vector<arte::gltf::Index<arte::gltf::Skin>> skinInstances;
 };
-
-//struct SkinnedInstance
-//{
-//    public:
-//        SkinnedInstance(arte::gltf::Index<arte::gltf::Mesh> aMeshId,
-//                        arte::gltf::Index<arte::gltf::Skin> aSkinId);
-//
-//        bool operator<(const SkinnedInstance & aRhs) const;
-//
-//    private:
-//        arte::gltf::Index<arte::gltf::Mesh> mMesh;
-//        arte::gltf::Index<arte::gltf::Skin> mSkin{
-//            std::numeric_limits<arte::gltf::Index<arte::gltf::Skin>::Value_t>::max()};
-//};
-//using InstanceRepository = std::map<SkinnedInstance, std::vector<InstanceList::Instance>>;
 
 // Associates a mesh index to a mesh loaded on the Gpu
 using MeshRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, MeshInstances>;
-using InstanceRepository = std::map<arte::gltf::Index<arte::gltf::Mesh>, std::vector<InstanceList::Instance>>;
+// Associates a skin index to a Skeleton with its uniform buffer on the Gpu
+using SkeletonRepository = std::map<arte::gltf::Index<arte::gltf::Skin>, Skeleton>;
 
 using AnimationRepository = std::vector<Animation>;
 
@@ -55,24 +42,36 @@ inline void clearInstances(MeshRepository & aRepository)
     for(auto & [index, mesh] : aRepository)
     {
         mesh.instances.clear();
+        mesh.skinInstances.clear();
     }
 }
 
 
 /// \brief Associate a gltf::mesh index to a viewer's Mesh instance.
 template <class T_nodeRange>
-void populateMeshRepository(MeshRepository & aRepository, const T_nodeRange & aNodes)
+void populateMeshRepository(MeshRepository & aRepository,
+                            SkeletonRepository & aSkeletonRepo,
+                            const T_nodeRange & aNodes)
 {
     for (arte::Owned<arte::gltf::Node> node : aNodes)
     {
-        if(node->mesh && !aRepository.contains(*node->mesh))
+        if(node->mesh)
         {
-            auto [it, didInsert] = 
-                aRepository.emplace(*node->mesh,
-                                    prepare(node.get(&arte::gltf::Node::mesh), node->skin.has_value()));
-            ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second.mesh);
+            if(!aRepository.contains(*node->mesh))
+            {
+                auto [it, didInsert] = aRepository.emplace(
+                    *node->mesh,
+                    prepare(node.get(&arte::gltf::Node::mesh)));
+                ADLOG(gPrepareLogger, info)("Completed GPU loading for mesh '{}'.", it->second.mesh);
+            }
+            // Only populates skins that are actually present in this scene.
+            if(node->skin && !aSkeletonRepo.contains(*node->skin))
+            {
+                aSkeletonRepo.emplace(*node->skin, Skeleton{node.get(&arte::gltf::Node::skin)});
+                ADLOG(gPrepareLogger, debug)("Loaded skeleton for skin #{}.", *node->skin);
+            }
         }
-        populateMeshRepository(aRepository, node.iterate(&arte::gltf::Node::children));
+        populateMeshRepository(aRepository, aSkeletonRepo, node.iterate(&arte::gltf::Node::children));
     }
 }
 
@@ -103,19 +102,17 @@ struct Scene
         scene{gltf.get(aSceneIndex)},
         appInterface{std::move(aAppInterface)},
         camera{appInterface},
-        /*TOSK*/skeleton{gltf.get(arte::gltf::Index<arte::gltf::Skin>{0})},
         debugDrawer{appInterface}
     {
-        populateMeshRepository(indexToMesh, scene.iterate(&arte::gltf::Scene::nodes));
+        populateMeshRepository(indexToMesh, 
+                               indexToSkeleton,
+                               scene.iterate(&arte::gltf::Scene::nodes));
         populateAnimationRepository(animations, gltf.getAnimations());
         if (!animations.empty())
         {
             activeAnimation = &animations.front();
         }
         
-        // Not enabled by default OpenGL context.
-        glEnable(GL_DEPTH_TEST);
-
         auto sceneBounds = getBoundingBox(scene);
         if (!sceneBounds)
         {
@@ -126,7 +123,6 @@ struct Scene
               sceneBounds->center(), *sceneBounds);
         camera.setOrigin(sceneBounds->center());
         setProjection(camera.setViewedHeight(sceneBounds->height() * gViewportHeightFactor));
-
 
         using namespace std::placeholders;
         appInterface->registerKeyCallback(
@@ -146,26 +142,19 @@ struct Scene
                    math::AffineMatrix<4, float> aParentTransform 
                     = math::AffineMatrix<4, float>::Identity()) const;
 
-    void initializePrograms();
-
+    void setView(const math::AffineMatrix<4, float> & aViewTransform);
     void setProjection(const math::Matrix<4, 4, float> & aProjectionTransform);
 
     void update(const graphics::Timer & aTimer)
     {
-        auto view = camera.update();
-        renderer.setCameraTransformation(view);
-        debugDrawer.setCameraTransformation(view);
+        setView(camera.update());
 
         updateAnimation(aTimer);
         updatesInstances();
-
-        /*TOSK*/skeleton.updatePalette(nodeToJoint);
-
-        // TODO remove
-        debugDrawer.addLine({{0.f, 0.f, 0.f}, {10.f, 0.f, 0.f}, 4});
     }
 
 
+    /// \brief Modify gltf Nodes with the updated local transforms.
     void updateAnimation(const graphics::Timer & aTimer)
     {
         if(activeAnimation != nullptr)
@@ -173,6 +162,7 @@ struct Scene
             activeAnimation->updateScene(aTimer.time(), scene);
         }
     }
+
 
     void updatesInstances()
     {
@@ -182,10 +172,15 @@ struct Scene
             updatesInstances(node);
         }
 
-        for(auto & [index, pair] : indexToMesh)
+        for(auto & [_index, mesh] : indexToMesh)
         {
             // Update the VBO containing instance data with the client vector of instance data
-            pair.mesh.gpuInstances.update(pair.instances);
+            mesh.mesh.gpuInstances.update(mesh.instances);
+        }
+
+        for (auto & [_index, skeleton] : indexToSkeleton)
+        {
+            skeleton.updatePalette(nodeToJoint);
         }
     }
 
@@ -200,7 +195,15 @@ struct Scene
 
         if(aNode->mesh)
         {
-            indexToMesh.at(*aNode->mesh).instances.push_back({modelTransform});
+            if(aNode->skin)
+            {
+                // TODO move this comment
+                indexToMesh.at(*aNode->mesh).skinInstances.push_back(*aNode->skin);
+            }
+            else
+            {
+                indexToMesh.at(*aNode->mesh).instances.push_back({modelTransform});
+            }
         }
 
         if(aNode->usedAsJoint)
@@ -221,10 +224,19 @@ struct Scene
 
     void render() const
     {
-        // TODO should it be optimized to only call when there is at least once instance?
         for(const auto & [index, mesh] : indexToMesh)
         {
-            renderer.render(mesh.mesh);
+            // Render "static" instances
+            if(mesh.instances.size() != 0)
+            {
+                renderer.render(mesh.mesh);
+            }
+
+            // Render skinned instances
+            for (auto skinId : mesh.skinInstances)
+            {
+                renderer.render(mesh.mesh, indexToSkeleton.at(skinId));
+            }
         }
 
         debugDrawer.render();
@@ -262,10 +274,10 @@ struct Scene
     arte::Gltf gltf;
     arte::Owned<arte::gltf::Scene> scene;
     MeshRepository indexToMesh;
+    SkeletonRepository indexToSkeleton;
     AnimationRepository animations;
     Animation * activeAnimation{nullptr};
     JointRepository nodeToJoint;
-    /*TOSK*/Skeleton skeleton;
     Renderer renderer;
     std::shared_ptr<graphics::AppInterface> appInterface;
     UserCamera camera;

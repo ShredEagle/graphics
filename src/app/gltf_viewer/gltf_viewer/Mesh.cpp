@@ -22,6 +22,8 @@ const std::map<std::string /*semantic*/, GLuint /*vertex attribute index*/> gSem
     {"NORMAL", 1},
     {"TEXCOORD_0", 2}, // TODO Use the texCoord from TextureInfo
     {"COLOR_0", 3},
+    {"JOINTS_0", 4},
+    {"WEIGHTS_0", 5},
 };
 
 
@@ -457,14 +459,9 @@ std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture
 }
 
 
-Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh, bool aUseSkinning)
+Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh)
 {
     Mesh mesh;
-
-    if(aUseSkinning)
-    {
-        mesh.program = GpuProgram::Skinning;
-    }
 
     auto primitives = aMesh.iterate(&arte::gltf::Mesh::primitives);
     auto primitiveIt = primitives.begin();

@@ -49,8 +49,16 @@ inline const GLchar* gSkeletalVertexShader = R"#(
     layout(location=1) in vec3 ve_normal;
     layout(location=2) in vec2 ve_baseColorUv;
     layout(location=3) in vec4 ve_color;
+//   TODO ivec4
+    layout(location=4) in vec4 ve_joints;
+    layout(location=5) in vec4 ve_weights;
 
-    layout(location=8) in mat4 in_modelTransform;
+    // The client submit skinned geomatry via non-instanced draw calls,
+    // so the instance buffer is empty (attempting to access does crash).
+    // Also, the whole model to world transformation must be in the palette:
+    // > Only the joint transforms are applied to the skinned mesh;
+    // > the transform of the skinned mesh node MUST be ignored.
+    //layout(location=8) in mat4 in_modelTransform;
 
     uniform mat4 u_camera;
     uniform mat4 u_projection;
@@ -68,7 +76,17 @@ inline const GLchar* gSkeletalVertexShader = R"#(
 
     void main(void)
     {
-        mat4 modelViewTransform = u_camera * in_modelTransform;
+        mat4 skinningMatrix = 
+            //joints[ve_joints.x] * ve_weights.x
+            //+ joints[ve_joints.y] * ve_weights.y
+            //+ joints[ve_joints.z] * ve_weights.z
+            //+ joints[ve_joints.w] * ve_weights.w;
+              joints[int(ve_joints.x)] * ve_weights.x
+            + joints[int(ve_joints.y)] * ve_weights.y
+            + joints[int(ve_joints.z)] * ve_weights.z
+            + joints[int(ve_joints.w)] * ve_weights.w;
+
+        mat4 modelViewTransform = u_camera * skinningMatrix;
         ex_position_view = modelViewTransform * ve_position;
         ex_normal_view = vec4(
             normalize(transpose(inverse(mat3(modelViewTransform))) * ve_normal),

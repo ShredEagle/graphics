@@ -41,10 +41,8 @@ math::AffineMatrix<4, float> getLocalTransform(const arte::gltf::Node & aNode)
 
 
 /// \brief A single (non-instanted) draw of the mesh primitive.
-void render(const MeshPrimitive & aMeshPrimitive)
+void drawCall(const MeshPrimitive & aMeshPrimitive)
 {
-    graphics::bind_guard boundVao{aMeshPrimitive.vao};
-
     if (aMeshPrimitive.indices)
     {
         ADLOG(gDrawLogger, trace)
@@ -69,34 +67,9 @@ void render(const MeshPrimitive & aMeshPrimitive)
 }
 
 
-/// \brief Instantiated rendering of the mesh primitive.
-void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
+/// \brief Instanced draw of the mesh primitive.
+void drawCall(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
 {
-    graphics::bind_guard boundVao{aMeshPrimitive.vao};
-
-    const auto & material = aMeshPrimitive.material;
-
-    // Culling
-    if (material.doubleSided) glDisable(GL_CULL_FACE);
-    else glEnable(GL_CULL_FACE);
-
-    // Alpha mode
-    switch(material.alphaMode)
-    {
-    case gltf::Material::AlphaMode::Opaque:
-        glDisable(GL_BLEND);
-        break;
-    case gltf::Material::AlphaMode::Blend:
-        glEnable(GL_BLEND);
-        break;
-    case gltf::Material::AlphaMode::Mask:
-        ADLOG(gDrawLogger, critical)("Not supported: mask alpha mode.");
-        throw std::logic_error{"Mask alpha mode not implemented."};
-    }
-
-    glActiveTexture(GL_TEXTURE0 + Renderer::gTextureUnit);
-    glBindTexture(GL_TEXTURE_2D, *material.baseColorTexture);
-
     if (aMeshPrimitive.indices)
     {
         ADLOG(gDrawLogger, trace)
@@ -124,6 +97,38 @@ void render(const MeshPrimitive & aMeshPrimitive, GLsizei aInstanceCount)
             aMeshPrimitive.count,
             aInstanceCount);
     }
+}
+
+
+template <class ... VT_extraParams>
+void render(const MeshPrimitive & aMeshPrimitive, VT_extraParams ... aExtraDrawParams)
+{
+    graphics::bind_guard boundVao{aMeshPrimitive.vao};
+
+    const auto & material = aMeshPrimitive.material;
+
+    // Culling
+    if (material.doubleSided) glDisable(GL_CULL_FACE);
+    else glEnable(GL_CULL_FACE);
+
+    // Alpha mode
+    switch(material.alphaMode)
+    {
+    case gltf::Material::AlphaMode::Opaque:
+        glDisable(GL_BLEND);
+        break;
+    case gltf::Material::AlphaMode::Blend:
+        glEnable(GL_BLEND);
+        break;
+    case gltf::Material::AlphaMode::Mask:
+        ADLOG(gDrawLogger, critical)("Not supported: mask alpha mode.");
+        throw std::logic_error{"Mask alpha mode not implemented."};
+    }
+
+    glActiveTexture(GL_TEXTURE0 + Renderer::gTextureUnit);
+    glBindTexture(GL_TEXTURE_2D, *material.baseColorTexture);
+
+    drawCall(aMeshPrimitive, std::forward<VT_extraParams>(aExtraDrawParams)...);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -136,29 +141,47 @@ Renderer::Renderer()
 }
 
 
-void Renderer::render(const Mesh & aMesh) const
+template <class ... VT_extraParams>
+void Renderer::renderImpl(const Mesh & aMesh,
+                          graphics::Program & aProgram,
+                          VT_extraParams ... aExtraParams) const
 {
-    std::shared_ptr<graphics::Program> program{mPrograms.at(aMesh.program)};
-    graphics::bind_guard boundProgram{*program};
+    // Not enabled by default OpenGL context.
+    glEnable(GL_DEPTH_TEST);
 
-    setUniformInt(*program, "u_baseColorTex", gTextureUnit); 
+    graphics::bind_guard boundProgram{aProgram};
+
+    setUniformInt(aProgram, "u_baseColorTex", gTextureUnit); 
 
     for (const auto & primitive : aMesh.primitives)
     {
-        setUniform(*program, "u_baseColorFactor", primitive.material.baseColorFactor); 
+        setUniform(aProgram, "u_baseColorFactor", primitive.material.baseColorFactor); 
 
         // If the vertex color are not provided for the primitive, the default value (black)
         // will be used in the shaders. It must be offset to white.
         auto vertexColorOffset = primitive.providesColor() ?
             math::hdr::Rgba_f{0.f, 0.f, 0.f, 0.f} : math::hdr::Rgba_f{1.f, 1.f, 1.f, 0.f};
-        setUniform(*program, "u_vertexColorOffset", vertexColorOffset); 
+        setUniform(aProgram, "u_vertexColorOffset", vertexColorOffset); 
 
-        gltfviewer::render(primitive, aMesh.gpuInstances.size());
+        gltfviewer::render(primitive, std::forward<VT_extraParams>(aExtraParams)...);
     }
 }
 
 
-void Renderer::bind(const Skeleton & aSkeleton)
+void Renderer::render(const Mesh & aMesh) const
+{
+    renderImpl(aMesh, *mPrograms.at(GpuProgram::InstancedNoAnimation), aMesh.gpuInstances.size());
+}
+
+
+void Renderer::render(const Mesh & aMesh, const Skeleton & aSkeleton) const
+{
+    bind(aSkeleton);
+    renderImpl(aMesh, *mPrograms.at(GpuProgram::Skinning));
+}
+
+
+void Renderer::bind(const Skeleton & aSkeleton) const
 {
     glBindBufferBase(GL_UNIFORM_BUFFER,
         gPaletteBlockBinding,

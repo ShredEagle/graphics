@@ -31,7 +31,8 @@ Skeleton::Skeleton(arte::Const_Owned<arte::gltf::Skin> aSkin) :
     matrixPalette{aSkin->joints.size()}
 {
     // The palette size upper limit is hardcoded in the vertex shader
-    assert(matrixPalette.size() <= 64);
+    assert(joints.size() <= 64);
+
     // TODO Ad 2022/04/01 Get rid of the useless copy.
     std::vector<std::byte> raw = loadBufferData(aSkin.get(&arte::gltf::Skin::inverseBindMatrices));
     auto matrix = reinterpret_cast<Matrix*>(raw.data());

@@ -138,24 +138,15 @@ struct MeshPrimitive
 };
 
 
-enum class GpuProgram
-{
-    InstancedNaive,
-    InstancedNoAnimation,
-    Skinning,
-};
-
-
 struct Mesh
 {
     std::vector<MeshPrimitive> primitives;
     math::Box<GLfloat> boundingBox{{0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}};
     InstanceList gpuInstances;
-    GpuProgram program{GpuProgram::InstancedNoAnimation}; // NOTE: This is likely to become per MeshPrimitive, as soon as needed.
 };
 
 
-Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh, bool aUseSkinning);
+Mesh prepare(arte::Const_Owned<arte::gltf::Mesh> aMesh);
 
 std::shared_ptr<graphics::Texture> prepare(arte::Const_Owned<arte::gltf::Texture> aTexture);
 

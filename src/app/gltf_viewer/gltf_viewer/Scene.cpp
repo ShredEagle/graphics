@@ -10,6 +10,13 @@ namespace gltfviewer {
 //
 // Programs
 //
+void Scene::setView(const math::AffineMatrix<4, float> & aViewTransform)
+{
+    renderer.setCameraTransformation(aViewTransform);
+    debugDrawer.setCameraTransformation(aViewTransform);
+}
+
+
 void Scene::setProjection(const math::Matrix<4, 4, float> & aProjectionTransform)
 {
     renderer.setProjectionTransformation(aProjectionTransform);
