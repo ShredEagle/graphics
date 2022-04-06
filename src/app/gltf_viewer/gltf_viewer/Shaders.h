@@ -49,8 +49,7 @@ inline const GLchar* gSkeletalVertexShader = R"#(
     layout(location=1) in vec3 ve_normal;
     layout(location=2) in vec2 ve_baseColorUv;
     layout(location=3) in vec4 ve_color;
-//   TODO ivec4
-    layout(location=4) in vec4 ve_joints;
+    layout(location=4) in vec4 ve_joints; //TODO ivec4
     layout(location=5) in vec4 ve_weights;
 
     // The client submit skinned geomatry via non-instanced draw calls,
@@ -77,10 +76,6 @@ inline const GLchar* gSkeletalVertexShader = R"#(
     void main(void)
     {
         mat4 skinningMatrix = 
-            //joints[ve_joints.x] * ve_weights.x
-            //+ joints[ve_joints.y] * ve_weights.y
-            //+ joints[ve_joints.z] * ve_weights.z
-            //+ joints[ve_joints.w] * ve_weights.w;
               joints[int(ve_joints.x)] * ve_weights.x
             + joints[int(ve_joints.y)] * ve_weights.y
             + joints[int(ve_joints.z)] * ve_weights.z
