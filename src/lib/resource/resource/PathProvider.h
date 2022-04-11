@@ -1,3 +1,5 @@
+/// \deprecated Do not include this file, it only works in build tree.
+
 #pragma once
 
 #include "build_config.h"
