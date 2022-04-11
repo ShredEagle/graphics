@@ -25,6 +25,9 @@ inline std::size_t getComponentSize(GLenum aComponentType)
     case GL_FLOAT:
         return sizeof(GLfloat);
     }
+
+    throw std::logic_error{std::string{"In "} + __func__ 
+        + ", unhandled component type: " + std::to_string(aComponentType)};
 }
 
 

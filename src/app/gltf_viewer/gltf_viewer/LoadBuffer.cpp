@@ -129,6 +129,9 @@ loadIndices(arte::Const_Owned<arte::gltf::accessor::Indices> aIndices, std::size
     case GL_UNSIGNED_INT:
         return copyIndices<GLuint>(first, aCount);
     }
+
+    throw std::logic_error{std::string{"In "} + __func__ 
+        + ", unhandled component type: " + std::to_string(aIndices->componentType)};
 }
 
 

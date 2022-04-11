@@ -14,6 +14,7 @@ set(${TARGET_NAME}_HEADERS
     detail/ImageFormats/StbImageFormats.h
 
     gltf/Gltf.h
+    gltf/Gltf-decl.h
     gltf/Owned.h
 )
 

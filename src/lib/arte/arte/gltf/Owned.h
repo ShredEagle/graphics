@@ -1,6 +1,10 @@
 #pragma once
 
 
+// Sadly, the Owned templates make direct use of Gltf class
+// (which also makes uses Owned template instances in its API).
+#include "Gltf-decl.h"
+
 #include <platform/Filesystem.h>
 
 #include <iostream>
@@ -12,65 +16,8 @@ namespace ad {
 namespace arte {
 
 
-namespace gltf {
-
-
-    struct Uri
-    {
-        enum class Type
-        {
-            Data,
-            File,
-        };
-
-        Uri(std::string aString) :
-            string{std::move(aString)}
-        {
-            type = (string.rfind("data:", 0) == 0) ? Type::Data : Type::File;
-        }
-
-        std::string string;
-        Type type;
-    };
-
-
-    template <class T_indexed>
-    struct Index
-    {
-        using Value_t = std::vector<T_indexed>::size_type;
-
-        Index(Value_t aValue) : 
-            value{aValue}
-        {}
-
-        Index(const Index & aIndex) : 
-            Index{aIndex.value}
-        {}
-
-        Index & operator=(Value_t aValue)
-        {
-            value = aValue;
-            return this;
-        }
-
-        operator Value_t() const
-        { return value; }
-
-        Value_t value;
-    };
-
-    template <class T_indexed>
-    std::ostream & operator<<(std::ostream & aOut, const std::vector<T_indexed> & aIndexVector);
-
-
-} // namespace gltf
-
-
 template <class T_element>
 class Const_Owned;
-
-
-class Gltf;
 
 
 template <class T_element>
@@ -137,13 +84,13 @@ public:
     }
 
     // Note: Not provided at the moment in the non-const Owned.
-    // It is unclear whether the default value should be provided as const (breaking the return type) 
+    // It is unclear whether the default value should be provided as const (breaking the return type)
     // or not (breaking the usual expectations regarding a default value).
     //template <class T_indexed>
     //Owned<T_indexed> value_or(std::optional<gltf::Index<T_indexed>> T_element::* aDataMember, const? T_indexed & aDefaultElement) const
 
     template <class T_member>
-    std::vector<Owned<T_member>> 
+    std::vector<Owned<T_member>>
     iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector)
     {
         std::vector<Owned<T_member>> result;
@@ -184,7 +131,7 @@ public:
 
 private:
     Gltf & mOwningGltf;
-    T_element & mElement; 
+    T_element & mElement;
     gltf::Index<T_element> mIndex;
 };
 
@@ -195,7 +142,7 @@ class Const_Owned
 {
     friend class Gltf;
 
-    static constexpr auto gInvalidIndex = 
+    static constexpr auto gInvalidIndex =
         std::numeric_limits<typename gltf::Index<T_element>::Value_t>::max();
 
 public:
@@ -265,7 +212,7 @@ public:
     }
 
     template <class T_member>
-    std::vector<Const_Owned<T_member>> 
+    std::vector<Const_Owned<T_member>>
     iterate(std::vector<gltf::Index<T_member>> T_element::* aMemberIndexVector) const
     {
         std::vector<Const_Owned<T_member>> result;
@@ -306,7 +253,7 @@ public:
 
 private:
     const Gltf & mOwningGltf;
-    const T_element & mElement; 
+    const T_element & mElement;
     const gltf::Index<T_element> mIndex;
 };
 
@@ -314,7 +261,7 @@ private:
 //
 // Implementations
 //
-namespace gltf 
+namespace gltf
 {
 
 
@@ -337,7 +284,7 @@ namespace gltf
         return aOut << "]";
     }
 
-     
+
 } // namespace gltf
 
 
