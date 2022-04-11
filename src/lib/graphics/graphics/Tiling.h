@@ -63,6 +63,7 @@ public:
     void render(const sprite::LoadedAtlas & aAtlas, const TileSet & aTileSet) const;
 
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
+    // TODO This seems like a type mistake, an affine matrix cannot represent perpsective projection.
     void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
 
     static constexpr GLint gTextureUnit{2};

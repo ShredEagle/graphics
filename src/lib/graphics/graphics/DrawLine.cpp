@@ -3,6 +3,7 @@
 #include "shaders.h"
 
 #include <renderer/Error.h>
+#include <renderer/Uniforms.h>
 #include <renderer/VertexSpecification.h>
 
 
@@ -26,21 +27,23 @@ namespace
     };
 
     constexpr std::size_t gVerticesCount = 4;
+    // Note: X is used for origin(0) or end(1).
+    // Y is used for width. +normal(1) or -normal(-1).
     constexpr VertexData gVertices[gVerticesCount]{
-        {{0.0f, 0.0f}},
-        {{0.0f, 1.0f}},
-        {{1.0f, 0.0f}},
-        {{1.0f, 1.0f}},
+        {{0.0f,  1.0f}},
+        {{0.0f, -1.0f}},
+        {{1.0f,  1.0f}},
+        {{1.0f, -1.0f}},
     };
 
     //
     // Per instance data
     //
     constexpr AttributeDescriptionList gInstanceDescription{
-        { 1,                                  2, offsetof(DrawLine::Line, mOrigin),     MappedGL<GLint>::enumerator},
-        { 2,                                  2, offsetof(DrawLine::Line, mEnd),        MappedGL<GLint>::enumerator},
-        { 3,                                  1, offsetof(DrawLine::Line, width),        MappedGL<GLfloat>::enumerator},
-        {{4, Attribute::Access::Float, true}, 3, offsetof(DrawLine::Line, mColor),      MappedGL<GLubyte>::enumerator},
+        { 1,                                  3, offsetof(DrawLine::Line, mOrigin),       MappedGL<GLfloat>::enumerator},
+        { 2,                                  3, offsetof(DrawLine::Line, mEnd),          MappedGL<GLfloat>::enumerator},
+        { 3,                                  1, offsetof(DrawLine::Line, mWidth_screen), MappedGL<GLfloat>::enumerator},
+        {{4, Attribute::Access::Float, true}, 4, offsetof(DrawLine::Line, mColor),        MappedGL<GLubyte>::enumerator},
     };
 
     VertexSpecification make_VertexSpecification()
@@ -54,21 +57,25 @@ namespace
     Program make_Program()
     {
         return makeLinkedProgram({
-                  {GL_VERTEX_SHADER, gSolidColorLineVertexShader},
-                  {GL_FRAGMENT_SHADER, gTrivialFragmentShader},
+                  {GL_VERTEX_SHADER, drawline::gSolidColorLineVertexShader},
+                  {GL_FRAGMENT_SHADER, gTrivialFragmentShaderOpacity},
                });
     }
 
 } // anonymous namespace
 
 
-DrawLine::DrawLine(Size2<int> aRenderResolution) :
+DrawLine::DrawLine(std::shared_ptr<AppInterface> aAppInterface) :
     mDrawContext{
         make_VertexSpecification(),
         make_Program()
-    }
+    },
+    mListenWindowSize{aAppInterface->listenWindowResize(
+        std::bind(&DrawLine::setWindowResolution, this, std::placeholders::_1))}
 {
-    setBufferResolution(aRenderResolution);
+    setWindowResolution(aAppInterface->getWindowSize());
+    setCameraTransformation(math::AffineMatrix<4, GLfloat>::Identity());
+    setProjectionTransformation(math::AffineMatrix<4, GLfloat>::Identity());
 }
 
 
@@ -88,6 +95,9 @@ void DrawLine::render() const
 {
     activate(mDrawContext);
 
+    auto scopedDepthTest = graphics::scopeFeature(GL_DEPTH_TEST, false);
+    auto scopedBlend = graphics::scopeFeature(GL_BLEND, true);
+
     //
     // Stream vertex attributes
     //
@@ -106,7 +116,19 @@ void DrawLine::render() const
 }
 
 
-void DrawLine::setBufferResolution(Size2<int> aNewResolution)
+void DrawLine::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+{
+    setUniform(mDrawContext.mProgram, "u_view", aTransformation); 
+}
+
+
+void DrawLine::setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation)
+{
+    setUniform(mDrawContext.mProgram, "u_projection", aTransformation); 
+}
+
+
+void DrawLine::setWindowResolution(Size2<int> aNewResolution)
 {
     GLint location = glGetUniformLocation(mDrawContext.mProgram, "in_BufferResolution");
     glProgramUniform2iv(mDrawContext.mProgram, location, 1, aNewResolution.data());

@@ -143,7 +143,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
     setUniform(mFontProgram, "u_WorldToCamera", math::AffineMatrix<4, GLfloat>::Identity());
     setUniform(mFontProgram, "u_Projection", 
         math::trans3d::orthographicProjection<GLfloat>(
-            getViewVolume(aAppInterface.getFramebufferSize(), aScreenWorldHeight, 1, -1)));
+            getViewVolumeRightHanded(aAppInterface.getFramebufferSize(), aScreenWorldHeight, 0, 1)));
 
     
     // Font atlas generation

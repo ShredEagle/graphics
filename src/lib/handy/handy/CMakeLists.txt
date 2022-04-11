@@ -2,6 +2,7 @@ set(TARGET_NAME handy)
 
 set(${TARGET_NAME}_HEADERS
     array_utils.h
+    Base64.h
     Bitmask.h
     Crc.h
     Guard.h
@@ -13,6 +14,8 @@ set(${TARGET_NAME}_HEADERS
     tuple_utils.h
     vector_utils.h
     ZeroOnMove.h
+
+    3rdparty/beast_base64.h
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}

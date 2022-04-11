@@ -34,7 +34,7 @@ math::Box<GLfloat> getViewVolume(Size2<int> aRenderResolution,
         math::Position<3, GLfloat>{
             -frontSize.width() / 2.f,
             -frontSize.height() / 2.f,
-            aNear},
+            aNear - aDepth},
         frontSize,
     };
 }

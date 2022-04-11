@@ -64,8 +64,9 @@ namespace graphics {
     }
 
 
+    template <class T_hdrNumber>
     inline void setUniform(Program & aProgram, const std::string & aNameInShader,
-                           const math::hdr::Rgb & aColor)
+                           const math::hdr::Rgb<T_hdrNumber> & aColor)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform3f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2]);
@@ -81,8 +82,9 @@ namespace graphics {
     }
 
 
+    template <class T_hdrNumber>
     inline void setUniform(Program & aProgram, const std::string & aNameInShader,
-                           const math::hdr::Rgba & aColor)
+                           const math::hdr::Rgba<T_hdrNumber> & aColor)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform4f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2], (GLfloat)aColor[3]);

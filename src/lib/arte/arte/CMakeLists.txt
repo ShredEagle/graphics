@@ -3,20 +3,29 @@ set(TARGET_NAME arte)
 set(${TARGET_NAME}_HEADERS
     Freetype.h
     Image.h
+    Logging.h
     SpriteSheet.h
 
+    detail/GltfJson.h
     detail/Json.h
     detail/3rdparty/stb_image.h
     detail/3rdparty/stb_image_include.h
     detail/ImageFormats/Netpbm.h
     detail/ImageFormats/StbImageFormats.h
+
+    gltf/Gltf.h
+    gltf/Gltf-decl.h
+    gltf/Owned.h
 )
 
 set(${TARGET_NAME}_SOURCES
     Image.cpp
+    Logging.cpp
     SpriteSheet.cpp
 
     detail/3rdparty/stb_image.cpp
+
+    gltf/Gltf.cpp
 )
 
 add_library(${TARGET_NAME}
@@ -48,6 +57,7 @@ target_link_libraries(${TARGET_NAME}
 
         Freetype::Freetype
         nlohmann_json::nlohmann_json
+        spdlog::spdlog
 )
 
 ##

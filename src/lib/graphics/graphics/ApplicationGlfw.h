@@ -104,6 +104,8 @@ public:
 
         glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
 
+        glfwSetScrollCallback(mWindow, forward_scroll_callback);
+
         glfwShowWindow(mWindow);
 
         // VSync
@@ -211,8 +213,13 @@ private:
     static void forward_cursorposition_callback(GLFWwindow* window, double xpos, double ypos)
     {
         AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
-
         appInterface->callbackCursorPosition(xpos, ypos);
+    }
+    
+    static void forward_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+    {
+        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        appInterface->callbackScroll(xoffset, yoffset);
     }
 
     static void windowMinimize_callback(GLFWwindow * window, int iconified)

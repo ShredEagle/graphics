@@ -71,13 +71,15 @@ void setOrthographicView(T_engine3D & aEngine,
 }
 
 
-inline math::AffineMatrix<4> getCameraTransform(math::Position<3> aCameraPosition,
-                                                math::Vec<3> aGazeDirection,
-                                                math::Vec<3> aUpDirection = {0., 1., 0.})
+template <class T_number>
+inline math::AffineMatrix<4, T_number> getCameraTransform(
+    math::Position<3, T_number> aCameraPosition,
+    math::Vec<3, T_number> aGazeDirection,
+    math::Vec<3, T_number> aUpDirection = {T_number{0}, T_number{1}, T_number{0}})
 {
-    math::Frame<3> cameraFrame{
+    math::Frame<3, T_number> cameraFrame{
         aCameraPosition,
-        math::OrthonormalBase<3>::MakeFromTwoVectors(-aGazeDirection, aUpDirection)
+        math::OrthonormalBase<3, T_number>::MakeFromTwoVectors(-aGazeDirection, aUpDirection)
     };
 
     return math::trans3d::canonicalToFrame(cameraFrame);
@@ -102,10 +104,10 @@ inline math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResol
 }
 
 
-inline math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
-                                 GLfloat aBufferHeight,   
-                                 GLfloat aNearPlaneZ,
-                                 GLfloat aDepth)
+inline math::Box<GLfloat> getViewVolumeRightHanded(math::Size<2, int> aRenderResolution,
+                                                   GLfloat aBufferHeight,   
+                                                   GLfloat aNearPlaneZ,
+                                                   GLfloat aDepth)
 {
     math::Size<3, GLfloat> size{
         math::makeSizeFromHeight(aBufferHeight, math::getRatio<GLfloat>(aRenderResolution)),
@@ -116,7 +118,7 @@ inline math::Box<GLfloat> getViewVolume(math::Size<2, int> aRenderResolution,
         math::Position<3, GLfloat>{
             -size.width() / 2.f,
             -size.height() / 2.f,
-            aNearPlaneZ},
+            aNearPlaneZ - aDepth},
         size,
     };
 }

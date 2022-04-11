@@ -8,25 +8,18 @@
 namespace ad {
 namespace graphics {
 
-void clear(const Texture & aTexture, math::hdr::Rgba aClearValue)
+void clear(const Texture & aTexture, math::hdr::Rgba_f aClearValue)
 {
-    std::array<GLfloat, 4> clear{
-        aClearValue.r(),
-        aClearValue.g(),
-        aClearValue.b(),
-        aClearValue.a(),
-    };
-
     if (!GL_ARB_clear_texture)
     {
         FrameBuffer fb;
         attachImage(fb, aTexture);
-        glClearBufferfv(GL_COLOR, 0, clear.data());
+        glClearBufferfv(GL_COLOR, 0, aClearValue.data());
     }
     else
     {
         bind_guard bound(aTexture);
-        glClearTexImage(aTexture, 0, GL_RGBA, GL_FLOAT, clear.data());
+        glClearTexImage(aTexture, 0, GL_RGBA, GL_FLOAT, aClearValue.data());
     }
 }
 

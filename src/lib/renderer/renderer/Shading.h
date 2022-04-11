@@ -45,6 +45,19 @@ inline void disableProgram()
 }
 
 
+/// \note Provided for ability to use bind_guard
+inline void bind(const Program & aProgram)
+{
+    use(aProgram);
+}
+
+/// \note Provided for ability to use bind_guard
+inline void unbind(const Program &)
+{
+    disableProgram();
+}
+
+
 void handleGlslError(GLuint objectId,
                      GLenum aStatusEnumerator,
                      std::function<void(GLuint, GLenum, GLint*)> statusGetter,

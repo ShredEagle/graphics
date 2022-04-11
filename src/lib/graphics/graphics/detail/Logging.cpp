@@ -8,19 +8,23 @@ namespace graphics {
 namespace detail {
 
 
-/// This singleton has no state, its purpose is to initialize graphics
-/// logging on construction.
-/// Being a singleton, it ensures the initialization occurs at most once.
-struct LoggingInitializationSingleton
-{
-    LoggingInitializationSingleton()
+namespace {
+
+    /// This singleton has no state, its purpose is to initialize graphics
+    /// logging on construction.
+    /// Being a singleton, it ensures the initialization occurs at most once.
+    struct LoggingInitializationSingleton
     {
-        // Intended for message issued by opengl
-        spdlog::stdout_color_mt("opengl"); 
-        // Intended for the actual library messages
-        spdlog::stdout_color_mt("graphics"); 
-    }
-};
+        LoggingInitializationSingleton()
+        {
+            // Intended for message issued by opengl
+            spdlog::stdout_color_mt(gOpenglLogger);
+            // Intended for the actual library messages
+            spdlog::stdout_color_mt(gMainLogger);
+        }
+    };
+
+} // namespace anonymous
 
 
 void initializeLogging()

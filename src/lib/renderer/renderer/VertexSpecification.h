@@ -54,6 +54,17 @@ struct [[nodiscard]] VertexBufferObject : public ResourceGuard<GLuint>
 };
 
 
+inline void bind(const VertexBufferObject & aVertexBuffer)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, aVertexBuffer);
+}
+
+inline void unbind(const VertexBufferObject &)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
 struct [[nodiscard]] IndexBufferObject : public ResourceGuard<GLuint>
 {
     IndexBufferObject() :
@@ -61,6 +72,17 @@ struct [[nodiscard]] IndexBufferObject : public ResourceGuard<GLuint>
                               [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
     {}
 };
+
+
+inline void bind(const IndexBufferObject & aIndexBuffer)
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIndexBuffer);
+}
+
+inline void unbind(const IndexBufferObject &)
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
 
 
 /// \brief A VertexArray with a vector of VertexBuffers
@@ -111,7 +133,7 @@ struct Attribute
 
     GLuint mIndex; // index to match in vertex shader.
     Access mTypeInShader{Access::Float}; // destination data type
-    bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/max_value)
+    bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
 
 /// \brief The complete description of an attribute expected by OpenGL

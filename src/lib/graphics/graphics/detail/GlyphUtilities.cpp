@@ -45,7 +45,7 @@ DynamicGlyphCache::DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p,
             }
             else if(aRibonDimension_p.width() > getMaxTextureSize())
             {
-                LOG(graphics, warn)("Requested ribon dimension ({}, {}) exceeds maximum texture dimension {}. Clamping the width.",
+                ADLOG(gMainLogger, warn)("Requested ribon dimension ({}, {}) exceeds maximum texture dimension {}. Clamping the width.",
                     aRibonDimension_p.width(), aRibonDimension_p.height(), getMaxTextureSize());
                 return {getMaxTextureSize(), aRibonDimension_p.height()};
             }
@@ -65,7 +65,7 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
     }
     else
     {
-        LOG(graphics, trace)("Glyph for charcode {} not found in cache, rendering.", aCharCode);
+        ADLOG(gMainLogger, trace)("Glyph for charcode {} not found in cache, rendering.", aCharCode);
         if (aFontFace.hasGlyph(aCharCode))
         {
             arte::GlyphSlot slot = aFontFace.getGlyphSlot(aCharCode);
@@ -73,7 +73,7 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
 
             if (!atlases.back().isFitting(bitmap.width()))
             {
-                LOG(graphics, info)("Growing dynamic atlas with a new texture.", aCharCode);
+                ADLOG(gMainLogger, info)("Growing dynamic atlas with a new texture.", aCharCode);
                 growAtlas();
             }
             assert(atlases.back().isFitting(bitmap.width()));
@@ -105,7 +105,7 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
         }
         else
         {
-            LOG(graphics, warn)("No glyph for character code: {}", aCharCode);
+            ADLOG(gMainLogger, warn)("No glyph for character code: {}", aCharCode);
         }
     }
     assert(aCharCode != placeholder); // otherwise infinity open its time consuming arms

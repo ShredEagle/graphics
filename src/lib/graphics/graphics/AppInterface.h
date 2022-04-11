@@ -18,10 +18,12 @@ public:
     AppInterface(std::function<void()> aCloseAppCallback);
 
     static void clear();
-    static void setClearColor(math::hdr::Rgb aClearColor);
+    static void setClearColor(math::hdr::Rgb_f aClearColor);
 
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;
+
+    [[nodiscard]] std::shared_ptr<SizeListener> listenWindowResize(SizeListener aListener);
 
     [[nodiscard]] std::shared_ptr<SizeListener> listenFramebufferResize(SizeListener aListener);
 
@@ -33,11 +35,15 @@ public:
     template <class T_keyCallback>
     void registerKeyCallback(std::shared_ptr<T_keyCallback> aCallback);
 
+    /// \important Coordinate system origin is TOP-left corner of the window (unlike openGL).
     template <class T_mouseButtonCallback>
     void registerMouseButtonCallback(T_mouseButtonCallback && mCallback);
 
     template <class T_cursorPositionCallback>
     void registerCursorPositionCallback(T_cursorPositionCallback && mCallback);
+
+    template <class T_scrollCallback>
+    void registerScrollCallback(T_scrollCallback && mCallback);
 
     /// \brief To be called by the application when the Window is minimized (iconified).
     void callbackWindowMinimize(bool aMinimized);
@@ -56,6 +62,9 @@ public:
     /// \brief To be called by the application when it has cursor position events to provide
     void callbackCursorPosition(double xpos, double ypos);
 
+    /// \brief To be called by the application when it has scroll events to provide
+    void callbackScroll(double xoffset, double yoffset);
+
     static void GLAPIENTRY OpenGLMessageLogging(GLenum source,
                                                 GLenum type,
                                                 GLuint id,
@@ -68,11 +77,13 @@ private:
     bool mWindowIsMinimized{false};
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
+    Subject<SizeListener> mWindowSizeSubject;
     Subject<SizeListener> mFramebufferSizeSubject;
     std::function<void()> mCloseAppCallback;
     std::function<void(int, int, int, int)> mKeyboardCallback;
     std::function<void(int, int, int, double, double)> mMouseButtonCallback = [](int, int, int, double, double){};
     std::function<void(double, double)> mCursorPositionCallback = [](double, double){};
+    std::function<void(double, double)> mScrollCallback = [](double, double){};
 };
 
 
@@ -85,6 +96,14 @@ inline const Size2<int> & AppInterface::getWindowSize() const
 inline const Size2<int> & AppInterface::getFramebufferSize() const
 {
     return mFramebufferSize;
+}
+
+
+inline std::shared_ptr<AppInterface::SizeListener> AppInterface::listenWindowResize(SizeListener aListener)
+{
+    auto result = std::make_shared<SizeListener>(std::move(aListener));
+    mWindowSizeSubject.mObservers.emplace_back(result);
+    return result;
 }
 
 
@@ -127,6 +146,13 @@ void AppInterface::registerCursorPositionCallback(T_cursorPositionCallback && mC
 }
 
 
+template <class T_scrollCallback>
+void AppInterface::registerScrollCallback(T_scrollCallback && mCallback)
+{
+    mScrollCallback = std::forward<T_scrollCallback>(mCallback);
+}
+
+
 inline void AppInterface::callbackKeyboard(int key, int scancode, int action, int mods)
 {
     mKeyboardCallback(key, scancode, action, mods);
@@ -142,6 +168,12 @@ inline void AppInterface::callbackMouseButton(int button, int action, int mods, 
 inline void AppInterface::callbackCursorPosition(double xpos, double ypos)
 {
     mCursorPositionCallback(xpos, ypos);
+}
+
+
+inline void AppInterface::callbackScroll(double xoffset, double yoffset)
+{
+    mScrollCallback(xoffset, yoffset);
 }
 
 

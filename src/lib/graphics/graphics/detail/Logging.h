@@ -3,11 +3,17 @@
 #include <spdlog/spdlog.h>
 
 
-#define LOG(logger, severity) spdlog::get(#logger)->severity
+#define ADLOG(logger, severity) spdlog::get(logger)->severity
 
 
 namespace ad {
 namespace graphics {
+
+
+constexpr const char * gMainLogger = "logging";
+constexpr const char * gOpenglLogger = "opengl";
+
+
 namespace detail {
 
 
