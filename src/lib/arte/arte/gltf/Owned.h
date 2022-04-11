@@ -70,13 +70,17 @@ template <class T_element>
 class Const_Owned;
 
 
+class Gltf;
+
+
 template <class T_element>
 class Owned
 {
     friend class Gltf;
     friend class Const_Owned<T_element>;
 
-    static constexpr auto gInvalidIndex = std::numeric_limits<gltf::Index<T_element>::Value_t>::max();
+    static constexpr auto gInvalidIndex =
+        std::numeric_limits<typename gltf::Index<T_element>::Value_t>::max();
 
 public:
     Owned(Gltf & aGltf, T_element & aElement, gltf::Index<T_element> aIndex);
@@ -191,7 +195,8 @@ class Const_Owned
 {
     friend class Gltf;
 
-    static constexpr auto gInvalidIndex = std::numeric_limits<gltf::Index<T_element>::Value_t>::max();
+    static constexpr auto gInvalidIndex = 
+        std::numeric_limits<typename gltf::Index<T_element>::Value_t>::max();
 
 public:
     /*implicit*/Const_Owned(Owned<T_element> aOwned);

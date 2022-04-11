@@ -8,6 +8,8 @@
 #include <math/Interpolation/Interpolation.h>
 #include <math/Interpolation/QuaternionInterpolation.h>
 
+#include <memory>
+
 
 namespace ad {
 namespace gltfviewer {
