@@ -19,6 +19,7 @@ constexpr const char * gTagAccessors            = "accessors";
 constexpr const char * gTagAlphaMode            = "alphaMode";
 constexpr const char * gTagAlphaCutoff          = "alphaCutoff";
 constexpr const char * gTagAnimations           = "animations";
+constexpr const char * gTagAspectRatio          = "aspectRatio";
 constexpr const char * gTagAttributes           = "attributes";
 constexpr const char * gTagBuffer               = "buffer";
 constexpr const char * gTagBuffers              = "buffers";
@@ -27,6 +28,8 @@ constexpr const char * gTagBufferViews          = "bufferViews";
 constexpr const char * gTagByteLength           = "byteLength";
 constexpr const char * gTagByteOffset           = "byteOffset";
 constexpr const char * gTagByteStride           = "byteStride";
+constexpr const char * gTagCamera               = "camera";
+constexpr const char * gTagCameras              = "cameras";
 constexpr const char * gTagChannels             = "channels";
 constexpr const char * gTagChildren             = "children";
 constexpr const char * gTagBaseColorFactor      = "baseColorFactor";
@@ -56,9 +59,11 @@ constexpr const char * gTagName                 = "name";
 constexpr const char * gTagNode                 = "node";
 constexpr const char * gTagNodes                = "nodes";
 constexpr const char * gTagNormalized           = "normalized";
+constexpr const char * gTagOrthographic         = "orthographic";
 constexpr const char * gTagOutput               = "output";
 constexpr const char * gTagPath                 = "path";
 constexpr const char * gTagPbrMetallicRoughness = "pbrMetallicRoughness";
+constexpr const char * gTagPerspective          = "perspective";
 constexpr const char * gTagPrimitives           = "primitives";
 constexpr const char * gTagRotation             = "rotation";
 constexpr const char * gTagSampler              = "sampler";
@@ -80,6 +85,11 @@ constexpr const char * gTagUri                  = "uri";
 constexpr const char * gTagValues               = "values";
 constexpr const char * gTagWrapS                = "wrapS";
 constexpr const char * gTagWrapT                = "wrapT";
+constexpr const char * gTagXMag                 = "xmag";
+constexpr const char * gTagYFov                 = "yfov";
+constexpr const char * gTagYMag                 = "ymag";
+constexpr const char * gTagZFar                 = "zfar";
+constexpr const char * gTagZNear                = "znear";
 
 } // namespace anonymous
 
@@ -165,6 +175,24 @@ const std::map<std::string, Material::AlphaMode> gStringToAlphaMode{
     {"MASK",    Material::AlphaMode::Mask},
     {"BLEND",   Material::AlphaMode::Blend},
 };
+
+
+const std::map<std::string, gltf::Camera::Type> gStringToCameraType{
+    {"orthographic",  Camera::Type::Orthographic},
+    {"perspective",  Camera::Type::Perspective},
+};
+
+const std::array<std::string, 2> gCameraTypeToString{
+    "orthographic",
+    "perspective",
+};
+
+std::string to_string(gltf::Camera::Type aCameraType)
+{
+    std::size_t index = static_cast<std::size_t>(aCameraType);
+    assert(index < gCameraTypeToString.size());
+    return gCameraTypeToString.at(index);
+}
 
 
 //
@@ -279,6 +307,7 @@ Node load(const Json & aNodeObject)
 
     return Node{
         .name = aNodeObject.value(gTagName, ""),
+        .camera = getOptional<Index<Camera>>(aNodeObject, gTagCamera),
         .children = makeIndicesVector<Index<Node>>(getOptionalArray(aNodeObject, gTagChildren)),
         .transformation = handleTransformation(aNodeObject),
         .mesh = getOptional<Index<Mesh>>(aNodeObject, gTagMesh),
@@ -579,6 +608,43 @@ Skin load(const Json & aJson, Gltf & aGltf)
 }
 
 
+template <>
+Camera load(const Json & aJson)
+{
+    Camera result{
+        .name = aJson.value(gTagName, ""),
+        .type = gStringToCameraType.at(aJson.at(gTagType)),
+    };
+
+    switch(result.type)
+    {
+    case Camera::Type::Orthographic:
+    {
+        auto proj = aJson.at(gTagOrthographic);
+        result.projection = Camera::Orthographic{
+            .xmag = proj.at(gTagXMag),
+            .ymag = proj.at(gTagYMag),
+            .zfar = proj.at(gTagZFar),
+            .znear = proj.at(gTagZNear),
+        };
+        break;
+    }
+    case Camera::Type::Perspective:
+    {
+        auto proj = aJson.at(gTagPerspective);
+        result.projection = Camera::Perspective{
+            .aspectRatio = getOptional<float>(proj, gTagAspectRatio),
+            .yfov = proj.at(gTagYFov),
+            .zfar = getOptional<float>(proj, gTagZFar),
+            .znear = proj.at(gTagZNear),
+        };
+        break;
+    }
+    }
+
+    return result;
+}
+
 // 
 // Output operators
 // 
@@ -630,9 +696,10 @@ Gltf::Gltf(const filesystem::path & aGltfJson) :
     populateVectorIfPresent(json, mTextures, gTagTextures);
     populateVectorIfPresent(json, mSamplers, gTagSamplers);
     populateVectorIfPresent(json, mSkins, gTagSkins, *this);
+    populateVectorIfPresent(json, mCameras, gTagCameras);
 
-    ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} material(s), {} animation(s), {} skin(s), {} buffer(s).",
-                             mScenes.size(), mNodes.size(), mMeshes.size(), mMaterials.size(), mAnimations.size(), mSkins.size(), mBuffers.size());
+    ADLOG(gMainLogger, info)("Loaded glTF file with {} scene(s), {} node(s), {} meshe(s), {} material(s), {} animation(s), {} skin(s), {} camera(s), {} buffer(s).",
+                             mScenes.size(), mNodes.size(), mMeshes.size(), mMaterials.size(), mAnimations.size(), mSkins.size(), mCameras.size(), mBuffers.size());
 }
 
 
@@ -805,6 +872,17 @@ Owned<gltf::Skin> Gltf::get(gltf::Index<gltf::Skin> aSkinIndex)
 Const_Owned<gltf::Skin> Gltf::get(gltf::Index<gltf::Skin> aSkinIndex) const
 {
     return {*this, mSkins.at(aSkinIndex), aSkinIndex};
+}
+
+
+Owned<gltf::Camera> Gltf::get(gltf::Index<gltf::Camera> aCameraIndex)
+{
+    return {*this, mCameras.at(aCameraIndex), aCameraIndex};
+}
+
+Const_Owned<gltf::Camera> Gltf::get(gltf::Index<gltf::Camera> aCameraIndex) const
+{
+    return {*this, mCameras.at(aCameraIndex), aCameraIndex};
 }
 
 

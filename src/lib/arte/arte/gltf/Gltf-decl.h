@@ -73,6 +73,35 @@ namespace gltf {
     std::ostream & operator<<(std::ostream & aOut, const std::vector<T_indexed> & aIndexVector);
 
 
+    struct Camera
+    {
+        enum class Type
+        {
+            Orthographic,
+            Perspective,
+        };
+
+        struct Orthographic
+        {
+            float xmag;
+            float ymag;
+            float zfar;
+            float znear;
+        };
+
+        struct Perspective
+        {
+            std::optional<float> aspectRatio;
+            float yfov;
+            std::optional<float> zfar;
+            float znear;
+        };
+
+        std::string name;
+        Type type;
+        std::variant<Orthographic, Perspective> projection;
+    };
+
     struct Accessor;
     struct Node;
 
@@ -304,6 +333,7 @@ namespace gltf {
         };
 
         std::string name;
+        std::optional<Index<Camera>> camera;
         std::vector<Index<Node>> children;
         std::variant<Matrix, TRS> transformation;
         std::optional<Index<Mesh>> mesh;
@@ -326,6 +356,7 @@ namespace gltf {
 
 std::string to_string(gltf::Accessor::ElementType aElementType);
 std::string to_string(gltf::animation::Sampler::Interpolation aInterpolation);
+std::string to_string(gltf::Camera::Type aCameraType);
 
 
 // Forward declarations (Gltf.h takes care of including the actual definitions after this header)
@@ -383,6 +414,9 @@ public:
     Owned<gltf::Skin> get(gltf::Index<gltf::Skin> aSkinIndex);
     Const_Owned<gltf::Skin> get(gltf::Index<gltf::Skin> aSkinIndex) const;
 
+    Owned<gltf::Camera> get(gltf::Index<gltf::Camera> aCameraIndex);
+    Const_Owned<gltf::Camera> get(gltf::Index<gltf::Camera> aCameraIndex) const;
+
     filesystem::path getPathFor(gltf::Uri aFileUri) const;
 
 private:
@@ -403,6 +437,7 @@ private:
     std::vector<gltf::Texture> mTextures;
     std::vector<gltf::texture::Sampler> mSamplers;
     std::vector<gltf::Skin> mSkins;
+    std::vector<gltf::Camera> mCameras;
 };
 
 
