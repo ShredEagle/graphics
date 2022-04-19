@@ -174,10 +174,12 @@ public:
         aYpos = ypos;
     }
 
-    bool loadWindowIntoImGui(std::function<bool(GLFWwindow * window, bool install_callbacks)> ImGui_install)
-    {
-        return ImGui_install(mWindow, true);
-    }
+    /// \important This is breaking the encapsulation for cases where third parties such as dear-ImGui
+    /// need access.
+    /// Please do not use it for "normal" application management, which should be properly wrapped once 
+    /// the need arises.
+    GLFWwindow * getGlfwWindow()
+    { return mWindow; }
 
 private:
     static void error_callback(int error, const char* description)
