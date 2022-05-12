@@ -51,6 +51,8 @@ constexpr const char * gTagMatrix               = "matrix";
 constexpr const char * gTagMax                  = "max";
 constexpr const char * gTagMesh                 = "mesh";
 constexpr const char * gTagMeshes               = "meshes";
+constexpr const char * gTagMetallicFactor       = "metallicFactor";
+constexpr const char * gTagMetallicRoughnessTexture = "metallicRoughnessTexture";
 constexpr const char * gTagMimeType             = "mimeType";
 constexpr const char * gTagMin                  = "min";
 constexpr const char * gTagMinFilter            = "minFilter";
@@ -66,6 +68,7 @@ constexpr const char * gTagPbrMetallicRoughness = "pbrMetallicRoughness";
 constexpr const char * gTagPerspective          = "perspective";
 constexpr const char * gTagPrimitives           = "primitives";
 constexpr const char * gTagRotation             = "rotation";
+constexpr const char * gTagRoughnessFactor      = "roughnessFactor";
 constexpr const char * gTagSampler              = "sampler";
 constexpr const char * gTagSamplers             = "samplers";
 constexpr const char * gTagScale                = "scale";
@@ -509,9 +512,11 @@ material::PbrMetallicRoughness load(const Json & aJson)
     return {
         .baseColorFactor = 
             aJson.value<math::hdr::Rgba<float>>(gTagBaseColorFactor,
-                                                math::hdr::Rgba<float>{math::hdr::gWhite<float>}),
-        .baseColorTexture = 
-            loadOptional<TextureInfo>(aJson, gTagBaseColorTexture),
+                                                material::gDefaultPbr.baseColorFactor),
+        .baseColorTexture = loadOptional<TextureInfo>(aJson, gTagBaseColorTexture),
+        .metallicFactor = aJson.value(gTagMetallicFactor, material::gDefaultPbr.metallicFactor),
+        .roughnessFactor = aJson.value(gTagRoughnessFactor, material::gDefaultPbr.roughnessFactor),
+        .metallicRoughnessTexture = loadOptional<TextureInfo>(aJson, gTagMetallicRoughnessTexture),
     };
 }
 

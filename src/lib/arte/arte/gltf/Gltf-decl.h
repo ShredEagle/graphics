@@ -162,6 +162,9 @@ namespace gltf {
         {
             math::hdr::Rgba<float> baseColorFactor{math::hdr::gWhite<float>};
             std::optional<TextureInfo> baseColorTexture;
+            float metallicFactor{1.f};
+            float roughnessFactor{1.f};
+            std::optional<TextureInfo> metallicRoughnessTexture;
         };
 
         constexpr material::PbrMetallicRoughness gDefaultPbr;
