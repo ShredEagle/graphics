@@ -33,7 +33,7 @@ class GraphicsConan(ConanFile):
         ("spdlog/1.9.2"),
         ("utfcpp/3.2.1"),
 
-        ("math/0541d9cdd9@adnn/develop"),
+        ("math/38aee3b8df@adnn/develop"),
     )
 
     build_policy = "missing"
