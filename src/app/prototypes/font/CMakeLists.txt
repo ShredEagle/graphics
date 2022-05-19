@@ -14,6 +14,8 @@ find_package(glad REQUIRED)
 
 find_package(math REQUIRED)
 
+find_package(Handy CONFIG REQUIRED COMPONENTS handy platform resource)
+
 add_executable(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
     ${${TARGET_NAME}_HEADERS}

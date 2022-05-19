@@ -11,6 +11,8 @@ set(${TARGET_NAME}_SOURCES
 find_package(Boost 1.71)
 find_package(glfw3 3.3 REQUIRED)
 
+find_package(Handy CONFIG REQUIRED COMPONENTS resource)
+
 add_executable(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
     ${${TARGET_NAME}_HEADERS}

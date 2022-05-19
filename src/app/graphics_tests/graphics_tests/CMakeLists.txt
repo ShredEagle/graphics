@@ -11,6 +11,8 @@ set(${TARGET_NAME}_SOURCES
     Image_tests.cpp
 )
 
+find_package(Handy CONFIG REQUIRED COMPONENTS platform resource)
+
 add_executable(${TARGET_NAME}
                ${${TARGET_NAME}_HEADERS}
                ${${TARGET_NAME}_SOURCES}

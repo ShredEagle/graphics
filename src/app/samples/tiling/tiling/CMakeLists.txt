@@ -10,6 +10,7 @@ set(${TARGET_NAME}_SOURCES
 )
 
 find_package(glad REQUIRED)
+find_package(Handy CONFIG REQUIRED COMPONENTS resource)
 
 add_executable(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
