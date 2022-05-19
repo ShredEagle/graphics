@@ -1,16 +1,12 @@
-add_subdirectory(lib/handy/handy)
-add_subdirectory(lib/platform/platform)
 add_subdirectory(lib/GSL-2.0.0/gsl)
 
 add_subdirectory(lib/arte/arte)
 add_subdirectory(lib/renderer/renderer)
-add_subdirectory(lib/resource/resource)
 add_subdirectory(lib/graphics/graphics)
 
 option(BUILD_tests "Build the demo applications" ON)
 if(BUILD_tests)
     add_subdirectory(app/graphics_tests/graphics_tests)
-    add_subdirectory(app/handy_tests/handy_tests)
 
     # In order of implementation
     add_subdirectory(app/prototypes/demo)

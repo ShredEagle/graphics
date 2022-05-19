@@ -230,6 +230,19 @@ std::optional<T_value> getOptional(Json aObject, T_tag && aTag)
 }
 
 
+template <class T_key>
+Json getOptionalArray(const Json & aObject, T_key && aKey)
+{
+    return aObject.value(std::forward<T_key>(aKey), Json::array());
+}
+
+
+//
+// Element loaders
+//
+template <class T_object, class ... VT_args>
+T_object load(const Json & aObjectJson, VT_args && ... vaArgs);
+
 template <class T_value, class T_tag>
 std::optional<T_value> loadOptional(Json aObject, T_tag && aTag)
 {
@@ -238,14 +251,6 @@ std::optional<T_value> loadOptional(Json aObject, T_tag && aTag)
         return load<T_value>(aObject.at(std::forward<T_tag>(aTag)));
     }
     return std::nullopt;
-}
-
-
-
-template <class T_key>
-Json getOptionalArray(const Json & aObject, T_key && aKey)
-{
-    return aObject.value(std::forward<T_key>(aKey), Json::array());
 }
 
 
@@ -259,7 +264,6 @@ void populateVector(const Json & aJson, std::vector<T_object> & aVector, T_tag &
     }
 }
 
-
 template <class T_object, class T_tag, class ... VT_args>
 void populateVectorIfPresent(const Json & aJson, std::vector<T_object> & aVector, T_tag && aTag, VT_args && ... vaArgs)
 {
@@ -270,11 +274,6 @@ void populateVectorIfPresent(const Json & aJson, std::vector<T_object> & aVector
 }
 
 
-//
-// Element loaders
-//
-template <class T_object, class ... VT_args>
-T_object load(const Json & aObjectJson, VT_args && ... vaArgs);
 
 
 template <>
