@@ -33,7 +33,7 @@ class GraphicsConan(ConanFile):
         ("spdlog/1.9.2"),
         ("utfcpp/3.2.1"),
 
-        ("handy/5029544ba8@adnn/develop"),
+        ("handy/bfed056640@adnn/develop"),
         ("math/4234fd5aaf@adnn/develop"),
     )
 
