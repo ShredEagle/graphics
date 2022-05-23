@@ -4,7 +4,9 @@
 #include <graphics/SpriteLoading.h>
 #include <graphics/Tiling.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
+
+#include <vector>
 
 
 namespace ad {
@@ -61,7 +63,7 @@ private:
     Tiling mTiling;
     TileSet mTileSet;
     sprite::LoadedAtlas mAtlas;
-    std::vector<TileSet::Instance> mPlacedTiles{mGridSize.area(), TileSet::gEmptyInstance};
+    std::vector<TileSet::Instance> mPlacedTiles{static_cast<size_t>(mGridSize.area()), TileSet::gEmptyInstance};
 };
 
 

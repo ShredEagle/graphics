@@ -11,6 +11,8 @@ set(${TARGET_NAME}_SOURCES
 find_package(Boost 1.71)
 find_package(glfw3 3.3 REQUIRED)
 
+find_package(Graphics CONFIG REQUIRED COMPONENTS test_commons)
+
 add_executable(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
     ${${TARGET_NAME}_HEADERS}
@@ -20,7 +22,7 @@ target_link_libraries(${TARGET_NAME}
     PRIVATE
         glfw::glfw
         ad::graphics
-        ad::resource
+        ad::test_commons
         Boost::boost # Target for header-only dependencies
 )
 

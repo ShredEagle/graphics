@@ -1,11 +1,8 @@
 #include "catch.hpp"
 
-
 #include <arte/Image.h>
 
-#include <platform/Filesystem.h>
-
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 #include <fstream>
 
@@ -31,8 +28,8 @@ filesystem::path ensureTemporaryImageFolder(filesystem::path aSubfolder)
     filesystem::path result =  tmp / aSubfolder;
     create_directories(result);
     return result;
-}
 
+}
 
 template <class T_image>
 void requireImagesEquality(const T_image & aLhs, const T_image & aRhs)
@@ -210,7 +207,7 @@ SCENARIO("Image files creation, read, write")
             red.write(ImageFormat::Ppm,
                       std::ofstream{redfile.string(), std::ios_base::out | std::ios_base::binary});
 
-            REQUIRE(exists(redfile));
+            REQUIRE(filesystem::exists(redfile));
         }
     }
 
@@ -238,21 +235,21 @@ SCENARIO("Image files creation, read, write")
                 yacht.write(ImageFormat::Ppm,
                             std::ofstream{resultfile.string(),
                                           std::ios_base::out | std::ios_base::binary});
-                REQUIRE(exists(resultfile));
+                REQUIRE(filesystem::exists(resultfile));
             }
 
             THEN("It can be converted to a grayscale image and written to a file")
             {
                 filesystem::path resultfile = tempFolder/"grayscale_yacht.pgm";
                 toGrayscale(yacht).saveFile(resultfile);
-                REQUIRE(exists(resultfile));
+                REQUIRE(filesystem::exists(resultfile));
             }
 
             THEN("It can be cropped and writtent to a file")
             {
                 filesystem::path resultfile = tempFolder/"cropped_yacht.ppm";
                 yacht.crop({ {127, 127}, {256, 256} }).saveFile(resultfile);
-                REQUIRE(exists(resultfile));
+                REQUIRE(filesystem::exists(resultfile));
             }
 
             THEN("It can be prepared as an array")
@@ -263,7 +260,7 @@ SCENARIO("Image files creation, read, write")
                 };
 
                 yacht.prepareArray(positions.begin(), positions.end(), {256, 240}).saveFile(resultfile);
-                REQUIRE(exists(resultfile));
+                REQUIRE(filesystem::exists(resultfile));
             }
         }
     }

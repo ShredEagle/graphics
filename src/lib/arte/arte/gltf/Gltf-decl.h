@@ -47,13 +47,13 @@ namespace gltf {
     template <class T_indexed>
     struct Index
     {
-        using Value_t = std::vector<T_indexed>::size_type;
+        using Value_t = typename std::vector<T_indexed>::size_type;
 
-        Index(Value_t aValue) :
+        constexpr Index(Value_t aValue) :
             value{aValue}
         {}
 
-        Index(const Index & aIndex) :
+        constexpr Index(const Index & aIndex) :
             Index{aIndex.value}
         {}
 

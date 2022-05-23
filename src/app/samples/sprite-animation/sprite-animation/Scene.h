@@ -11,7 +11,7 @@
 #include <math/Transformations.h>
 #include <math/Interpolation/Interpolation.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 #include <optional>
 

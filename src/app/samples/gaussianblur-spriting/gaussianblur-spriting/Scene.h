@@ -6,7 +6,7 @@
 #include <graphics/Spriting.h>
 #include <graphics/effects/GaussianBlur.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 #include <graphics/CameraUtilities.h>
 

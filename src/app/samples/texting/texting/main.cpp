@@ -4,7 +4,7 @@
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 #include <future>
 #include <thread>

@@ -1,4 +1,5 @@
-@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS arte handy renderer resource)
+@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS arte renderer)
+@find_package@(Handy CONFIG @REQUIRED@ COMPONENTS handy resource)
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
 
 @find_package@(glad @REQUIRED@)

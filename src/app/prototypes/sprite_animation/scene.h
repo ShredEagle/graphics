@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 #include <arte/Image.h>
 

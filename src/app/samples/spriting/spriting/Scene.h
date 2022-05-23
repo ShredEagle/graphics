@@ -4,7 +4,7 @@
 #include <graphics/SpriteLoading.h>
 #include <graphics/Spriting.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 
 namespace ad {

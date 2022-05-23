@@ -11,6 +11,8 @@ set(${TARGET_NAME}_SOURCES
     Image_tests.cpp
 )
 
+find_package(Graphics CONFIG REQUIRED COMPONENTS test_commons)
+
 add_executable(${TARGET_NAME}
                ${${TARGET_NAME}_HEADERS}
                ${${TARGET_NAME}_SOURCES}
@@ -19,8 +21,8 @@ add_executable(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     PRIVATE
         ad::arte
-        ad::platform
-        ad::resource)
+        ad::test_commons
+        )
 
 set_target_properties(${TARGET_NAME} PROPERTIES
                       VERSION "${${PROJECT_NAME}_VERSION}"
