@@ -8,17 +8,29 @@ set(${TARGET_NAME}_HEADERS
     PathProvider.h
 )
 
-add_library(${TARGET_NAME}
-    ${${TARGET_NAME}_HEADERS}
+source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
+             FILES ${${TARGET_NAME}_HEADERS}
 )
 
-source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
-             FILES ${${TARGET_NAME}_HEADERS} ${${TARGET_NAME}_SOURCES}
-)
+add_library(${TARGET_NAME} INTERFACE)
 
 add_library(ad::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
+# Custom target to have the files show up in the IDE
+add_custom_target(${TARGET_NAME}_IDE
+    SOURCES
+        ${${TARGET_NAME}_HEADERS}
+        ${${TARGET_NAME}_DOC}
+)
+
+
 cmc_target_current_include_directory(${TARGET_NAME})
+
+target_include_directories(${TARGET_NAME}
+    INTERFACE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}> # For generated header
+)
+
 
 
 ##
@@ -28,7 +40,7 @@ cmc_target_current_include_directory(${TARGET_NAME})
 cmc_find_dependencies(FILE CMakeFinds.cmake.in)
 
 target_link_libraries(${TARGET_NAME}
-    PUBLIC
+    INTERFACE
         ad::platform
 )
 
