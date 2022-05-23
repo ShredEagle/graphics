@@ -9,7 +9,7 @@
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 #include <math/Vector.h>
 

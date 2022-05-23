@@ -5,7 +5,7 @@
 #include <graphics/AppInterface.h>
 #include <graphics/adapters/ParallaxScroller.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 
 namespace ad {

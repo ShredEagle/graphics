@@ -13,7 +13,7 @@
 #include <renderer/Texture.h>
 #include <renderer/VertexSpecification.h>
 
-#include <resource/PathProvider.h>
+#include <test_commons/PathProvider.h>
 
 namespace ad {
 namespace graphics {

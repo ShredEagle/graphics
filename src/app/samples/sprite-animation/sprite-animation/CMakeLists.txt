@@ -10,7 +10,7 @@ set(${TARGET_NAME}_SOURCES
 
 find_package(glad REQUIRED)
 
-find_package(Handy CONFIG REQUIRED COMPONENTS resource)
+find_package(Graphics CONFIG REQUIRED COMPONENTS test_commons)
 
 add_executable(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
@@ -22,7 +22,7 @@ target_link_libraries(${TARGET_NAME}
         glad::glad
         ad::arte
         ad::graphics
-        ad::resource
+        ad::test_commons
 )
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER samples)

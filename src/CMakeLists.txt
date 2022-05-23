@@ -6,6 +6,7 @@ add_subdirectory(lib/graphics/graphics)
 
 option(BUILD_tests "Build the demo applications" ON)
 if(BUILD_tests)
+    add_subdirectory(app/test_commons/test_commons)
     add_subdirectory(app/graphics_tests/graphics_tests)
 
     # In order of implementation
