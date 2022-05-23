@@ -1,11 +1,10 @@
 #include "catch.hpp"
 
+#include "build_config.h"
 
 #include <arte/Image.h>
 
 #include <platform/Filesystem.h>
-
-#include <resource/PathProvider.h>
 
 #include <fstream>
 
@@ -30,6 +29,17 @@ filesystem::path ensureTemporaryImageFolder(filesystem::path aSubfolder)
 
     filesystem::path result =  tmp / aSubfolder;
     create_directories(result);
+    return result;
+
+}
+
+inline filesystem::path pathFor(const filesystem::path &aAsset)
+{
+    auto result = gAssetFolderPath / aAsset;
+    if (!exists(result))
+    {
+        throw std::runtime_error{result.string() + " does not exist."};
+    }
     return result;
 }
 
@@ -216,7 +226,7 @@ SCENARIO("Image files creation, read, write")
 
     GIVEN("A stream containing a PPM formatted image")
     {
-        std::ifstream ppmInput{resource::pathFor("tests/Images/PPM/Yacht.512.ppm").string(),
+        std::ifstream ppmInput{pathFor("tests/Images/PPM/Yacht.512.ppm").string(),
                                std::ios_base::in | std::ios_base::binary};
 
         THEN("It can be read to an Image")
@@ -270,7 +280,7 @@ SCENARIO("Image files creation, read, write")
 
     GIVEN("A Jpeg image file.")
     {
-        filesystem::path jpegPath{resource::pathFor("tests/Images/JPEG/Lion_Afrique.jpg").string()};
+        filesystem::path jpegPath{pathFor("tests/Images/JPEG/Lion_Afrique.jpg").string()};
 
         WHEN("It is loaded as an Rgb image with an inverted vertical axis")
         {
@@ -292,8 +302,8 @@ SCENARIO("Image high level operations")
 
     GIVEN("Source images loaded from disk.")
     {
-        ImageRgb yacht{resource::pathFor("tests/Images/PPM/Yacht.512.ppm")};
-        ImageRgb phoenix{resource::pathFor("tests/Images/PPM/Phoenix.512.ppm")};
+        ImageRgb yacht{pathFor("tests/Images/PPM/Yacht.512.ppm")};
+        ImageRgb phoenix{pathFor("tests/Images/PPM/Phoenix.512.ppm")};
 
         GIVEN("A destination image twice the size of the sources in each dimension.")
         {
