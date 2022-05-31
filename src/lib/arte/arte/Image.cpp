@@ -4,6 +4,7 @@
 #include "detail/ImageFormats/StbImageFormats.h"
 
 #include <algorithm>
+#include <fstream>
 #include <string>
 #include <istream>
 #include <sstream>

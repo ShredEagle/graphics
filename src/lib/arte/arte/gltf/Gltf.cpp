@@ -5,6 +5,7 @@
 #include "../detail/Json.h"
 #include "../detail/GltfJson.h"
 
+#include <fstream>
 
 namespace ad {
 namespace arte {
