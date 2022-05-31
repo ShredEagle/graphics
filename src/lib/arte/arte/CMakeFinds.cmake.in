@@ -1,6 +1,6 @@
 @find_package@(Handy CONFIG @REQUIRED@ COMPONENTS handy platform)
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
 
-@find_package@(Freetype @REQUIRED@)
+@find_package@(Freetype @REQUIRED@ CONFIG)
 @find_package@(nlohmann_json 3.9 @REQUIRED@)
 @find_package@(spdlog @REQUIRED@)

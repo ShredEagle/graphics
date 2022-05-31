@@ -20,7 +20,7 @@ add_executable(${TARGET_NAME}
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE
-        glfw::glfw
+        glfw
         ad::graphics
         ad::test_commons
         Boost::boost # Target for header-only dependencies

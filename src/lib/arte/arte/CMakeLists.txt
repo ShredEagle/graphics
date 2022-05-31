@@ -55,7 +55,7 @@ target_link_libraries(${TARGET_NAME}
 
         ad::math
 
-        Freetype::Freetype
+        freetype
         nlohmann_json::nlohmann_json
         spdlog::spdlog
 )
