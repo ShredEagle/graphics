@@ -35,8 +35,8 @@ class GraphicsConan(ConanFile):
         ("utfcpp/3.2.1"),
         ("zlib/1.2.12"),
 
-        ("handy/aeb7e759ba@adnn/develop"),
-        ("math/08118a6f2c@adnn/develop"),
+        ("handy/4ecfa5b125@adnn/develop"),
+        ("math/6d9dbebec4@adnn/develop"),
     )
 
     build_policy = "missing"
