@@ -1,4 +1,4 @@
-set(TARGET_NAME gaussianblur-spriting)
+set(TARGET_NAME gaussblur-sprite)
 
 set(${TARGET_NAME}_HEADERS
     Scene.h
