@@ -156,6 +156,14 @@ namespace gltf {
         unsigned int texCoord;
     };
 
+
+    struct OcclusionTextureInfo
+    {
+        Index<Texture> index;
+        unsigned int texCoord;
+        float strength;
+    };
+
     namespace material
     {
         struct PbrMetallicRoughness
@@ -168,6 +176,7 @@ namespace gltf {
         };
 
         constexpr material::PbrMetallicRoughness gDefaultPbr;
+
     } // namespace material
 
     struct Material
@@ -181,6 +190,7 @@ namespace gltf {
 
         std::string name;
         std::optional<material::PbrMetallicRoughness> pbrMetallicRoughness;
+        std::optional<OcclusionTextureInfo> occlusionTexture;
         AlphaMode alphaMode{AlphaMode::Opaque};
         std::optional<float> alphaCutoff;
         bool doubleSided{false};

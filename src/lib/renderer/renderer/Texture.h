@@ -32,6 +32,8 @@ inline Guard scopeUnpackAlignment(GLint aAlignment)
 
 struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 {
+    /// \parameter aTarget for values see `target` parameter of 
+    /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     Texture(GLenum aTarget) :
         ResourceGuard<GLuint>(reserve(glGenTextures),
                               [](GLuint textureId){glDeleteTextures(1, &textureId);}),
@@ -103,13 +105,15 @@ inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
 
 /// \brief Allocate texture storage.
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
-                            const GLsizei aWidth, const GLsizei aHeight)
+                            const GLsizei aWidth, const GLsizei aHeight,
+                            const GLsizei aMipmapLevels = 1)
 {
     bind_guard bound(aTexture);
 
     if (GL_ARB_texture_storage)
     {
-        glTexStorage2D(aTexture.mTarget, 1, aInternalFormat, aWidth, aHeight);
+        // TODO allow to specify the number of mipmap levels.
+        glTexStorage2D(aTexture.mTarget, aMipmapLevels, aInternalFormat, aWidth, aHeight);
         { // scoping isSuccess
             GLint isSuccess;
             glGetTexParameteriv(aTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
@@ -128,10 +132,12 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
 }
 
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
-                            math::Size<2, GLsizei> aResolution)
+                            math::Size<2, GLsizei> aResolution,
+                            const GLsizei aMipmapLevels = 1)
 {
     return allocateStorage(aTexture, aInternalFormat,
-                           aResolution.width(), aResolution.height());
+                           aResolution.width(), aResolution.height(),
+                           aMipmapLevels);
 }
 
 void clear(const Texture & aTexture, math::hdr::Rgba_f aClearValue);
@@ -139,11 +145,27 @@ void clear(const Texture & aTexture, math::hdr::Rgba_f aClearValue);
 /// \brief Parameter for `writeTo()` below.
 struct InputImageParameters
 {
+    template <class T_pixel>
+    static InputImageParameters From(const arte::Image<T_pixel> & aImage);
+
     math::Size<2, GLsizei> resolution;
     GLenum format;
     GLenum type;
     GLint alignment; // maps to GL_UNPACK_ALIGNMENT
 };
+
+
+template <class T_pixel>
+static InputImageParameters InputImageParameters::From(const arte::Image<T_pixel> & aImage)
+{
+    return {
+        aImage.dimensions(),
+        MappedPixel_v<T_pixel>,
+        GL_UNSIGNED_BYTE, // TODO that will not hold true for HDR images
+        (GLint)aImage.rowAlignment() 
+    };
+}
+
 
 /// \brief OpenGL pixel unpack operation, writing to a texture whose storage is already allocated.
 inline void writeTo(const Texture & aTexture,
@@ -152,6 +174,9 @@ inline void writeTo(const Texture & aTexture,
                     math::Position<2, GLint> aTextureOffset = {0, 0},
                     GLint aMipmapLevel = 0)
 {
+    // Cubemaps individual faces muste be accessed explicitly in glTexSubImage2D.
+    assert(aTexture.mTarget != GL_TEXTURE_CUBE_MAP);
+
     bind_guard bound(aTexture);
 
     // Handle alignment
@@ -174,8 +199,7 @@ inline void loadImage(const Texture & aTexture,
         || aTexture.mTarget == GL_TEXTURE_RECTANGLE);
 
     allocateStorage(aTexture, GL_RGBA8, aImage.dimensions());
-    writeTo(aTexture, static_cast<const std::byte *>(aImage), 
-            { aImage.dimensions(), MappedPixel_v<T_pixel>, GL_UNSIGNED_BYTE, (GLint)aImage.rowAlignment() });
+    writeTo(aTexture, static_cast<const std::byte *>(aImage), InputImageParameters::From(aImage));
 }
 
 /// \brief Load an animation from an image containing a (column) array of frames.
@@ -205,6 +229,24 @@ inline void loadAnimationAsArray(const Texture & aTexture,
     // Sampler parameters
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+}
+
+
+inline GLsizei countCompleteMipmaps(math::Size<2, int> aResolution)
+{
+    return std::floor(
+        std::log2(
+            std::max(aResolution.width(), aResolution.height())
+    )) + 1;
+}
+
+
+inline constexpr math::Size<2, GLsizei> getMipmapSize(math::Size<2, int> aFullResolution, unsigned int aLevel)
+{
+    return {
+        std::max(1, aFullResolution.width() / (int)std::pow(2, aLevel)),
+        std::max(1, aFullResolution.height() / (int)std::pow(2, aLevel)),
+    };
 }
 
 

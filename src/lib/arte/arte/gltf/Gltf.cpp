@@ -62,6 +62,7 @@ constexpr const char * gTagName                 = "name";
 constexpr const char * gTagNode                 = "node";
 constexpr const char * gTagNodes                = "nodes";
 constexpr const char * gTagNormalized           = "normalized";
+constexpr const char * gTagOcclusionTexture     = "occlusionTexture";
 constexpr const char * gTagOrthographic         = "orthographic";
 constexpr const char * gTagOutput               = "output";
 constexpr const char * gTagPath                 = "path";
@@ -80,6 +81,7 @@ constexpr const char * gTagSkin                 = "skin";
 constexpr const char * gTagSkins                = "skins";
 constexpr const char * gTagSource               = "source";
 constexpr const char * gTagSparse               = "sparse";
+constexpr const char * gTagStrength             = "strength";
 constexpr const char * gTagTarget               = "target";
 constexpr const char * gTagTranslation          = "translation";
 constexpr const char * gTagTexCoord             = "texCoord";
@@ -507,6 +509,17 @@ TextureInfo load(const Json & aJson)
 
 
 template <>
+OcclusionTextureInfo load(const Json & aJson)
+{
+    return {
+        .index = aJson.at(gTagIndex).get<Index<Texture>>(),
+        .texCoord = aJson.value<unsigned int>(gTagTexCoord, 0),
+        .strength = aJson.value<float>(gTagStrength, 1.0),
+    };
+}
+
+
+template <>
 material::PbrMetallicRoughness load(const Json & aJson)
 {
     return {
@@ -528,6 +541,7 @@ Material load(const Json & aJson)
         .name = aJson.value(gTagName, ""),
         .pbrMetallicRoughness = 
             loadOptional<material::PbrMetallicRoughness>(aJson, gTagPbrMetallicRoughness),
+        .occlusionTexture = loadOptional<OcclusionTextureInfo>(aJson, gTagOcclusionTexture),
         .alphaCutoff = getOptional<float>(aJson, gTagAlphaCutoff),
         .doubleSided = aJson.value(gTagDoubleSided, gDefaultMaterial.doubleSided),
     };

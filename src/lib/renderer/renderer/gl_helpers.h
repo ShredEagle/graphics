@@ -1,9 +1,12 @@
 #pragma once
 
-#include <handy/Guard.h>
-
 #include "GL_Loader.h"
 #include "Query.h"
+
+#include <handy/Guard.h>
+
+#include <math/Rectangle.h>
+
 
 namespace ad {
 namespace graphics {
@@ -52,6 +55,35 @@ inline Guard scopeFeature(GLenum aFeature, bool aEnable)
     handler(aEnable);
 
     return Guard{ std::bind(handler, wasEnabled) };
+}
+
+
+inline Guard scopeDepthMask(bool aEnable)
+{
+    bool wasEnabled = isEnabled(GL_DEPTH_WRITEMASK);
+
+    auto handler = [](bool enable)
+    {
+        glDepthMask(enable);
+    };
+    handler(aEnable);
+
+    return Guard{ std::bind(handler, wasEnabled) };
+}
+
+
+inline Guard scopeViewport(math::Rectangle<GLint> aViewport)
+{
+    std::array<GLint, 4> previous;
+    glGetIntegerv(GL_VIEWPORT, previous.data());
+
+    glViewport(aViewport.xMin(), aViewport.yMin(),
+               aViewport.width(), aViewport.height());
+
+    return Guard{ [previous]()
+        {
+            glViewport(previous[0], previous[1], previous[2], previous[3]);
+        }};
 }
 
 
