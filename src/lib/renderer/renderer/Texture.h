@@ -32,7 +32,7 @@ inline Guard scopeUnpackAlignment(GLint aAlignment)
 
 struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 {
-    /// \parameter aTarget for values see `target` parameter of 
+    /// \parameter aTarget for values see `target` parameter of
     /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     Texture(GLenum aTarget) :
         ResourceGuard<GLuint>(reserve(glGenTextures),
@@ -89,7 +89,7 @@ inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
 //    mGuard{[&aTexture, aTextureUnit]()
 //        {
 //            unbind(aTexture, aTextureUnit);
-//            activateTextureUnit(GL_TEXTURE0); 
+//            activateTextureUnit(GL_TEXTURE0);
 //        }}
 //{
 //    bind(aTexture, aTextureUnit);
@@ -156,13 +156,13 @@ struct InputImageParameters
 
 
 template <class T_pixel>
-static InputImageParameters InputImageParameters::From(const arte::Image<T_pixel> & aImage)
+InputImageParameters InputImageParameters::From(const arte::Image<T_pixel> & aImage)
 {
     return {
         aImage.dimensions(),
         MappedPixel_v<T_pixel>,
         GL_UNSIGNED_BYTE, // TODO that will not hold true for HDR images
-        (GLint)aImage.rowAlignment() 
+        (GLint)aImage.rowAlignment()
     };
 }
 
@@ -195,7 +195,7 @@ inline void loadImage(const Texture & aTexture,
                       const arte::Image<T_pixel> & aImage)
 {
     // Probably too restrictive
-    assert(aTexture.mTarget == GL_TEXTURE_2D 
+    assert(aTexture.mTarget == GL_TEXTURE_2D
         || aTexture.mTarget == GL_TEXTURE_RECTANGLE);
 
     allocateStorage(aTexture, GL_RGBA8, aImage.dimensions());
