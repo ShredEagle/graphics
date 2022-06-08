@@ -37,6 +37,7 @@ struct MappedPixel;
 
 MAP(MappedPixel, math::sdr::Rgb, GL_RGB);
 MAP(MappedPixel, math::sdr::Rgba, GL_RGBA);
+MAP(MappedPixel, math::hdr::Rgb_f, GL_RGB);
 
 template <class T_pixel>
 constexpr GLenum MappedPixel_v = MappedPixel<T_pixel>::enumerator;

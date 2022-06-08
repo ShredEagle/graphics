@@ -22,6 +22,7 @@ enum class ImageFormat
     Bmp,
     Jpg,
     Png,
+    Hdr,
 };
 
 
@@ -45,6 +46,7 @@ static const std::map<ImageFormat, FormatInfo> gImageFormatMap {
     {ImageFormat::Bmp, {"BMP", ".bmp"}},
     {ImageFormat::Jpg, {"JPG", ".jpg"}},
     {ImageFormat::Png, {"PNG", ".png"}},
+    {ImageFormat::Hdr, {"HDR", ".hdr"}},
 };
 
 

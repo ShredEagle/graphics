@@ -77,6 +77,14 @@ void Image<math::sdr::Rgba>::write(ImageFormat aFormat, std::ostream & aOut,
 
 
 template <>
+void Image<math::hdr::Rgb_f>::write(ImageFormat aFormat, std::ostream & aOut,
+                                    ImageOrientation aOrientation) const
+{
+    throw std::runtime_error{"Writing HDR image is not implemented."};
+}
+
+
+template <>
 void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut,
                                         ImageOrientation aOrientation) const
 {
@@ -146,6 +154,22 @@ Image<math::sdr::Grayscale> Image<math::sdr::Grayscale>::Read(ImageFormat aForma
         return detail::Netpbm<detail::NetpbmFormat::Pgm>::Read(aIn, aOrientation);
     default:
         throw std::runtime_error{"Unsupported read format for grayscale image: "
+                                 + to_string(aFormat)};
+    }
+}
+
+
+template <>
+Image<math::hdr::Rgb_f> Image<math::hdr::Rgb_f>::Read(ImageFormat aFormat,
+                                                      std::istream & aIn,
+                                                      ImageOrientation aOrientation)
+{
+    switch(aFormat)
+    {
+    case ImageFormat::Hdr:
+        return detail::StbImageFormats::Read<math::hdr::Rgb_f>(aIn, aOrientation);
+    default:
+        throw std::runtime_error{"Unsupported read format to produce an HDR image: "
                                  + to_string(aFormat)};
     }
 }
@@ -245,6 +269,8 @@ Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 template class Image<math::sdr::Rgb>;
 template class Image<math::sdr::Rgba>;
 template class Image<math::sdr::Grayscale>;
+
+template class Image<math::hdr::Rgb_f>;
 
 
 } // namespace arte

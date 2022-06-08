@@ -12,20 +12,31 @@ namespace detail {
 
 
 template <class T_pixel>
-struct stbi_channels;
+struct stbi_traits;
 
 
 template <>
-struct stbi_channels<math::sdr::Rgb>
+struct stbi_traits<math::sdr::Rgb>
 {
-    static constexpr int value = STBI_rgb;
+    static constexpr int channels = STBI_rgb;
+    static constexpr auto loadFromCallbacks = &stbi_load_from_callbacks;
 };
 
 
 template <>
-struct stbi_channels<math::sdr::Rgba>
+struct stbi_traits<math::sdr::Rgba>
 {
-    static constexpr int value = STBI_rgb_alpha;
+    static constexpr int channels = STBI_rgb_alpha;
+    static constexpr auto loadFromCallbacks = &stbi_load_from_callbacks;
+};
+
+
+template <class T_number>
+struct stbi_traits<math::hdr::Rgb<T_number>>
+{
+    static constexpr int channels = STBI_rgb;
+    // IMPORTANT: load**f**
+    static constexpr auto loadFromCallbacks = &stbi_loadf_from_callbacks;
 };
 
 
@@ -65,16 +76,24 @@ struct StbImageFormats
         math::Size<2, int> dimension = math::Size<2, int>::Zero();
         int channelsInFile;
 
-        unsigned char * data = stbi_load_from_callbacks(
+        // stbi_traits will redirect to either `load` or `loadf` based on pixel type.
+        unsigned char * data = (unsigned char *)stbi_traits<T_pixel>::loadFromCallbacks(
             &streamCallbacks,
             &aIn,
             &dimension.width(),
             &dimension.height(),
             &channelsInFile,
-            stbi_channels<T_pixel>::value);
+            stbi_traits<T_pixel>::channels);
 
         assert(channelsInFile >= 3);
 
+        // HDR CASE
+        // IMPORTANT: even though it returns a float*, stbi_loadf internally allocates
+        // the returned data buffer as a char* via our provided STBI_MALLOC.
+        // So the default Deleter is right.
+        // TODO Ad 2022/06/08: I am nonetheless not sure whether it is safe to 
+        // then treat the returned array as an array of T_pixel (math::hdr::Rgb_f).
+        // overview of the issue: https://stackoverflow.com/a/70157161/1027706
         return Image<T_pixel>{dimension, std::unique_ptr<unsigned char []>{data}};
     };
 };
