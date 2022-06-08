@@ -2,8 +2,8 @@
 @find_package@(Handy CONFIG @REQUIRED@ COMPONENTS handy resource)
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
 
-@find_package@(glad @REQUIRED@)
-@find_package@(glfw3 3.3 @REQUIRED@)
-@find_package@(spdlog @REQUIRED@)
-@find_package@(utf8cpp @REQUIRED@)
+@find_package@(glad CONFIG @REQUIRED@)
+@find_package@(glfw3 CONFIG 3.3 @REQUIRED@)
+@find_package@(spdlog CONFIG @REQUIRED@)
+@find_package@(utf8cpp CONFIG @REQUIRED@)
 

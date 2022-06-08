@@ -59,15 +59,8 @@ class GraphicsConan(ConanFile):
         with open("conanuser_config.cmake", "w") as config:
             config.write("message(STATUS \"Including user generated conan config.\")\n")
             # avoid path.join, on Windows it outputs '\', which is a string escape sequence.
-            #config.write("include(\"{}\")\n".format("${CMAKE_CURRENT_LIST_DIR}/conan_paths.cmake"))
             config.write("set({} {})\n".format("BUILD_tests", self.options.build_tests))
             config.write("set(CMAKE_EXPORT_COMPILE_COMMANDS 1)\n")
-
-
-    def export_sources(self):
-        # The path of the CMakeLists.txt we want to export is one level above
-        folder = path.join(self.recipe_folder, "..")
-        copy(self, "*.txt", folder, self.export_sources_folder)
 
 
     def _configure_cmake(self):
