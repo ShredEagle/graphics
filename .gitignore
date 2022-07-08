@@ -47,3 +47,4 @@ Thumbs.db
 *.user
 ipch
 .vscode
+/conan_imports_manifest.txt
