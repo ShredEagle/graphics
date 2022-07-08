@@ -7,6 +7,7 @@
 #include <math/Color.h>
 #include <math/Rectangle.h>
 
+#include <algorithm>
 #include <map>
 #include <memory>
 
