@@ -178,7 +178,7 @@ public:
     /// need access.
     /// Please do not use it for "normal" application management, which should be properly wrapped once 
     /// the need arises.
-    GLFWwindow * getGlfwWindow()
+    GLFWwindow * getGlfwWindow() const
     { return mWindow; }
 
 private:
