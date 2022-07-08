@@ -12,7 +12,7 @@ set(${TARGET_NAME}_SOURCES
 find_package(glfw3 3.3 REQUIRED)
 find_package(glad REQUIRED)
 
-find_package(math REQUIRED)
+find_package(Math REQUIRED COMPONENTS math)
 
 find_package(Handy CONFIG REQUIRED COMPONENTS handy platform)
 find_package(Graphics CONFIG REQUIRED COMPONENTS test_commons)

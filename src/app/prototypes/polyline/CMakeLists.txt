@@ -12,7 +12,7 @@ set(${TARGET_NAME}_SOURCES
 find_package(glfw3 3.3 REQUIRED)
 find_package(glad REQUIRED)
 
-find_package(math REQUIRED)
+find_package(Math REQUIRED COMPONENTS math)
 
 add_executable(${TARGET_NAME}
     ${${TARGET_NAME}_SOURCES}
