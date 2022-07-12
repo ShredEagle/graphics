@@ -42,6 +42,7 @@ class GraphicsConan(ConanFile):
 
     build_policy = "missing"
     generators = "CMakeDeps", "CMakeToolchain"
+    keep_imports = True
 
     scm = {
         "type": "git",

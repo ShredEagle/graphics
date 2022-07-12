@@ -29,8 +29,8 @@ add_library(${TARGET_NAME}
 add_library(ad::${TARGET_NAME} ALIAS ${TARGET_NAME})
 
 target_include_directories(${TARGET_NAME}
-    PUBLIC
-        ${PROJECT_BINARY_DIR}/conan_imports
+    PRIVATE
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/conan_imports>
 )
 
 
