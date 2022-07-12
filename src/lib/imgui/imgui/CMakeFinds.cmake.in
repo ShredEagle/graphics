@@ -1,0 +1,2 @@
+@find_package@(imgui @REQUIRED@)
+@find_package@(Graphics @REQUIRED@ @CONFIG@ @COMPONENTS@ graphics)

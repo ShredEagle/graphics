@@ -34,6 +34,7 @@ class GraphicsConan(ConanFile):
         ("spdlog/1.9.2"),
         ("utfcpp/3.2.1"),
         ("zlib/1.2.12"),
+        ("imgui/1.87"),
 
         ("handy/4ecfa5b125@adnn/develop"),
         ("math/f140b4368f@adnn/develop"),
@@ -41,6 +42,7 @@ class GraphicsConan(ConanFile):
 
     build_policy = "missing"
     generators = "CMakeDeps", "CMakeToolchain"
+    keep_imports = True
 
     scm = {
         "type": "git",
@@ -75,6 +77,16 @@ class GraphicsConan(ConanFile):
 
     def generate(self):
            self._generate_cmake_configfile()
+
+
+    def imports(self):
+        # see: https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html
+        # the imgui package is designed this way: consumer has to import desired backends.
+        self.copy("imgui_impl_glfw.cpp",         src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+        self.copy("imgui_impl_opengl3.cpp",      src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+        self.copy("imgui_impl_glfw.h",           src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+        self.copy("imgui_impl_opengl3.h",        src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+        self.copy("imgui_impl_opengl3_loader.h", src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
 
 
     def build(self):
