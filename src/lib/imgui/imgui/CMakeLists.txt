@@ -1,4 +1,4 @@
-set(TARGET_NAME imgui)
+set(TARGET_NAME imguiui)
 
 set(${TARGET_NAME}_HEADERS
     ImguiUi.h
