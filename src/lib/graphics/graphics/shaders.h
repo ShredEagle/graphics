@@ -179,7 +179,7 @@ namespace drawline {
             vec4 origin_view = u_view * in_origin;
             vec4 direction_view = u_view * (in_end - in_origin);
 
-            // Project the normal on view plane by discarding Z, and rotate by 90° CCW.
+            // Project the normal on view plane by discarding Z, and rotate by 90 degree CCW.
             vec4 normal_view = vec4(-direction_view.y, direction_view.x, 0., 0.);
             // We need the normal (normalized) in clip space, because the width is given in screen space.
             vec2 normal_clip = normalize(vec2(u_projection * normal_view));
