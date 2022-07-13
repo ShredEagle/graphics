@@ -6,7 +6,7 @@
 
 
 namespace ad {
-namespace imgui {
+namespace imguiui {
 
 class ImguiUi
 {

@@ -35,7 +35,7 @@ namespace {
 
 
 namespace ad {
-namespace imgui {
+namespace imguiui {
 
 
 ImguiUi::ImguiUi(const graphics::ApplicationGlfw & aApplication) :
