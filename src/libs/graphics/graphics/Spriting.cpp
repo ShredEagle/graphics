@@ -172,7 +172,7 @@ void Spriting::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aT
 }
 
 
-void Spriting::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+void Spriting::setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation)
 {
     setUniform(mProgram, "u_projection", aTransformation); 
 }

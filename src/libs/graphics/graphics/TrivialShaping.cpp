@@ -123,7 +123,7 @@ void TrivialShaping::setCameraTransformation(const math::AffineMatrix<3, GLfloat
 }
 
 
-void TrivialShaping::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+void TrivialShaping::setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation)
 {
     setUniform(mDrawContext.mProgram, "u_projection", aTransformation); 
 }

@@ -36,7 +36,7 @@ public:
 
     /// see: FoCG chapter 7 for this separation between several transformations.
     void setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
-    void setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation);
 
 private:
     using Index = GLuint;

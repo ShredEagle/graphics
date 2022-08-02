@@ -119,7 +119,7 @@ void TrivialLineStrip::setCameraTransformation(const math::AffineMatrix<3, GLflo
 }
 
 
-void TrivialLineStrip::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+void TrivialLineStrip::setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation)
 {
     setUniform(mDrawContext.mProgram, "projection", aTransformation); 
 }

@@ -111,7 +111,7 @@ void Curving::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTr
 }
 
 
-void Curving::setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
+void Curving::setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation)
 {
     setUniform(mGpuProgram, "u_projection", aTransformation); 
 }

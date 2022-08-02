@@ -213,7 +213,7 @@ void Tiling::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTra
 }
 
 
-void Tiling::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+void Tiling::setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation)
 {
     setUniform(mProgram, "u_projection", aTransformation); 
 }

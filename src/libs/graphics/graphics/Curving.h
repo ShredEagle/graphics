@@ -35,7 +35,7 @@ public:
     void setColor(math::hdr::Rgba_f aColor);
 
     void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
-    void setProjectionTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
+    void setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation);
 
 private:
     GLsizei mVertexCount; 

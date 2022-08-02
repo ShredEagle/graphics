@@ -115,7 +115,7 @@ void Texting::setCameraTransformation(const math::AffineMatrix<3, GLfloat> & aTr
 }
 
 
-void Texting::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+void Texting::setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation)
 {
     setUniform(mGpuProgram, "u_Projection", aTransformation); 
 }

@@ -117,7 +117,7 @@ void TrivialPolygon::setCameraTransformation(const math::AffineMatrix<3, GLfloat
 }
 
 
-void TrivialPolygon::setProjectionTransformation(const math::AffineMatrix<3, GLfloat> & aTransformation)
+void TrivialPolygon::setProjectionTransformation(const math::Matrix<3, 3, GLfloat> & aTransformation)
 {
     setUniform(mDrawContext.mProgram, "projection", aTransformation); 
 }
