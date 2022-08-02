@@ -242,7 +242,7 @@ VertexBufferObject loadUnattachedVertexBuffer(std::span<const T_vertex> aVertice
 }
 
 
-/// \brief High-level function directly appending a loaded VertexBuffer to a VertexSpecification.
+/// \brief High-level function loading a VertexBuffer and directly appending it to a VertexSpecification.
 ///
 /// This is an extension to `loadVertexBuffer()`, which appends the loaded vertex buffer to `aSpecification`.
 template <class T_vertex, std::size_t N_spanExtent>
