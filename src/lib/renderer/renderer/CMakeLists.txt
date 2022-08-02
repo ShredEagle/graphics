@@ -55,7 +55,6 @@ target_link_libraries(${TARGET_NAME}
         ad::handy
         ad::math
 
-        gsl::gsl
         glad::glad
 )
 

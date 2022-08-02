@@ -27,7 +27,6 @@ target_link_libraries(${TARGET_NAME}
         glad::glad
         ad::graphics
         ad::renderer
-        gsl::gsl
         Boost::filesystem
 )
 

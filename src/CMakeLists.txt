@@ -1,5 +1,3 @@
-add_subdirectory(lib/GSL-2.0.0/gsl)
-
 add_subdirectory(lib/arte/arte)
 add_subdirectory(lib/renderer/renderer)
 add_subdirectory(lib/graphics/graphics)
