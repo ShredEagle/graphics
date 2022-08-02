@@ -3,7 +3,6 @@
 #include "gl_helpers.h"
 #include "GL_Loader.h"
 #include "MappedGL.h"
-#include "Range.h"
 
 #include <handy/Guard.h>
 

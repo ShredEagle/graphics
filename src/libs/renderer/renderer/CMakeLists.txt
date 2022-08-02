@@ -9,7 +9,6 @@ set(${TARGET_NAME}_HEADERS
     GL_Loader.h
     MappedGL.h
     Query.h
-    Range.h
     Shading.h
     Texture.h
     UniformBuffer.h

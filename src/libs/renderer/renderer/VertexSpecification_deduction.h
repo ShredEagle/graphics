@@ -2,6 +2,9 @@
 
 #include "VertexSpecification.h"
 
+#include <handy/array_utils.h>
+
+
 namespace ad {
 namespace graphics {
 
