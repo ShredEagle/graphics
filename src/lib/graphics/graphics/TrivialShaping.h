@@ -26,7 +26,7 @@ public:
     /// \brief Replace all instances that will be drawn when calling `render()`.
     ///
     /// Actually push to the vertex buffers.
-    void updateInstances(gsl::span<const Rectangle> aInstances);
+    void updateInstances(std::span<const Rectangle> aInstances);
 
     /// \brief Render all shapes that were added since the last call to `clearShapes()`.
     void render() const;

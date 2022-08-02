@@ -133,29 +133,29 @@ inline Scene::Scene() :
     //
     // Line bezier
     //
-    appendToVertexSpecification<const LineVertex>(mLineVertexSpecification,
-                                                  gLineVertexDescription,
-                                                  {});
+    appendToVertexSpecification(mLineVertexSpecification,
+                                gLineVertexDescription,
+                                std::span<const LineVertex>{});
 
     for (std::size_t i = 0; i <= gSubdivisions; ++i)
     {
         mLineVertices.push_back(LineVertex{deCasteljau((GLfloat)i/gSubdivisions, mBezier)});
     }
 
-    respecifyBuffer<LineVertex>(mLineVertexSpecification.mVertexBuffers[0], mLineVertices);
+    respecifyBuffer(mLineVertexSpecification.mVertexBuffers[0], std::span{mLineVertices});
 
     //
     // Fat bezier
     //
-    appendToVertexSpecification<const GenerativeVertex>(
+    appendToVertexSpecification(
         mGenerativeVertexSpecification,
         gGenerativeVertexDescription,
-        gGenerativeVertices);
+        std::span{gGenerativeVertices});
 
-    appendToVertexSpecification<CubicBezier>(
+    appendToVertexSpecification(
         mGenerativeVertexSpecification,
         gBezierInstanceDescription,
-        {},
+        std::span<CubicBezier>{},
         1);
 }
 
@@ -164,7 +164,7 @@ inline void Scene::step(const Timer & aTimer)
 {
     setUniformFloat(mGenerativeProgram, "halfWidth", 0.1f);
     respecifyBuffer(mGenerativeVertexSpecification.mVertexBuffers[1],
-                    gsl::make_span(mBezier.p));
+                    std::span{mBezier.p});
 }
 
 

@@ -28,7 +28,7 @@ template <class T_vertex>
 VertexBufferObject loadVertexBuffer(
     const VertexArrayObject & aVertexArray,
     Attribute aAttribute,
-    const gsl::span<T_vertex> aVertices)
+    const std::span<T_vertex> aVertices)
 {
     static_assert(std::is_array<T_vertex>::value || std::is_arithmetic<T_vertex>::value,
                   "Currently only supports spans of arrays or arithmetic types");
@@ -62,7 +62,7 @@ offset_of(const T_object * aValidObject, T_member T_object::* aMember)
 /// It is not recommended for use
 template <class T_vertex, class... VT_members>
 VertexBufferObject makeLoadedVertexBuffer(
-        const gsl::span<T_vertex>  aVertices,
+        const std::span<T_vertex>  aVertices,
         AttributeCompact<T_vertex, VT_members>... vaAttributes)
 {
     // Implementer's note:

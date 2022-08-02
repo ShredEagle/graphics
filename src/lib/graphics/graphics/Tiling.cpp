@@ -98,7 +98,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     std::vector<Vertex> quad = makeQuad(aCellSize);
     specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray,
                                                                gVertexDescription,
-                                                               gsl::make_span(quad)));
+                                                               std::span{quad}));
     // Could also be
     //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
 
@@ -112,7 +112,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     specification.mVertexBuffers.push_back(
         loadVertexBuffer(specification.mVertexArray,
                          { {2, 2, 0, MappedGL<GLint>::enumerator} },
-                         gsl::make_span(positions),
+                         std::span{positions},
                          1));
 
     // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
@@ -155,11 +155,11 @@ void TileSet::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     bind(mVertexSpecification);
 
     std::vector<Vertex> quad = makeQuad(aCellSize);
-    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(0), gsl::make_span(quad));
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(0), std::span{quad});
 
     Vec2<int> cellOffset(aCellSize);
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
-    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(1), gsl::make_span(positions));
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(1), std::span{positions});
 
     mTileSize = aCellSize;
     mGridDefinition = aGridDefinition;
@@ -168,7 +168,7 @@ void TileSet::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
 }
 
 
-void TileSet::updateInstances(gsl::span<const Instance> aInstances)
+void TileSet::updateInstances(std::span<const Instance> aInstances)
 {
     assert(aInstances.size() == getTileCount());
     //

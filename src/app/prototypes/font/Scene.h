@@ -238,7 +238,7 @@ inline void Scene::step(const Timer & aTimer)
     penPosition = {-26.f, -10.f};
     addMessage({"WAV!"}, penPosition);
 
-    respecifyBuffer<GlyphInstance>(mGlyphQuadVertex.mVertexBuffers.back(), instances);
+    respecifyBuffer(mGlyphQuadVertex.mVertexBuffers.back(), std::span{instances});
     mGlyphCount = instances.size();
 }
 

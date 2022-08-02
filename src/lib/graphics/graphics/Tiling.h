@@ -26,7 +26,7 @@ public:
 
     TileSet(Size2<int> aCellSize, Size2<int> aGridDefinition);
 
-    void updateInstances(gsl::span<const Instance> aInstances);
+    void updateInstances(std::span<const Instance> aInstances);
 
     /// \brief Reset the geometry tile grid to be rendered.
     void resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition);

@@ -71,9 +71,9 @@ inline Scene::Scene() :
               {GL_FRAGMENT_SHADER, gFragmentShader},
     })}
 {
-    appendToVertexSpecification<const Vertex>(mVertexSpecification,
-                                              gVertexDescription,
-                                              gVertices);
+    appendToVertexSpecification(mVertexSpecification,
+                                gVertexDescription,
+                                std::span{gVertices});
 }
 
 

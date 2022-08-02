@@ -114,9 +114,9 @@ Scene setupScene()
     // Geometry
     VertexSpecification specification;
 
-    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray, 0, gsl::span<GLfloat[4]>(gVerticesPositions)));
-    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray, 1, gsl::span<GLfloat[4]>(gVerticesColors)));
-    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray, 2, gsl::span<GLfloat[2]>(gVerticesUVs)));
+    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray, 0, std::span<GLfloat[4]>(gVerticesPositions)));
+    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray, 1, std::span<GLfloat[4]>(gVerticesColors)));
+    specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray, 2, std::span<GLfloat[2]>(gVerticesUVs)));
 
     ////
     //// the literal texture defined above

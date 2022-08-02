@@ -30,7 +30,7 @@ inline ScreenQuad::ScreenQuad()
     mVertexSpec.mVertexBuffers.push_back(
         loadVertexBuffer(mVertexSpec.mVertexArray,
                          gVertexScreenDescription,
-                         gsl::span<VertexScreenQuad>{gVerticesScreen}));
+                         std::span<VertexScreenQuad>{gVerticesScreen}));
 }
 
 struct CompleteFrameBuffer
@@ -64,7 +64,7 @@ struct FirstRender
 
 inline FirstRender::FirstRender() :
     mVAO(),
-    mVertexData(loadVertexBuffer(mVAO, gVertexSceneDescription, gsl::span<VertexScene>{gVerticesScene})),
+    mVertexData(loadVertexBuffer(mVAO, gVertexSceneDescription, std::span<VertexScene>{gVerticesScene})),
     mProgram(makeLinkedProgram({
         {GL_VERTEX_SHADER, gInitialVertex},
         {GL_FRAGMENT_SHADER, gInitialFragment}}))

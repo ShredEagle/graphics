@@ -7,8 +7,7 @@
 
 #include <handy/Guard.h>
 
-#include <gsl/span>
-
+#include <span>
 #include <type_traits>
 #include <vector>
 
@@ -209,12 +208,14 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     GLuint aAttributeDivisor = 0);
 
 
+// TODO Ideally, client-code could invoke the functions expecting std::span 
+// without explicitly constructing the std::span{} on call.
 /// \brief This overload deduces the stride and size from T_vertex,
 /// which could itself be deduced from the provided span.
-template <class T_vertex>
+template <class T_vertex, std::size_t N_spanExtent>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     const AttributeDescriptionList & aAttributes,
-                                    const gsl::span<T_vertex> aVertices,
+                                    std::span<T_vertex, N_spanExtent> aVertices,
                                     GLuint aAttributeDivisor = 0)
 {
     return loadVertexBuffer(aVertexArray,
@@ -232,7 +233,7 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
 /// \note Attachment to a VertexArrayObject as well as attributes association might be done later with
 /// `attachVertexBuffer()`.
 template <class T_vertex>
-VertexBufferObject loadUnattachedVertexBuffer(gsl::span<const T_vertex> aVertices,
+VertexBufferObject loadUnattachedVertexBuffer(std::span<const T_vertex> aVertices,
                                               GLenum aHint = GL_STATIC_DRAW)
 {
     VertexBufferObject vbo;
@@ -245,10 +246,10 @@ VertexBufferObject loadUnattachedVertexBuffer(gsl::span<const T_vertex> aVertice
 /// \brief High-level function directly appending a loaded VertexBuffer to a VertexSpecification.
 ///
 /// This is an extension to `loadVertexBuffer()`, which appends the loaded vertex buffer to `aSpecification`.
-template <class T_vertex>
+template <class T_vertex, std::size_t N_spanExtent>
 void appendToVertexSpecification(VertexSpecification & aSpecification,
                                  const AttributeDescriptionList & aAttributes,
-                                 const gsl::span<T_vertex> aVertices,
+                                 std::span<T_vertex, N_spanExtent> aVertices,
                                  GLuint aAttributeDivisor = 0)
 {
     aSpecification.mVertexBuffers.push_back(
@@ -292,7 +293,7 @@ inline IndexBufferObject initIndexBuffer(const VertexArrayObject & aVertexArray)
 /// This is an extension of `initIndexBuffer()`, which loads data into the initialized vertex buffer.
 template <class T_index>
 IndexBufferObject loadIndexBuffer(const VertexArrayObject & aVertexArray,
-                                  const gsl::span<T_index> aIndices,
+                                  const std::span<T_index> aIndices,
                                   const BufferHint aHint)
 {
     IndexBufferObject ibo = initIndexBuffer(aVertexArray);
@@ -335,8 +336,8 @@ inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData
 
 /// \brief Overload accepting a span of generic values, instead of low-level void pointer.
 /// It works with both vertex and index buffers.
-template <class T_values, class T_buffer>
-void respecifyBuffer(const T_buffer & aBufferObject, const gsl::span<T_values> aValues)
+template <class T_values, class T_buffer, std::size_t N_spanExtent>
+void respecifyBuffer(const T_buffer & aBufferObject, std::span<T_values, N_spanExtent> aValues)
 {
     respecifyBuffer(aBufferObject,
                     aValues.data(),

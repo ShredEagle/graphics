@@ -57,15 +57,18 @@ namespace {
     };
 
 
+    VertexBufferObject makeCurveVertexBuffer(VertexArrayObject & aVAO, GLsizei aCurveSubdivisions)
+    {
+        auto vertices = generateVertices(aCurveSubdivisions);
+        return loadVertexBuffer(aVAO, gVertexDescription, std::span{vertices});
+    }
+
 } // unnamed namespace
 
 
 Curving::Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aProjectionTransformation) :
     mVertexCount{ 2 * (aCurveSubdivisions + 1) },
-    mVertexBuffer{loadVertexBuffer(
-        mVertexArray,
-        gVertexDescription,
-        gsl::make_span(generateVertices(aCurveSubdivisions)))},
+    mVertexBuffer{makeCurveVertexBuffer(mVertexArray, aCurveSubdivisions)},
     mInstanceBuffer{initVertexBuffer<Curving::Instance>(
         mVertexArray,
         gBezierInstanceDescription, 
@@ -82,7 +85,7 @@ Curving::Curving(GLsizei aCurveSubdivisions, math::AffineMatrix<4, GLfloat> aPro
 }
 
 
-void Curving::render(gsl::span<const Instance> aInstances) const
+void Curving::render(std::span<const Instance> aInstances) const
 {
     activate(mVertexArray, mGpuProgram);
 

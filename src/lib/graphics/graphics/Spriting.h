@@ -63,7 +63,7 @@ public:
 
     Spriting(GLfloat aPixelSize = 1.f);
 
-    void updateInstances(gsl::span<const Instance> aInstances);
+    void updateInstances(std::span<const Instance> aInstances);
 
     // TODO Externalize the VertexSpecification in a dedicated struct, and take it as an argument.
     // It would be more flexible, and remove some constness issues (seen Grapito Render system).

@@ -107,7 +107,7 @@ namespace graphics {
 
 
     inline void setUniformFloatArray(Program & aProgram, const std::string & aNameInShader,
-                                     gsl::span<const GLfloat> aFloats)
+                                     std::span<const GLfloat> aFloats)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform1fv(aProgram, location, aFloats.size(), aFloats.data());
@@ -115,7 +115,7 @@ namespace graphics {
 
 
     inline void setUniformIntArray(Program & aProgram, const std::string & aNameInShader,
-                                   gsl::span<const GLint> aIntegers)
+                                   std::span<const GLint> aIntegers)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform1iv(aProgram, location, aIntegers.size(), aIntegers.data());

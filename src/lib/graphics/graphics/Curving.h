@@ -30,7 +30,7 @@ public:
     explicit Curving(GLsizei aCurveSubdivisions,
                      math::AffineMatrix<4, GLfloat> aProjectionTransformation = math::AffineMatrix<4, GLfloat>::Identity());
 
-    void render(gsl::span<const Instance> aInstances) const;
+    void render(std::span<const Instance> aInstances) const;
 
     void setColor(math::hdr::Rgba_f aColor);
 

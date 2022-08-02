@@ -136,7 +136,7 @@ Spriting::Spriting(GLfloat aPixelSize) :
 }
 
 
-void Spriting::updateInstances(gsl::span<const Instance> aInstances)
+void Spriting::updateInstances(std::span<const Instance> aInstances)
 {
     //
     // Stream vertex attributes

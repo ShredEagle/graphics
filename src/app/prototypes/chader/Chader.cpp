@@ -33,7 +33,7 @@ constexpr std::initializer_list<AttributeDescription> gVertexDescription = {
 
 Chader::Chader() :
     mVertexData(mDrawer.addVertexBuffer(gVertexDescription,
-                                        gsl::span<VertexChad>{gVerticesChad}))
+                                        std::span<VertexChad>{gVerticesChad}))
 {}
 
 std::string readFile(const boost::filesystem::path & aPath)

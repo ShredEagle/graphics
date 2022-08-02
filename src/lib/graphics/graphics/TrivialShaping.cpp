@@ -51,8 +51,8 @@ namespace
     VertexSpecification make_VertexSpecification()
     {
         VertexSpecification specification;
-        appendToVertexSpecification(specification, gVertexDescription,   gsl::span{gVertices});
-        appendToVertexSpecification<TrivialShaping::Rectangle>(specification, gInstanceDescription, {}, 1);
+        appendToVertexSpecification(specification, gVertexDescription, std::span{gVertices});
+        appendToVertexSpecification(specification, gInstanceDescription, std::span<TrivialShaping::Rectangle>{}, 1);
         return specification;
     }
 
@@ -91,7 +91,7 @@ TrivialShaping::TrivialShaping(Size2<int> aRenderResolution) :
 }
 
 
-void TrivialShaping::updateInstances(gsl::span<const TrivialShaping::Rectangle> aInstances)
+void TrivialShaping::updateInstances(std::span<const TrivialShaping::Rectangle> aInstances)
 {
     //
     // Stream vertex attributes

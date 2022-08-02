@@ -28,7 +28,7 @@ namespace
     VertexSpecification make_VertexSpecification()
     {
         VertexSpecification specification;
-        appendToVertexSpecification(specification, gVertexDescription, gsl::span<LinePoint>{});
+        appendToVertexSpecification(specification, gVertexDescription, std::span<LinePoint>{});
         return specification;
     }
 
@@ -49,7 +49,7 @@ TrivialLineStrip::TrivialLineStrip(Size2<int> aRenderResolution) :
         make_Program()
     },
     mIbo{ loadIndexBuffer(mDrawContext.mVertexSpecification.mVertexArray,
-                          gsl::span<Index>{}, BufferHint::StreamDraw) }
+                          std::span<Index>{}, BufferHint::StreamDraw) }
 {
     setCameraTransformation(math::AffineMatrix<3, GLfloat>::Identity());
     setProjectionTransformation(math::trans2d::window<GLfloat>(
@@ -91,13 +91,13 @@ void TrivialLineStrip::render() const
     //
     // Stream vertex attributes
     //
-    respecifyBuffer<const LinePoint>(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
-                                     mVertexAttributes);
+    respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
+                    std::span{mVertexAttributes});
 
     //
     // Stream index buffer
     //
-    respecifyBuffer<const Index>(mIbo, mIndices);
+    respecifyBuffer(mIbo, std::span{mIndices});
 
     //
     // Draw

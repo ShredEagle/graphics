@@ -141,7 +141,7 @@ void Texting::updateInstances(T_mapping aTextureMappedBuffers)
     {
         handy::Pooled<PerTextureVao> perTexture = mVaoPool.getNext();
         perTexture->texture = texture;
-        respecifyBuffer(perTexture->instanceBuffer, gsl::make_span(buffer));
+        respecifyBuffer(perTexture->instanceBuffer, std::span{buffer});
         perTexture->instanceCount = (GLsizei)buffer.size();
 
         mPerTexture.push_back(std::move(perTexture));
@@ -174,7 +174,7 @@ void Texting::updateInstances(T_mapping aTextureMappedBuffers)
     //    glBufferSubData(GL_ARRAY_BUFFER,
     //                    firstInstance * sizeof(Instance),
     //                    buffer.size() * sizeof(Instance),
-    //                    gsl::make_span(buffer).data());
+    //                    std::span(buffer).data());
     //    firstInstance += buffer.size();
     //}
 }

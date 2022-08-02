@@ -2,7 +2,6 @@
 
 #include <renderer/Shading.h>
 #include <renderer/VertexSpecification.h>
-#include <gsl/span>
 
 #include <cassert>
 
@@ -20,7 +19,7 @@ struct GenericDrawer
     template <class T_vertex>
     VertexBufferObject addVertexBuffer(
         const std::initializer_list<AttributeDescription> & aAttributes,
-        gsl::span<T_vertex> aVertices)
+        std::span<T_vertex> aVertices)
     {
         if (mVertexCount)
         {
