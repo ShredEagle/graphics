@@ -245,7 +245,7 @@ Scene setupScene()
     glDetachShader(program, vertexShader);
     glDetachShader(program, fragmentShader);
 
-    handleGlslError(program, GL_LINK_STATUS, glGetProgramiv, glGetProgramInfoLog);
+    handleLinkError(program);
 
     /// \TODO handle use program and un-use (glUseProgram(0)), otherwise preventing correct deletion
     ///       since the used program is a global status, it should not be altered in a specific program dtor

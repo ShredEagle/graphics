@@ -213,7 +213,7 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
 /// which could itself be deduced from the provided span.
 template <class T_vertex, std::size_t N_spanExtent>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
-                                    const AttributeDescriptionList & aAttributes,
+                                    AttributeDescriptionList aAttributes,
                                     std::span<T_vertex, N_spanExtent> aVertices,
                                     GLuint aAttributeDivisor = 0)
 {

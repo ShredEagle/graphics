@@ -12,6 +12,34 @@ namespace ad {
 namespace graphics {
 
 
+/// \brief Augments the shader source code (as a string_view) with an
+/// optional name helping to identify the shader associated to the source.
+struct ShaderSourceView
+{
+    /*implicit*/ ShaderSourceView(const std::string & aSource, std::string aIdentifier = "") :
+        mSource{aSource},
+        mIdentifier{std::move(aIdentifier)}
+    {}
+
+    /*implicit*/ ShaderSourceView(const char * aSource, std::string aIdentifier = "") :
+        mSource{aSource},
+        mIdentifier{std::move(aIdentifier)}
+    {}
+
+    operator std::string_view () const
+    { return mSource; }
+
+    auto data() const
+    { return mSource.data(); }
+
+    auto size() const
+    { return mSource.size(); }
+
+    std::string_view mSource;
+    std::string mIdentifier{""};
+};
+
+
 struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
 {
     Shader(GLenum aStage) :
@@ -19,7 +47,7 @@ struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
         mStage(aStage)
     {}
 
-    Shader(GLenum aStage, const char * aSource);
+    Shader(GLenum aStage, ShaderSourceView aSource);
 
     GLenum mStage;
 };
@@ -58,10 +86,9 @@ inline void unbind(const Program &)
 }
 
 
-void handleGlslError(GLuint objectId,
-                     GLenum aStatusEnumerator,
-                     std::function<void(GLuint, GLenum, GLint*)> statusGetter,
-                     std::function<void(GLuint, GLsizei, GLsizei*, GLchar*)> infoLogGetter);
+void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource);
+
+void handleLinkError(GLuint aObjectId);
 
 class ShaderCompilationError : public std::runtime_error
 {
@@ -81,10 +108,13 @@ private:
     std::string mErrorLog;
 };
 
-void compileShader(const Shader & aShader, const char * aSource);
+void compileShader(const Shader & aShader, ShaderSourceView aSource);
+
+//Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
+//                                                          const char * /*source*/>> aShaders);
 
 Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
-                                                          const char * /*source*/>> aShaders);
+                                                          ShaderSourceView /*source*/>> aShaders);
 
 
 } // namespace graphics
