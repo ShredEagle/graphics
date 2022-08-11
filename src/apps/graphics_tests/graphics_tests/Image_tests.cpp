@@ -57,7 +57,7 @@ SCENARIO("Image type properties")
 
     GIVEN("An Image instance")
     {
-        ImageRgb green{ {32, 64}, Green};
+        ImageRgb green{ math::Size<2, int>{32, 64}, Green};
         REQUIRE(green.width() == 32);
         REQUIRE(green.height() == 64);
         REQUIRE(green.dimensions().area() == 32*64);
@@ -122,7 +122,7 @@ SCENARIO("Image manipulations")
     GIVEN("An image alternating red, green, and blue pixels")
     {
         // 5*3 pixels on each dimension
-        ImageRgb alternate( {15, 15}, Red);
+        ImageRgb alternate( math::Size<2, int>{15, 15}, Red);
         for(auto currentId = 1;
             currentId < alternate.dimensions().area();
             currentId += 3)
@@ -200,7 +200,7 @@ SCENARIO("Image files creation, read, write")
 
     GIVEN("An image with uniform background color")
     {
-        ImageRgb red{ {512, 512}, math::sdr::gRed };
+        ImageRgb red{ math::Size<2, int>{512, 512}, math::sdr::gRed };
         THEN("It can be writen to a file")
         {
             auto redfile = tempFolder/"red.ppm";

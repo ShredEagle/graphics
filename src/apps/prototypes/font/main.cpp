@@ -11,6 +11,8 @@
 
 #include <memory>
 
+#include <cstring> // for memcopy
+
 
 // Usage
 // Provide a path as first argument to output a dollar sign PGM image there.
@@ -26,8 +28,10 @@ void bitmapToFile(FT_ULong aCharacterCode, const ad::filesystem::path & aOutputP
     std::unique_ptr<unsigned char []> raster{new unsigned char[bitmap.bytesize()]};
     std::memcpy(raster.get(), bitmap.data(), bitmap.bytesize());
 
-    ad::arte::Image<ad::math::sdr::Grayscale>{ {bitmap.width(), bitmap.rows()}, std::move(raster)}
-        .saveFile(aOutputPgm);
+    ad::arte::Image<ad::math::sdr::Grayscale>{
+        ad::math::Size<2, int>{bitmap.width(), bitmap.rows()},
+        std::move(raster)
+    }.saveFile(aOutputPgm);
 }
 
 int main(int argc, const char * argv[])
@@ -46,13 +50,13 @@ int main(int argc, const char * argv[])
         constexpr int glyphPixelHeight = 128;
         constexpr GLfloat screenWorldHeight = 50;
         // cross multiplication to get the glyph world height which maps to the actual pixel height.
-        const GLfloat glyphWorldHeight = 
+        const GLfloat glyphWorldHeight =
             glyphPixelHeight * screenWorldHeight
             / application.getAppInterface()->getFramebufferSize().height();
         //ad::filesystem::path relativeFontPath{"fonts/souvenir/souvenirdemiitalic.otf"};
         ad::filesystem::path relativeFontPath{"fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"};
-        ad::font::Scene scene{ad::resource::pathFor(relativeFontPath), 
-                              glyphPixelHeight, 
+        ad::font::Scene scene{ad::resource::pathFor(relativeFontPath),
+                              glyphPixelHeight,
                               glyphWorldHeight,
                               screenWorldHeight,
                               *application.getAppInterface()};

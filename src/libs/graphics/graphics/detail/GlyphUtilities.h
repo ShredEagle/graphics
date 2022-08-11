@@ -9,6 +9,7 @@
 
 #include <glad/glad.h>
 
+#include <list>
 #include <unordered_map>
 
 
@@ -20,7 +21,7 @@ namespace detail {
 /// Unidimensionnal array of rasters
 struct TextureRibon
 {
-    /// \param aMargins The empty margin on each side of the glyph. 
+    /// \param aMargins The empty margin on each side of the glyph.
     /// This is the margin that will be left empty on the left and below each glyph when copying
     /// their bitmap to the texture.
     /// In particular, this makes no guarantee about the margin on top, which
@@ -152,7 +153,7 @@ struct DynamicGlyphCache
 // TODO aPixelToLocal should be removed, when the Texting rendering does all "local layout" in pixel coordinates
 void forEachGlyph(const std::string & aString,
                   math::Position<2, GLfloat> aPenOrigin_w,
-                  DynamicGlyphCache & aGlyphCache, 
+                  DynamicGlyphCache & aGlyphCache,
                   arte::FontFace & aFontFace,
                   math::Size<2, GLfloat> aPixelToLocal,
                   std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback);
