@@ -5,6 +5,8 @@
 
 #include <handy/Observer.h>
 
+#include <functional>
+
 
 namespace ad {
 namespace graphics {

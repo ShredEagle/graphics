@@ -8,7 +8,6 @@ set(${TARGET_NAME}_SOURCES
     main.cpp
 )
 
-find_package(Boost 1.71)
 find_package(glfw3 3.3 REQUIRED)
 
 find_package(Graphics CONFIG REQUIRED COMPONENTS test_commons)
@@ -23,7 +22,6 @@ target_link_libraries(${TARGET_NAME}
         glfw
         ad::graphics
         ad::test_commons
-        Boost::boost # Target for header-only dependencies
 )
 
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER prototypes)

@@ -9,6 +9,8 @@
 #include <istream>
 #include <sstream>
 
+#include <cassert>
+
 namespace ad {
 namespace arte {
 

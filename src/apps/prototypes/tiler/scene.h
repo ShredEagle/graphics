@@ -14,8 +14,6 @@
 
 #include <math/Transformations.h>
 
-#include <boost/iterator/iterator_adaptor.hpp>
-
 #include <fstream>
 
 

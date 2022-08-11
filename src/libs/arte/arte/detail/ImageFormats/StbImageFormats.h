@@ -5,6 +5,8 @@
 
 #include "../3rdparty/stb_image_include.h"
 
+#include <cassert>
+
 
 namespace ad {
 namespace arte {
@@ -91,7 +93,7 @@ struct StbImageFormats
         // IMPORTANT: even though it returns a float*, stbi_loadf internally allocates
         // the returned data buffer as a char* via our provided STBI_MALLOC.
         // So the default Deleter is right.
-        // TODO Ad 2022/06/08: I am nonetheless not sure whether it is safe to 
+        // TODO Ad 2022/06/08: I am nonetheless not sure whether it is safe to
         // then treat the returned array as an array of T_pixel (math::hdr::Rgb_f).
         // overview of the issue: https://stackoverflow.com/a/70157161/1027706
         return Image<T_pixel>{dimension, std::unique_ptr<unsigned char []>{data}};
