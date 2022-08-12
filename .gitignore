@@ -5,15 +5,22 @@
 /build/
 /build_*/
 /build-*/
-
-# Conan
 /conan/test_package/build/
-/conan/graph_info.json
+
+# CMake
 CMakeUserPresets.json
 
+# Conan
+# It tends to put those files in the working directory
+conan.lock
+conanbuildinfo.txt
+conaninfo.txt
+graph_info.json
+conan_imports_manifest.txt
+
 # Clang tooling #
-.clangd/
-.cache/
+.clangd
+.cache/clangd/
 compile_commands.json
 
 # Vim #
@@ -47,4 +54,3 @@ Thumbs.db
 *.user
 ipch
 .vscode
-/conan_imports_manifest.txt
