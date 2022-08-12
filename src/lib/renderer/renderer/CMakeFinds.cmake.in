@@ -1,5 +1,0 @@
-@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS gsl)
-@find_package@(Handy CONFIG @REQUIRED@ COMPONENTS handy)
-@find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
-
-@find_package@(glad @REQUIRED@)
