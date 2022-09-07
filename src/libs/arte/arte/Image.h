@@ -29,7 +29,7 @@ enum class ImageFormat
 
 enum class ImageOrientation
 {
-    Unchanged, 
+    Unchanged,
     InvertVerticalAxis,
 };
 
@@ -80,7 +80,7 @@ inline ImageFormat from_extension(filesystem::path aExtension)
 template <class T_pixelFormat>
 class Image
 {
-    // > Objects of trivially-copyable types that are not potentially-overlapping subobjects 
+    // > Objects of trivially-copyable types that are not potentially-overlapping subobjects
     // > are the only C++ objects that may be safely copied with std::memcpy
     // > or serialized to/from binary files with std::ofstream::write()/std::ifstream::read().
     // see: https://en.cppreference.com/w/cpp/types/is_trivially_copyable
@@ -90,6 +90,9 @@ class Image
 public:
     using pixel_format_t = T_pixelFormat;
     static constexpr std::size_t pixel_size_v = sizeof(pixel_format_t);
+
+    // alias useful in generic programming situations
+    using value_type = pixel_format_t;
 
 private:
     /// \brief Should never be kept in client code, only intended as a temporary
@@ -139,11 +142,17 @@ public:
 
     /// \brief Creates an image
     Image(math::Size<2, int> aDimensions, pixel_format_t aBackgroundValue);
-    
+
     /// \brief Load an Image from a file on disk.
     /// \note Similar functionality to LoadFile().
     explicit Image(const filesystem::path & aImageFile,
                    ImageOrientation aOrientation = ImageOrientation::Unchanged);
+
+
+    /// \brief Return an image of requested dimensions, where the pixel memory contains garbage.
+    ///
+    /// Each pixel can be written, but reading it before it is first written is an undefined behaviour.
+    static Image makeUninitialized(math::Size<2, int> aDimensions);
 
     void write(ImageFormat aFormat, std::ostream & aOut,
                ImageOrientation aOrientation = ImageOrientation::Unchanged) const;
@@ -259,6 +268,13 @@ private:
 
 
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
+
+
+template <class T_hdrChannel = float>
+Image<math::hdr::Rgb<T_hdrChannel>> to_hdr(const Image<math::sdr::Rgb> & aSource);
+
+template <class T_hdrChannel>
+Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSource);
 
 
 template <class T_pixelFormat, std::forward_iterator T_iterator, class T_proj = std::identity>

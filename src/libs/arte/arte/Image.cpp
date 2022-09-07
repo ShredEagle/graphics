@@ -48,6 +48,15 @@ Image<T_pixelFormat>::Image(const filesystem::path & aImageFile,
 
 
 template <class T_pixelFormat>
+Image<T_pixelFormat> Image<T_pixelFormat>::makeUninitialized(math::Size<2, int> aDimensions)
+{
+    return Image{
+        aDimensions,
+        std::make_unique<unsigned char[]>(sizeof(T_pixelFormat) * aDimensions.area())
+    };
+}
+
+template <class T_pixelFormat>
 Image<T_pixelFormat> & Image<T_pixelFormat>::operator=(const Image & aRhs)
 {
     *this = Image{aRhs};
@@ -266,6 +275,32 @@ Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 }
 
 
+template <class T_hdrChannel>
+Image<math::hdr::Rgb<T_hdrChannel>> to_hdr(const Image<math::sdr::Rgb> & aSource)
+{
+    auto result = Image<math::hdr::Rgb<T_hdrChannel>>::makeUninitialized(aSource.dimensions());
+    std::transform(aSource.begin(), aSource.end(), result.begin(),
+                   [](math::sdr::Rgb aSdrPixel) -> math::hdr::Rgb<T_hdrChannel>
+                   {
+                        return to_hdr<float>(aSdrPixel);
+                   });
+    return result;
+}
+
+
+template <class T_hdrChannel>
+Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSource)
+{
+    auto result = Image<math::sdr::Rgb>::makeUninitialized(aSource.dimensions());
+    std::transform(aSource.begin(), aSource.end(), result.begin(),
+                   [](math::hdr::Rgb<T_hdrChannel> aHdrPixel) -> math::sdr::Rgb
+                   {
+                        return to_sdr(aHdrPixel);
+                   });
+    return result;
+}
+
+
 //
 // Explicit instantiations
 //
@@ -274,6 +309,9 @@ template class Image<math::sdr::Rgba>;
 template class Image<math::sdr::Grayscale>;
 
 template class Image<math::hdr::Rgb_f>;
+
+template Image<math::hdr::Rgb_f> to_hdr(const Image<math::sdr::Rgb> &);
+template Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb_f> &);
 
 
 } // namespace arte
