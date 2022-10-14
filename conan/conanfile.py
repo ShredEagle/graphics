@@ -35,7 +35,7 @@ class GraphicsConan(ConanFile):
         ("imgui/1.87"),
 
         ("handy/b424f82ee7@adnn/develop"),
-        ("math/96fbbb3dcc@adnn/develop"),
+        ("math/e4a1b11ae1@adnn/develop"),
     )
 
     build_policy = "missing"
@@ -43,7 +43,7 @@ class GraphicsConan(ConanFile):
     keep_imports = True
 
 
-    python_requires="shred_conan_base/0.0.3@adnn/stable"
+    python_requires="shred_conan_base/0.0.5@adnn/stable"
     python_requires_extend="shred_conan_base.ShredBaseConanFile"
 
 
