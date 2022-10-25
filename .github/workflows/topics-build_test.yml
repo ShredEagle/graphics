@@ -6,6 +6,9 @@ on:
       - topic/**
       - fix/**
 
+env:
+  CONAN_USER_HOME_SHORT: ~/.cs
+
 jobs:
   build-test:
     uses: shredeagle/reusable-workflows/.github/workflows/main_build.yml@v2.3.1
