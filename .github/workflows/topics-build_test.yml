@@ -1,6 +1,8 @@
 name: Topical build-test
 
+
 on:
+  workflow_dispatch
   push:
     branches:
       - topic/**
