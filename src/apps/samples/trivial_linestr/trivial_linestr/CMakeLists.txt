@@ -1,4 +1,4 @@
-set(TARGET_NAME trivial_linestrip)
+set(TARGET_NAME trivial_linestr)
 
 set(${TARGET_NAME}_HEADERS
     Scene.h
