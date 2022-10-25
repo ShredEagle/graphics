@@ -13,7 +13,7 @@ class GraphicsConan(ConanFile):
     description = "Graphics rendering generic library, both software and with OpenGL"
     topics = ("opengl", "graphics", "2D", "3D")
     settings = "os", "compiler", "build_type", "arch"
-    short_paths: True
+    short_paths = True
     options = {
         "shared": [True, False],
         "build_tests": [True, False],
