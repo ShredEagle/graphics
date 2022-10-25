@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 jobs:
   build-test:
-    uses: shredeagle/reusable-workflows/.github/workflows/main_build.yml@develop
+    uses: shredeagle/reusable-workflows/.github/workflows/main_build.yml@v2.3.2
     with:
       # Disable macos while spdlog crashes its compiler
       # see: https://github.com/conan-io/conan-center-index/issues/8480
