@@ -103,18 +103,77 @@ void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
                                                    const GLchar* message,
                                                    const void* userParam)
 {
+
+    std::string typeString = [type]() -> std::string
+    {
+        switch(type)
+        {
+            case GL_DEBUG_TYPE_ERROR:
+                return "error";
+            case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+                return "deprecated";
+            case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+                return "undefined";
+            case GL_DEBUG_TYPE_PORTABILITY:
+                return "portability";
+            case GL_DEBUG_TYPE_PERFORMANCE:
+                return "performance";
+            case GL_DEBUG_TYPE_MARKER:
+                return "marker";
+            case GL_DEBUG_TYPE_PUSH_GROUP:
+                return "push group";
+            case GL_DEBUG_TYPE_POP_GROUP:
+                return "pop group";
+            case GL_DEBUG_TYPE_OTHER:
+                return "other";
+            default:
+                return "UNKNOWN " + std::to_string(type);
+        }
+    }();
+
+    std::string severityString = [severity]() -> std::string
+    {
+        switch(severity)
+        {
+            case GL_DEBUG_SEVERITY_HIGH:
+                return "high";
+            case GL_DEBUG_SEVERITY_MEDIUM:
+                return "medium";
+            case GL_DEBUG_SEVERITY_LOW:
+                return "low";
+            case GL_DEBUG_SEVERITY_NOTIFICATION:
+                return "notification";
+            default:
+                return "UNKNOWN " + std::to_string(severity);
+        }
+    }();
+
     std::ostringstream oss;
-    oss << "(type = 0x" << type
-        << ", severity = 0x" << severity
+    oss << "(type = " << typeString
+        << ", severity = " << severityString
         << ")\n" << message
     ;
-    if (type == GL_DEBUG_TYPE_ERROR)
+
+    switch(type)
     {
-        ADLOG(gOpenglLogger, error)(oss.str());
-    }
-    else
-    {
-        ADLOG(gOpenglLogger, info)(oss.str());
+        case GL_DEBUG_TYPE_ERROR:
+        {
+            ADLOG(gOpenglLogger, error)(oss.str());
+            break;
+        }
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        case GL_DEBUG_TYPE_PORTABILITY:
+        case GL_DEBUG_TYPE_PERFORMANCE:
+        {
+            ADLOG(gOpenglLogger, warn)(oss.str());
+            break;
+        }
+        default:
+        {
+            ADLOG(gOpenglLogger, debug)(oss.str());
+            break;
+        }
     }
 }
 
