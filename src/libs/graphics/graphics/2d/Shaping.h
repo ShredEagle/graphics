@@ -20,7 +20,7 @@ class CameraProjection
 public:
     static const GLuint gBinding{1};
 
-    //CameraProjection();
+    CameraProjection();
 
     void setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation);
     void setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation);
@@ -29,11 +29,7 @@ public:
     { glBindBufferBase(GL_UNIFORM_BUFFER, gBinding, mUniformBuffer); }
 
 private:
-    // This is used as a default member initliazer, to avoid implementing a default ctor.
-    // Not having a default ctor allows to rely on the "rule of zero".
-    static UniformBufferObject IdentityBuffer();
-
-    UniformBufferObject mUniformBuffer{IdentityBuffer()};
+    UniformBufferObject mUniformBuffer;
 };
 
 

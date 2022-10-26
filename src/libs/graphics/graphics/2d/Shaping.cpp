@@ -9,18 +9,15 @@ namespace ad {
 namespace graphics {
 
 
-UniformBufferObject CameraProjection::IdentityBuffer()
+CameraProjection::CameraProjection()
 { 
     const std::array<math::Matrix<4, 4, GLfloat>, 2> identities{
         math::Matrix<4, 4, GLfloat>::Identity(),
         math::Matrix<4, 4, GLfloat>::Identity(),
     };
 
-    UniformBufferObject uniformBuffer;
-    bind_guard bound{uniformBuffer};
+    bind_guard bound{mUniformBuffer};
     glBufferData(GL_UNIFORM_BUFFER, sizeof(identities), identities.data(), GL_DYNAMIC_DRAW);
-
-    return uniformBuffer;
 }
 
 
