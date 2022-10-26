@@ -21,6 +21,9 @@ set(${TARGET_NAME}_HEADERS
     DrawLine.h
     Vertex.h
 
+    2d/Shaping.h
+    2d/Shaping-shaders.h
+
     adapters/ParallaxScroller.h
 
     detail/Logging.h
@@ -45,6 +48,8 @@ set(${TARGET_NAME}_SOURCES
     TrivialPolygon.cpp
     TrivialShaping.cpp
     DrawLine.cpp
+
+    2d/Shaping.cpp
 
     adapters/ParallaxScroller.cpp
 
