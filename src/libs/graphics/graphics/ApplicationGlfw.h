@@ -180,7 +180,7 @@ public:
         return glfwGetKey(mWindow, keyCode);
     }
 
-    void getMousePos(float & aXpos, float & aYpos) const
+    void getMousePos(double & aXpos, double & aYpos) const
     {
         double xpos, ypos;
         glfwGetCursorPos(mWindow, &xpos, &ypos);
