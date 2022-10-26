@@ -13,6 +13,7 @@ class GraphicsConan(ConanFile):
     description = "Graphics rendering generic library, both software and with OpenGL"
     topics = ("opengl", "graphics", "2D", "3D")
     settings = "os", "compiler", "build_type", "arch"
+    short_paths = True
     options = {
         "shared": [True, False],
         "build_tests": [True, False],
@@ -34,8 +35,8 @@ class GraphicsConan(ConanFile):
         ("utfcpp/3.2.1"),
         ("imgui/1.87"),
 
-        ("handy/b424f82ee7@adnn/develop"),
-        ("math/e4a1b11ae1@adnn/develop"),
+        ("handy/35f0a507af@adnn/develop"),
+        ("math/662cc47fad@adnn/develop"),
     )
 
     build_policy = "missing"
