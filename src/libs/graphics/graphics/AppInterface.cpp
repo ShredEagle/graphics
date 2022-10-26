@@ -66,7 +66,11 @@ void AppInterface::callbackWindowSize(int width, int height)
 void AppInterface::callbackFramebufferSize(int width, int height)
 {
     ADLOG(gMainLogger, debug)("The framebuffer has been resized to ({}, {}).", width, height);
-    glViewport(0, 0, width, height);
+    // Cannot resize the OpenGL viewport here directly:
+    // this callback should always be invoked on the thread that created the window
+    // but the OpenGL context might have been moved to another thread.
+    // Thus, the client is now expected to register a callback invoking `glViewport` if it is needed.
+    //glViewport(0, 0, width, height);
     mFramebufferSize.width() = width;
     mFramebufferSize.height() = height;
     if (!mWindowIsMinimized)

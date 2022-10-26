@@ -53,6 +53,8 @@ public:
     /// \brief To be called by the application when the Window is resized
     void callbackWindowSize(int width, int height);
     /// \brief To be called by the application when the Framebuffer is resized
+    /// \important This method will not resize the OpenGL viewport, it is the responsibility
+    /// of the client. Registering a custom listener is a potential approach.
     void callbackFramebufferSize(int width, int height);
 
     /// \brief To be called by the application when it has keyboard events to provide

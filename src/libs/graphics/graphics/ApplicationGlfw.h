@@ -123,6 +123,20 @@ public:
         }
     }
 
+    /// \brief Must be called from the context-active thread before making context current on another thread.
+    void removeCurrentContext()
+    {
+        // Make the OpenGL context non-current
+        // see: https://www.glfw.org/docs/latest/context.html#context_current
+        glfwMakeContextCurrent(nullptr);
+    }
+
+    /// \brief Make the context current on the calling thread.
+    void makeContextCurrent()
+    {
+        glfwMakeContextCurrent(mWindow);
+    }
+
     bool handleEvents()
     {
         glfwPollEvents();
