@@ -5,6 +5,7 @@
 
 #include "../detail/UnitQuad.h"
 
+#include <handy/Guard.h>
 #include <renderer/Drawing.h>
 #include <renderer/FrameBuffer.h>
 #include <renderer/Texture.h>
@@ -35,7 +36,7 @@ void Fade::apply(math::sdr::Rgba aFadeToColor,
 
     // Bind the VAO and activate the program.
     activate(mUnitQuad, mProgram);
-    auto activationGuard{ [&](){deactivate(mUnitQuad, mProgram);} };
+    Guard activationGuard{ [&](){deactivate(mUnitQuad, mProgram);} };
 
     // Active the texture unit that is mapped to the programs sampler,
     // and bind the source texture.
