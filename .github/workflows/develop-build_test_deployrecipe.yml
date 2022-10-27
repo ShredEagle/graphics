@@ -1,6 +1,7 @@
 name: Build, test, deploy recipe
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
