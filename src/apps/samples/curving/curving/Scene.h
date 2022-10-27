@@ -161,7 +161,7 @@ private:
         }
         else if (key == GLFW_KEY_F && action == GLFW_PRESS)
         {
-            if (mWireframe = !mWireframe)
+            if (mWireframe == !mWireframe)
             {
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
             }
