@@ -28,15 +28,15 @@ class GraphicsConan(ConanFile):
 
     requires = (
         ("freetype/2.12.1"),
-        ("glad/0.1.34"),
-        ("glfw/3.3.6"),
+        ("glad/0.1.36"),
+        ("glfw/3.3.8"),
         ("nlohmann_json/3.9.1"),
-        ("spdlog/1.9.2"),
+        ("spdlog/1.10.0"),
         ("utfcpp/3.2.1"),
-        ("imgui/1.87"),
+        ("imgui/1.88"),
 
-        ("handy/35f0a507af@adnn/develop"),
-        ("math/662cc47fad@adnn/develop"),
+        ("handy/301bce6d20@adnn/develop"),
+        ("math/3d5a576c1e@adnn/develop"),
     )
 
     build_policy = "missing"
