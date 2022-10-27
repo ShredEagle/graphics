@@ -1,3 +1,4 @@
+include(cmc-cpp)
 add_subdirectory(libs/arte/arte)
 add_subdirectory(libs/renderer/renderer)
 add_subdirectory(libs/graphics/graphics)
