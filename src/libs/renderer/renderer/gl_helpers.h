@@ -28,15 +28,18 @@ inline GLuint reserve(void(GLAPIENTRY * aGlGenFunction)(GLsizei, GLuint *))
     return name;
 }
 
-class bind_guard
+class ScopedBind
 {
 public:
     template <class T_resource, class... VT_args>
-    bind_guard(const T_resource & aResource, VT_args &&... aArgs) :
-        mGuard{[&aResource](){ unbind(aResource); }}
-    {
-        bind(aResource, std::forward<VT_args>(aArgs)...);
-    }
+    ScopedBind(const T_resource & aResource, VT_args &&... aArgs);
+    // TODO Make the generic implementation work.
+    // The problem is with the bind in the guard, as it expects a wrapped type.
+    //:
+    //    mGuard{[previous = getBound(aResource)](){ bind(previous); }}
+    //{
+    //    bind(aResource, std::forward<VT_args>(aArgs)...);
+    //}
 
 private:
     Guard mGuard;

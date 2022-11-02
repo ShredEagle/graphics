@@ -18,7 +18,7 @@ void clear(const Texture & aTexture, math::hdr::Rgba_f aClearValue)
     }
     else
     {
-        bind_guard bound(aTexture);
+        ScopedBind bound(aTexture);
         glClearTexImage(aTexture, 0, GL_RGBA, GL_FLOAT, aClearValue.data());
     }
 }

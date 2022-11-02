@@ -117,7 +117,7 @@ Scene::Scene(const char * argv[], const AppInterface * aAppInterface) :
 
         // This list of draw buffer is part of the FBO state
         // see: https://stackoverflow.com/a/34973291/1027706
-        bind_guard bound{frameBuffer};
+        ScopedBind bound{frameBuffer};
         unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
         glDrawBuffers(2, attachments);
     }

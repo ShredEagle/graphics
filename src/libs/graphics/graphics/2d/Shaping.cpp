@@ -16,14 +16,14 @@ CameraProjection::CameraProjection()
         math::Matrix<4, 4, GLfloat>::Identity(),
     };
 
-    bind_guard bound{mUniformBuffer};
+    ScopedBind bound{mUniformBuffer};
     glBufferData(GL_UNIFORM_BUFFER, sizeof(identities), identities.data(), GL_DYNAMIC_DRAW);
 }
 
 
 void CameraProjection::setCameraTransformation(const math::AffineMatrix<4, GLfloat> & aTransformation)
 {
-    bind_guard bound{mUniformBuffer};
+    ScopedBind bound{mUniformBuffer};
     glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(aTransformation),
                     aTransformation.data());
 }
@@ -31,7 +31,7 @@ void CameraProjection::setCameraTransformation(const math::AffineMatrix<4, GLflo
 
 void CameraProjection::setProjectionTransformation(const math::Matrix<4, 4, GLfloat> & aTransformation)
 {
-    bind_guard bound{mUniformBuffer};
+    ScopedBind bound{mUniformBuffer};
     glBufferSubData(GL_UNIFORM_BUFFER, sizeof(aTransformation), sizeof(aTransformation),
                     aTransformation.data());
 }

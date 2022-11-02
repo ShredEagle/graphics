@@ -89,9 +89,29 @@ inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
 template <class T_index>
 inline Guard scopePrimitiveRestartIndex(T_index aIndex)
 {
-    glEnable(GL_PRIMITIVE_RESTART);
+    bool wasEnabled = isEnabled(GL_PRIMITIVE_RESTART);
+    // We want to restore the restart index value even if it is not enabled.
+    GLint previousIndex;
+    glGetIntegerv(GL_PRIMITIVE_RESTART_INDEX, &previousIndex);
+
     glPrimitiveRestartIndex(aIndex);
-    return Guard{ [](){glDisable(GL_PRIMITIVE_RESTART);} };
+
+    if(wasEnabled)
+    {
+        return Guard{ [previousIndex]()
+            {
+                glPrimitiveRestartIndex(previousIndex); 
+            }};
+    }
+    else
+    {
+        glEnable(GL_PRIMITIVE_RESTART);
+        return Guard{ [previousIndex]()
+            {
+                glDisable(GL_PRIMITIVE_RESTART);
+                glPrimitiveRestartIndex(previousIndex);
+            }};
+    }
 }
 
 
