@@ -105,9 +105,9 @@ PingPongFrameBuffers::PingPongFrameBuffers(Size2<GLsizei> aResolution, GLenum aF
 }
 
 
-[[nodiscard]] bind_guard PingPongFrameBuffers::bindTargetFrameBuffer()
+[[nodiscard]] ScopedBind PingPongFrameBuffers::bindTargetFrameBuffer()
 {
-    return bind_guard{mFrameBuffers[mTarget]};
+    return ScopedBind{mFrameBuffers[mTarget]};
 }
 
 
@@ -218,7 +218,7 @@ void GaussianBlur::apply(int aPassCount,
         // It will be 1 less if there is an explicit last render target.
         for (; step < aPassCount * mProgramSequence.size() - (aLastTarget ? 1 : 0); ++step)
         {
-            bind_guard boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
+            ScopedBind boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             executeStep(step);
         }
@@ -226,7 +226,7 @@ void GaussianBlur::apply(int aPassCount,
     // In case pass count is zero (or negative), we shoud not execute the program even once
     if (aLastTarget && aPassCount > 0)
     {
-        bind_guard boundFrameBuffer{**aLastTarget};
+        ScopedBind boundFrameBuffer{**aLastTarget};
         // No glClear on a client provided last buffer.
         executeStep(step+1);
     }

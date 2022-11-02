@@ -46,6 +46,40 @@ constexpr GLenum MappedPixel_v = MappedPixel<T_pixel>::enumerator;
 #undef MAP
 
 
+//
+// glGet parameter names for texture bindings
+//
+template <GLenum N_textureTarget>
+struct MappedTextureBindingGL;
+
+#define TEXTURECASE(textureTarget, paramName)   \
+    case textureTarget:                         \
+        return paramName;
+
+
+constexpr GLenum getGLMappedTextureBinding(GLenum aTextureTarget) 
+{
+    switch(aTextureTarget)
+    {
+        TEXTURECASE(GL_TEXTURE_1D, GL_TEXTURE_BINDING_1D);
+        TEXTURECASE(GL_TEXTURE_1D_ARRAY, GL_TEXTURE_BINDING_1D_ARRAY);
+        TEXTURECASE(GL_TEXTURE_2D, GL_TEXTURE_BINDING_2D);
+        TEXTURECASE(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_BINDING_2D_ARRAY);
+        TEXTURECASE(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_BINDING_2D_MULTISAMPLE);
+        TEXTURECASE(GL_TEXTURE_2D_MULTISAMPLE_ARRAY, GL_TEXTURE_BINDING_2D_MULTISAMPLE_ARRAY);
+        TEXTURECASE(GL_TEXTURE_3D, GL_TEXTURE_BINDING_3D);
+        TEXTURECASE(GL_TEXTURE_BUFFER, GL_TEXTURE_BINDING_BUFFER);
+        TEXTURECASE(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BINDING_CUBE_MAP);
+        TEXTURECASE(GL_TEXTURE_RECTANGLE, GL_TEXTURE_BINDING_RECTANGLE);
+    default:
+        throw std::domain_error{"Invalid texture target."};
+    }
+}
+
+
+#undef TEXTURECASE
+
+
 enum class BufferHint
 {
     StreamDraw,

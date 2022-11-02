@@ -49,12 +49,26 @@ inline void activateTextureUnit(GLint aTextureUnit)
     glActiveTexture(GL_TEXTURE0 + aTextureUnit);
 }
 
+/// \deprecated Use the scoped version instead
 inline Guard activateTextureUnitGuard(GLint aTextureUnit)
 {
     activateTextureUnit(aTextureUnit);
     return Guard([]()
         {
             glActiveTexture(GL_TEXTURE0);
+        });
+}
+
+
+inline Guard scopeTextureUnitActivation(GLint aTextureUnit)
+{
+    GLint previousActive;
+    glGetIntegerv(GL_ACTIVE_TEXTURE, &previousActive);
+
+    activateTextureUnit(aTextureUnit);
+    return Guard([previousActive]()
+        {
+            glActiveTexture(previousActive);
         });
 }
 
@@ -70,35 +84,59 @@ inline void unbind(const Texture & aTexture)
     glBindTexture(aTexture.mTarget, 0);
 }
 
+inline GLenum getBound(const Texture & aTexture)
+{
+    GLint current;
+    glGetIntegerv(getGLMappedTextureBinding(aTexture.mTarget), &current);
+    return current;
+}
+
+
+/// \deprecated Texture unit activation is probably better explicit and outside.
 inline void bind(const Texture & aTexture, GLenum aTextureUnit)
 {
     glActiveTexture(aTextureUnit);
     bind(aTexture);
 }
 
+
+/// \deprecated Texture unit activation is probably better explicit and outside.
 inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
 {
     glActiveTexture(aTextureUnit);
     unbind(aTexture);
 }
 
-// TODO Ad 2022/02/02: Specialize bind_guard for Texture + TextureUnit
-// At least MSVC 16.11.1 refuses that
-//template <>
-//inline bind_guard::bind_guard<Texture, GLenum>(const Texture & aTexture, GLenum aTextureUnit) :
-//    mGuard{[&aTexture, aTextureUnit]()
-//        {
-//            unbind(aTexture, aTextureUnit);
-//            activateTextureUnit(GL_TEXTURE0);
-//        }}
-//{
-//    bind(aTexture, aTextureUnit);
-//}
+
+template <>
+inline ScopedBind::ScopedBind(const Texture & aResource) :
+    mGuard{[previousTexture = getBound(aResource), target = aResource.mTarget]
+           {
+                glBindTexture(target, previousTexture);
+}}
+{
+    bind(aResource);
+}
+
+
+// TODO I specially dislike this one:
+// * It requires an overload for each variation of the texture unit type (even if implicitly convertible)
+// * The logic is convoluted, activated a texture unit in several places, but never returning to the previously active unit
+template <>
+inline ScopedBind::ScopedBind(const Texture & aResource, GLint && aTextureUnit) :
+    mGuard{[aTextureUnit, previousTexture = (glActiveTexture(aTextureUnit), getBound(aResource)), target = aResource.mTarget]
+           {
+                glActiveTexture(aTextureUnit);
+                glBindTexture(target, previousTexture);
+           }}
+{
+    bind(aResource, aTextureUnit);
+}
 
 
 inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
 {
-    bind_guard scoped{aTexture};
+    ScopedBind scoped{aTexture};
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, aFiltering);
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, aFiltering);
 }
@@ -108,7 +146,7 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
                             const GLsizei aWidth, const GLsizei aHeight,
                             const GLsizei aMipmapLevels = 1)
 {
-    bind_guard bound(aTexture);
+    ScopedBind bound(aTexture);
 
     if (GL_ARB_texture_storage)
     {
@@ -177,7 +215,7 @@ inline void writeTo(const Texture & aTexture,
     // Cubemaps individual faces muste be accessed explicitly in glTexSubImage2D.
     assert(aTexture.mTarget != GL_TEXTURE_CUBE_MAP);
 
-    bind_guard bound(aTexture);
+    ScopedBind bound(aTexture);
 
     // Handle alignment
     Guard scopedAlignemnt = detail::scopeUnpackAlignment(aInput.alignment);
@@ -216,7 +254,7 @@ inline void loadAnimationAsArray(const Texture & aTexture,
 
     assert(aTexture.mTarget == GL_TEXTURE_2D_ARRAY);
 
-    bind_guard bound(aTexture);
+    ScopedBind bound(aTexture);
 
     Guard scopedAlignemnt = detail::scopeUnpackAlignment(aImage.rowAlignment());
 

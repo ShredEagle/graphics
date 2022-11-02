@@ -42,7 +42,7 @@ struct PingPongFrameBuffers
 
     /// \brief Bind the current target framebuffer, so draw operations will affect it.
     /// \return A guard to unbind (i.e. to restore default framebuffer).
-    [[nodiscard]] bind_guard bindTargetFrameBuffer();
+    [[nodiscard]] ScopedBind bindTargetFrameBuffer();
 
     /// \brief Set the viewport to match the frame buffers resolution, and return a Guard
     /// to restore previous viewport.

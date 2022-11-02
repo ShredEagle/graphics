@@ -41,10 +41,10 @@ void Fade::apply(math::sdr::Rgba aFadeToColor,
     // Active the texture unit that is mapped to the programs sampler,
     // and bind the source texture.
     auto activeTexUnit = activateTextureUnitGuard(gTextureUnit);
-    bind_guard boundTexture{aSource};
+    ScopedBind boundTexture{aSource};
 
     // Bind the target.
-    bind_guard boundFrameBuffer{aTarget};
+    ScopedBind boundFrameBuffer{aTarget};
 
     glDrawArrays(GL_TRIANGLE_STRIP, 0, detail::gQuadVerticeCount);
 }
