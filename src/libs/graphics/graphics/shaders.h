@@ -102,7 +102,7 @@ inline const GLchar* gTrivialColorVertexShader = R"#(
     void main(void)
     {
         gl_Position = vec4(projection * camera * vec3(in_VertexPosition, 1.), 1.);
-        ex_Color = in_VertexColor;
+        ex_Color = vec4(in_VertexColor, 1.);
     }
 )#";
 
@@ -110,12 +110,12 @@ inline const GLchar* gTrivialColorVertexShader = R"#(
 inline const GLchar* gTrivialFragmentShader = R"#(
     #version 400
 
-    in vec3 ex_Color;
+    in vec4 ex_Color;
     out vec4 out_Color;
 
     void main(void)
     {
-        out_Color = vec4(ex_Color, 1.);
+        out_Color = ex_Color;
     }
 )#";
 
