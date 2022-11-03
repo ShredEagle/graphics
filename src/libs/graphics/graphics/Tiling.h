@@ -95,7 +95,7 @@ inline Rectangle<TileSet::Position_t> TileSet::getGridRectangle() const
     return mGridRectangleScreen;
 }
 
-inline::std::size_t TileSet::getTileCount() const
+inline std::size_t TileSet::getTileCount() const
 {
     return mGridDefinition.area();
 }

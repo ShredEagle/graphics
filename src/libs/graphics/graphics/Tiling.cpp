@@ -203,7 +203,7 @@ void Tiling::render(const sprite::LoadedAtlas & aAtlas, const TileSet & aTileSet
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
                           TileSet::gVerticesPerInstance,
-                          aTileSet.getTileCount());
+                          static_cast<GLsizei>(aTileSet.getTileCount()));
 }
 
 

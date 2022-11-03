@@ -99,7 +99,7 @@ void TrivialShaping::updateInstances(std::span<const TrivialShaping::Rectangle> 
     // The last vertex buffer added to the specification is the per instance data.
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
                     aInstances);
-    mInstanceCount = aInstances.size();
+    mInstanceCount = (GLsizei)aInstances.size();
 }
 
 

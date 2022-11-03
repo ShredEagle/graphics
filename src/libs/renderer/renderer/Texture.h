@@ -272,10 +272,10 @@ inline void loadAnimationAsArray(const Texture & aTexture,
 
 inline GLsizei countCompleteMipmaps(math::Size<2, int> aResolution)
 {
-    return std::floor(
+    return static_cast<GLsizei>(std::floor(
         std::log2(
             std::max(aResolution.width(), aResolution.height())
-    )) + 1;
+    ))) + 1;
 }
 
 

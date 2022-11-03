@@ -80,7 +80,7 @@ computeLinearFilteredWeights(const std::array<GLfloat, N_initialWeights> & aNorm
     if (aNormalized.size() % 2 == 0) // is even
     {
         result.weights.back() = aNormalized.back();
-        result.offsets.back() = aNormalized.size() - 1;
+        result.offsets.back() = static_cast<GLfloat>(aNormalized.size()) - 1;
     }
 
     return result;
@@ -216,7 +216,7 @@ void GaussianBlur::apply(int aPassCount,
 
         // The total number of steps is the number of passes multiplied by the number of programs to apply at each pass.
         // It will be 1 less if there is an explicit last render target.
-        for (; step < aPassCount * mProgramSequence.size() - (aLastTarget ? 1 : 0); ++step)
+        for (; step < aPassCount * static_cast<int>(mProgramSequence.size()) - (aLastTarget ? 1 : 0); ++step)
         {
             ScopedBind boundFrameBuffer = aFrameBuffers.bindTargetFrameBuffer();
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

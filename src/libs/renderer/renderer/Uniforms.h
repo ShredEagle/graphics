@@ -110,7 +110,7 @@ namespace graphics {
                                      std::span<const GLfloat> aFloats)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform1fv(aProgram, location, aFloats.size(), aFloats.data());
+        glProgramUniform1fv(aProgram, location, (GLsizei)aFloats.size(), aFloats.data());
     }
 
 
@@ -118,7 +118,7 @@ namespace graphics {
                                    std::span<const GLint> aIntegers)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform1iv(aProgram, location, aIntegers.size(), aIntegers.data());
+        glProgramUniform1iv(aProgram, location, (GLsizei)aIntegers.size(), aIntegers.data());
     }
 
 

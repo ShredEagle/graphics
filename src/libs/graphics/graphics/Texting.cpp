@@ -83,7 +83,7 @@ Texting::Texting(const filesystem::path & aFontPath,
 
     // Font setup
     mFontFace.inverseYAxis(true);
-    mFontFace.setPixelHeight(glyphPixelHeight);
+    mFontFace.setPixelHeight(static_cast<int>(glyphPixelHeight));
 }
 
 

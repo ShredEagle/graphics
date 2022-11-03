@@ -88,7 +88,7 @@ void handleLinkError(GLuint aObjectId)
 void compileShader(const Shader & aShader, ShaderSourceView aSource)
 {
     const char * const data = aSource.data();
-    const GLint size = aSource.size();
+    const GLint size = static_cast<GLint>(aSource.size());
     glShaderSource(aShader, 1, &data, &size);
     glCompileShader(aShader);
 
