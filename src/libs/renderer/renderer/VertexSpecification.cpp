@@ -29,7 +29,7 @@ void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
     {
         switch(attribute.mTypeInShader)
         {
-            case Attribute::Access::Float :
+            case ShaderParameter::Access::Float :
             {
                 glVertexAttribPointer(attribute.mIndex,
                                       attribute.mDimension,
@@ -39,7 +39,7 @@ void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
                                       reinterpret_cast<const void*>(attribute.mOffset));
                 break;
             }
-            case Attribute::Access::Integer :
+            case ShaderParameter::Access::Integer :
             {
                 glVertexAttribIPointer(attribute.mIndex,
                                        attribute.mDimension,

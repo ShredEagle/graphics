@@ -10,7 +10,7 @@ namespace graphics {
 
 /// \brief Attribute and offset of the each entry inside T_element (for interleaved attributes)
 template <class T_element, class T_member>
-struct AttributeCompact : public Attribute
+struct AttributeCompact : public ShaderParameter
 {
     typedef T_member member_type;
 
@@ -20,7 +20,7 @@ struct AttributeCompact : public Attribute
 namespace vertex {
 
     template <class T_element, class T_member>
-    AttributeCompact<T_element, T_member> attr(Attribute aAttribute, T_member T_element::*aMember)
+    AttributeCompact<T_element, T_member> attr(ShaderParameter aAttribute, T_member T_element::*aMember)
     {
         return {aAttribute, aMember};
     }
@@ -30,7 +30,7 @@ namespace vertex {
 template <class T_vertex>
 VertexBufferObject loadVertexBuffer(
     const VertexArrayObject & aVertexArray,
-    Attribute aAttribute,
+    ShaderParameter aAttribute,
     const std::span<T_vertex> aVertices)
 {
     static_assert(std::is_array<T_vertex>::value || std::is_arithmetic<T_vertex>::value,

@@ -120,7 +120,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
         initVertexBuffer<TileSet::Instance>(
             specification.mVertexArray,
             {
-                { {3, Attribute::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
+                { {3, ShaderParameter::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
             },
             1));
 

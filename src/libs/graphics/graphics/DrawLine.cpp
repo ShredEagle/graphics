@@ -43,7 +43,7 @@ namespace
         { 1,                                  3, offsetof(DrawLine::Line, mOrigin),       MappedGL<GLfloat>::enumerator},
         { 2,                                  3, offsetof(DrawLine::Line, mEnd),          MappedGL<GLfloat>::enumerator},
         { 3,                                  1, offsetof(DrawLine::Line, mWidth_screen), MappedGL<GLfloat>::enumerator},
-        {{4, Attribute::Access::Float, true}, 4, offsetof(DrawLine::Line, mColor),        MappedGL<GLubyte>::enumerator},
+        {{4, ShaderParameter::Access::Float, true}, 4, offsetof(DrawLine::Line, mColor),        MappedGL<GLubyte>::enumerator},
     };
 
     VertexSpecification make_VertexSpecification()

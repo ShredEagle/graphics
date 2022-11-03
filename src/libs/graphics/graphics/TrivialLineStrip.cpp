@@ -22,7 +22,7 @@ namespace
     //
     constexpr AttributeDescriptionList gVertexDescription{
         { 0,                                  2, offsetof(LinePoint, mPosition), MappedGL<GLfloat>::enumerator},
-        {{1, Attribute::Access::Float, true}, 3, offsetof(LinePoint, mColor),    MappedGL<GLubyte>::enumerator},
+        {{1, ShaderParameter::Access::Float, true}, 3, offsetof(LinePoint, mColor),    MappedGL<GLubyte>::enumerator},
     };
 
     VertexSpecification make_VertexSpecification()

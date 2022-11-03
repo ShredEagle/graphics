@@ -110,8 +110,8 @@ inline void unbind(const VertexSpecification & aVertexSpecification)
 
 
 
-/// \brief Describes the attribute access from the shader (layout id, value type, normalization)
-struct Attribute
+/// \brief Describes the shader parameter aspect of the attribute (layout id, value type, normalization)
+struct ShaderParameter
 {
     enum class Access
     {
@@ -119,11 +119,11 @@ struct Attribute
         Integer,
     };
 
-    constexpr Attribute(GLuint aValue) :
+    constexpr ShaderParameter(GLuint aValue) :
         mIndex(aValue)
     {}
 
-    constexpr Attribute(GLuint aValue, Access aAccess, bool aNormalize=false) :
+    constexpr ShaderParameter(GLuint aValue, Access aAccess, bool aNormalize=false) :
         mIndex(aValue),
         mTypeInShader(aAccess),
         mNormalize(aNormalize)
@@ -134,13 +134,17 @@ struct Attribute
     bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
 
-/// \brief The complete description of an attribute expected by OpenGL
-struct AttributeDescription : public Attribute
+/// \brief Describes client perspective of the attribute, i.e. as an argument provided by the client.
+struct ClientAttribute
 {
     GLuint mDimension;  // from 1 to 4 (explicit distinct attributes must be used for matrix data)
     size_t mOffset;     // offset for the attribute within the vertex data structure (interleaved)
     GLenum mDataType;   // attribute source data type
 };
+
+/// \brief The complete description of an attribute as expected by OpenGL.
+struct AttributeDescription : public ShaderParameter, ClientAttribute
+{};
 
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
 

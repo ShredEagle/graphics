@@ -68,7 +68,7 @@ struct GenerativeVertex
 
 constexpr AttributeDescriptionList gGenerativeVertexDescription{
     {0,                               1, offsetof(GenerativeVertex, t),    MappedGL<GLfloat>::enumerator},
-    {{1, Attribute::Access::Integer}, 1, offsetof(GenerativeVertex, side), MappedGL<GLint>::enumerator},
+    {{1, ShaderParameter::Access::Integer}, 1, offsetof(GenerativeVertex, side), MappedGL<GLint>::enumerator},
 };
 
 

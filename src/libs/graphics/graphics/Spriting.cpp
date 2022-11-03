@@ -51,7 +51,7 @@ VertexSpecification makeQuad()
                 // Postion
                 { 0,                               2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
                 // UV
-                { {1, Attribute::Access::Integer}, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
+                { {1, ShaderParameter::Access::Integer}, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
             },
             sizeof(Vertex),
             sizeof(gVerticesQuad),
@@ -61,7 +61,7 @@ VertexSpecification makeQuad()
         //using namespace vertex; // for vertex::attr()
         //makeLoadedVertexBuffer(range(gVerticesQuad),
         //                       attr(0,                               &Vertex::mPosition),
-        //                       attr({1, Attribute::Access::Integer}, &Vertex::mUV)));
+        //                       attr({1, ShaderParameter::Access::Integer}, &Vertex::mUV)));
 
     // Per-instance attributes
     specification.mVertexBuffers.push_back(
@@ -73,7 +73,7 @@ VertexSpecification makeQuad()
                 { 3, 3, offsetof(Spriting::Instance, mModelTransform) + 3 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
                 { 4, 3, offsetof(Spriting::Instance, mModelTransform) + 6 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
                 // LoadedSprite (i.e. sprite rectangle cutout in the texture)
-                { {5, Attribute::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite),  MappedGL<GLint>::enumerator},
+                { {5, ShaderParameter::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite),  MappedGL<GLint>::enumerator},
                 { 6,                               1, offsetof(Spriting::Instance, mOpacity),       MappedGL<GLfloat>::enumerator},
                 { 7,                               2, offsetof(Spriting::Instance, mAxisMirroring), MappedGL<GLint>::enumerator},
             },

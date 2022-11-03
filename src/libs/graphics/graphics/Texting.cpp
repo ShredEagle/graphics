@@ -16,10 +16,10 @@ namespace graphics {
 
 constexpr AttributeDescriptionList gGlyphInstanceDescription{
     { 2, 2, offsetof(Texting::Instance, position_w),    MappedGL<GLfloat>::enumerator},
-    { {3, Attribute::Access::Integer}, 1, offsetof(Texting::Instance, offsetInTexture_p), MappedGL<GLint>::enumerator},
+    { {3, ShaderParameter::Access::Integer}, 1, offsetof(Texting::Instance, offsetInTexture_p), MappedGL<GLint>::enumerator},
     { 4, 2, offsetof(Texting::Instance, boundingBox_p), MappedGL<GLfloat>::enumerator},
     { 5, 2, offsetof(Texting::Instance, bearing_p),     MappedGL<GLfloat>::enumerator},
-    { {6, Attribute::Access::Float, true}, 4, offsetof(Texting::Instance, color), MappedGL<GLubyte>::enumerator},
+    { {6, ShaderParameter::Access::Float, true}, 4, offsetof(Texting::Instance, color), MappedGL<GLubyte>::enumerator},
 };
 
 

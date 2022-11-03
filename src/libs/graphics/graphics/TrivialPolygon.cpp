@@ -22,7 +22,7 @@ namespace
     //
     constexpr AttributeDescriptionList gVertexDescription{
         { 0,                                  2, offsetof(PolygonPoint, mPosition), MappedGL<GLfloat>::enumerator},
-        {{1, Attribute::Access::Float, true}, 3, offsetof(PolygonPoint, mColor),    MappedGL<GLubyte>::enumerator},
+        {{1, ShaderParameter::Access::Float, true}, 3, offsetof(PolygonPoint, mColor),    MappedGL<GLubyte>::enumerator},
         { 3,                                  3, offsetof(PolygonPoint, mMatrixTransform), MappedGL<GLfloat>::enumerator},
         { 4,                                  3, offsetof(PolygonPoint, mMatrixTransform) + 3 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
         { 5,                                  3, offsetof(PolygonPoint, mMatrixTransform) + 6 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},

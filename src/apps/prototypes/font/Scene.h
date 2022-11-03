@@ -67,7 +67,7 @@ struct GlyphInstance
 
 constexpr AttributeDescriptionList gGlyphInstanceDescription{
     { 2, 2, offsetof(GlyphInstance, position_w),  MappedGL<GLfloat>::enumerator},
-    { {3, Attribute::Access::Integer}, 1, offsetof(GlyphInstance, offsetInTexture), MappedGL<GLint>::enumerator},
+    { {3, ShaderParameter::Access::Integer}, 1, offsetof(GlyphInstance, offsetInTexture), MappedGL<GLint>::enumerator},
     { 4, 2, offsetof(GlyphInstance, boundingBox), MappedGL<GLfloat>::enumerator},
     { 5, 2, offsetof(GlyphInstance, bearing),     MappedGL<GLfloat>::enumerator},
 };

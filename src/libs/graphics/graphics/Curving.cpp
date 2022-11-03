@@ -23,7 +23,7 @@ namespace {
 
     constexpr AttributeDescriptionList gVertexDescription{
         {0,                               1, offsetof(VertexData, mParameter),  MappedGL<GLfloat>::enumerator},
-        {{1, Attribute::Access::Integer}, 1, offsetof(VertexData, mSide),       MappedGL<GLbyte>::enumerator},
+        {{1, ShaderParameter::Access::Integer}, 1, offsetof(VertexData, mSide),       MappedGL<GLbyte>::enumerator},
     };
 
     using Inst = Curving::Instance;
