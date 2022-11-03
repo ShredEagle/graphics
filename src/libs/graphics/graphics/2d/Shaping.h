@@ -41,7 +41,7 @@ struct Vertex
     math::Position<2, GLfloat> mPosition_local{0.f, 0.f};
 
     static constexpr AttributeDescriptionList gAttributeDescription = {
-        {0, 2, 0, MappedGL<GLfloat>::enumerator} 
+        {0, {2, 0, MappedGL<GLfloat>::enumerator}} 
     };
 };
 
@@ -54,8 +54,8 @@ struct Instance
     math::Size<2, GLfloat> mSize_world;
 
     static constexpr AttributeDescriptionList gAttributeDescription = {
-        {1, 3, 0,                        MappedGL<GLfloat>::enumerator},
-        {2, 2, sizeof(mPosition_world),  MappedGL<GLfloat>::enumerator},
+        {1, {3, 0,                        MappedGL<GLfloat>::enumerator}},
+        {2, {2, sizeof(mPosition_world),  MappedGL<GLfloat>::enumerator}},
     };
 };
 

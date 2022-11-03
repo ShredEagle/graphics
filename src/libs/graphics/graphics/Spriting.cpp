@@ -49,9 +49,9 @@ VertexSpecification makeQuad()
             specification.mVertexArray,
             {
                 // Postion
-                { 0,                               2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
+                { 0,                                     {2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator}},
                 // UV
-                { {1, ShaderParameter::Access::Integer}, 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
+                { {1, ShaderParameter::Access::Integer}, {2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator}},
             },
             sizeof(Vertex),
             sizeof(gVerticesQuad),
@@ -69,13 +69,13 @@ VertexSpecification makeQuad()
             specification.mVertexArray,
             {
                 // Model transform
-                { 2, 3, offsetof(Spriting::Instance, mModelTransform) + 0 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
-                { 3, 3, offsetof(Spriting::Instance, mModelTransform) + 3 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
-                { 4, 3, offsetof(Spriting::Instance, mModelTransform) + 6 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator},
+                { 2, {3, offsetof(Spriting::Instance, mModelTransform) + 0 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator}},
+                { 3, {3, offsetof(Spriting::Instance, mModelTransform) + 3 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator}},
+                { 4, {3, offsetof(Spriting::Instance, mModelTransform) + 6 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator}},
                 // LoadedSprite (i.e. sprite rectangle cutout in the texture)
-                { {5, ShaderParameter::Access::Integer}, 4, offsetof(Spriting::Instance, mLoadedSprite),  MappedGL<GLint>::enumerator},
-                { 6,                               1, offsetof(Spriting::Instance, mOpacity),       MappedGL<GLfloat>::enumerator},
-                { 7,                               2, offsetof(Spriting::Instance, mAxisMirroring), MappedGL<GLint>::enumerator},
+                { {5, ShaderParameter::Access::Integer}, {4, offsetof(Spriting::Instance, mLoadedSprite),  MappedGL<GLint>::enumerator}},
+                { 6,                                     {1, offsetof(Spriting::Instance, mOpacity),       MappedGL<GLfloat>::enumerator}},
+                { 7,                                     {2, offsetof(Spriting::Instance, mAxisMirroring), MappedGL<GLint>::enumerator}},
             },
             1
         ));

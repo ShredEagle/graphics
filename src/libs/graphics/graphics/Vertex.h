@@ -16,8 +16,8 @@ struct Vertex
 
 
 constexpr std::initializer_list<AttributeDescription> gVertexDescription = {
-    { 0,                                2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator},
-    { {1, ShaderParameter::Access::Integer} , 2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator},
+    { 0,                                      {2, offsetof(Vertex, mPosition), MappedGL<GLfloat>::enumerator}},
+    { {1, ShaderParameter::Access::Integer} , {2, offsetof(Vertex, mUV),       MappedGL<GLint>::enumerator}},
 };
 
 } // namespace graphics

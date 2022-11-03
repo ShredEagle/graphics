@@ -23,7 +23,7 @@ namespace
     };
 
     constexpr AttributeDescriptionList gVertexDescription{
-        {0, 2, offsetof(VertexData, mPosition), MappedGL<GLfloat>::enumerator},
+        {0, {2, offsetof(VertexData, mPosition), MappedGL<GLfloat>::enumerator}},
     };
 
     constexpr std::size_t gVerticesCount = 4;
@@ -40,10 +40,10 @@ namespace
     // Per instance data
     //
     constexpr AttributeDescriptionList gInstanceDescription{
-        { 1,                                  3, offsetof(DrawLine::Line, mOrigin),       MappedGL<GLfloat>::enumerator},
-        { 2,                                  3, offsetof(DrawLine::Line, mEnd),          MappedGL<GLfloat>::enumerator},
-        { 3,                                  1, offsetof(DrawLine::Line, mWidth_screen), MappedGL<GLfloat>::enumerator},
-        {{4, ShaderParameter::Access::Float, true}, 4, offsetof(DrawLine::Line, mColor),        MappedGL<GLubyte>::enumerator},
+        { 1,                                        {3, offsetof(DrawLine::Line, mOrigin),       MappedGL<GLfloat>::enumerator}},
+        { 2,                                        {3, offsetof(DrawLine::Line, mEnd),          MappedGL<GLfloat>::enumerator}},
+        { 3,                                        {1, offsetof(DrawLine::Line, mWidth_screen), MappedGL<GLfloat>::enumerator}},
+        {{4, ShaderParameter::Access::Float, true}, {4, offsetof(DrawLine::Line, mColor),        MappedGL<GLubyte>::enumerator}},
     };
 
     VertexSpecification make_VertexSpecification()

@@ -111,7 +111,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
     specification.mVertexBuffers.push_back(
         loadVertexBuffer(specification.mVertexArray,
-                         { {2, 2, 0, MappedGL<GLint>::enumerator} },
+                         { {2, {2, 0, MappedGL<GLint>::enumerator}} },
                          std::span{positions},
                          1));
 
@@ -120,7 +120,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
         initVertexBuffer<TileSet::Instance>(
             specification.mVertexArray,
             {
-                { {3, ShaderParameter::Access::Integer}, 4, 0, MappedGL<GLint>::enumerator}
+                { {3, ShaderParameter::Access::Integer}, {4, 0, MappedGL<GLint>::enumerator}}
             },
             1));
 

@@ -21,8 +21,8 @@ struct VertexUnitQuad
 
 
 constexpr std::initializer_list<AttributeDescription> gVertexScreenDescription = {
-    { 0, 2, offsetof(VertexUnitQuad, mPosition), MappedGL<GLfloat>::enumerator},
-    { 1, 2, offsetof(VertexUnitQuad, mUV),       MappedGL<GLfloat>::enumerator},
+    { 0, {2, offsetof(VertexUnitQuad, mPosition), MappedGL<GLfloat>::enumerator}},
+    { 1, {2, offsetof(VertexUnitQuad, mUV),       MappedGL<GLfloat>::enumerator}},
 };
 
 
