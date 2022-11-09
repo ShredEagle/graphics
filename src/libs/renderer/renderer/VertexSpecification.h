@@ -32,7 +32,7 @@ inline void bind(const VertexArrayObject & aVertexArray)
 
 // TODO Ad 2022/02/02: Is it a good idea to "expect" the object to unbind
 // when the underlying unbinding mechanism does not use it (just reset a default)? 
-inline void unbind(const VertexArrayObject & aVertexArray)
+inline void unbind(const VertexArrayObject & /*aVertexArray*/)
 {
     glBindVertexArray(0);
 }
