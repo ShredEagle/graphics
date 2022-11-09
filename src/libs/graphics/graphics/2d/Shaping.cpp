@@ -53,7 +53,7 @@ namespace {
         {
             GLfloat const t = 2 * math::pi<GLfloat> * n / N_vertice;
             vertices[n] = Vertex{
-                .mPosition_local = {cos(t)*radius, sin(t)*radius}
+                .mPosition_local = {cosf(t)*radius, sinf(t)*radius}
             };
         }
 
