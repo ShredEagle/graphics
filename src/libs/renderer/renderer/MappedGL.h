@@ -9,9 +9,14 @@
 namespace ad {
 namespace graphics {
 
-#define MAP(trait, type, enumval)       \
-    template <> struct trait<type>      \
-    { static constexpr GLenum enumerator = enumval; };
+#define MAP(trait, gltype, enumval)                     \
+    template <> struct trait<gltype>                    \
+    { static constexpr GLenum enumerator = enumval; };  \
+
+#define MAP_AND_REVERSE(trait, gltype, enumval)         \
+    MAP(trait, gltype, enumval)                         \
+    template <> struct trait##_r<enumval>               \
+    { using type = gltype; };
 
 //
 // Built-in types
@@ -19,14 +24,48 @@ namespace graphics {
 template <class T_scalar>
 struct MappedGL;
 
-MAP(MappedGL, GLfloat, GL_FLOAT);
-MAP(MappedGL, GLdouble, GL_DOUBLE);
-MAP(MappedGL, GLbyte, GL_BYTE);
-MAP(MappedGL, GLubyte, GL_UNSIGNED_BYTE);
-MAP(MappedGL, GLshort, GL_SHORT);
-MAP(MappedGL, GLushort, GL_UNSIGNED_SHORT);
-MAP(MappedGL, GLint, GL_INT);
-MAP(MappedGL, GLuint, GL_UNSIGNED_INT);
+template <class T_scalar>
+constexpr GLenum MappedGL_v = MappedGL<T_scalar>::enumerator;
+
+template <GLuint N_typeEnum>
+struct MappedGL_r;
+
+template <GLuint N_typeEnum>
+using GLFromTypeEnum_t = typename MappedGL_r<N_typeEnum>::type;
+
+MAP_AND_REVERSE(MappedGL, GLfloat, GL_FLOAT);
+MAP_AND_REVERSE(MappedGL, GLdouble, GL_DOUBLE);
+MAP_AND_REVERSE(MappedGL, GLbyte, GL_BYTE);
+MAP_AND_REVERSE(MappedGL, GLubyte, GL_UNSIGNED_BYTE);
+MAP_AND_REVERSE(MappedGL, GLshort, GL_SHORT);
+MAP_AND_REVERSE(MappedGL, GLushort, GL_UNSIGNED_SHORT);
+MAP_AND_REVERSE(MappedGL, GLint, GL_INT);
+MAP_AND_REVERSE(MappedGL, GLuint, GL_UNSIGNED_INT);
+
+
+#define TYPEENUMCASE(enumval)           \
+    case enumval:                       \
+        return sizeof(GLFromTypeEnum_t<enumval>);
+
+
+constexpr GLenum getByteSize(GLenum aTypeEnum) 
+{
+    switch(aTypeEnum)
+    {
+        TYPEENUMCASE(GL_FLOAT);
+        TYPEENUMCASE(GL_DOUBLE);
+        TYPEENUMCASE(GL_BYTE);
+        TYPEENUMCASE(GL_UNSIGNED_BYTE);
+        TYPEENUMCASE(GL_SHORT);
+        TYPEENUMCASE(GL_UNSIGNED_SHORT);
+        TYPEENUMCASE(GL_INT);
+        TYPEENUMCASE(GL_UNSIGNED_INT);
+    default:
+        throw std::domain_error{"Invalid type enumerator."};
+    }
+}
+
+#undef TYPEENUMCASE
 
 
 //
@@ -35,14 +74,14 @@ MAP(MappedGL, GLuint, GL_UNSIGNED_INT);
 template <class T_pixel>
 struct MappedPixel;
 
+template <class T_pixel>
+constexpr GLenum MappedPixel_v = MappedPixel<T_pixel>::enumerator;
+
 MAP(MappedPixel, math::sdr::Rgb, GL_RGB);
 MAP(MappedPixel, math::sdr::Rgba, GL_RGBA);
 MAP(MappedPixel, math::hdr::Rgb_f, GL_RGB);
 
-template <class T_pixel>
-constexpr GLenum MappedPixel_v = MappedPixel<T_pixel>::enumerator;
-
-
+#undef MAP_AND_REVERSE
 #undef MAP
 
 
