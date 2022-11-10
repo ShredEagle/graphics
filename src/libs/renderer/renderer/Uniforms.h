@@ -13,8 +13,10 @@
 namespace ad {
 namespace graphics {
 
+    // Note: It is not obvious whether a const program should allow to change its parameters.
+    // Yet, designing the API this way allow to make most render() member method constant.
 
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Matrix<3, 3, GLfloat> & aMatrix)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -22,7 +24,7 @@ namespace graphics {
     }
 
 
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Matrix<4, 4, GLfloat> & aMatrix)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -30,7 +32,7 @@ namespace graphics {
     }
 
     template <class T_derived>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Vector<T_derived, 2, GLint> & aVector)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -39,7 +41,7 @@ namespace graphics {
 
 
     template <class T_derived>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Vector<T_derived, 3, GLint> & aVector)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -47,7 +49,7 @@ namespace graphics {
     }
 
     template <class T_derived>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Vector<T_derived, 2, GLfloat> & aVector)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -56,7 +58,7 @@ namespace graphics {
 
 
     template <class T_derived>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Vector<T_derived, 3, GLfloat> & aVector)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -65,7 +67,7 @@ namespace graphics {
 
 
     template <class T_hdrNumber>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::hdr::Rgb<T_hdrNumber> & aColor)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -74,7 +76,7 @@ namespace graphics {
 
 
     template <class T_derived>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::Vector<T_derived, 4, GLfloat> & aVector)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -83,14 +85,14 @@ namespace graphics {
 
 
     template <class T_hdrNumber>
-    inline void setUniform(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
                            const math::hdr::Rgba<T_hdrNumber> & aColor)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform4f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2], (GLfloat)aColor[3]);
     }
 
-    inline void setUniformFloat(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniformFloat(const Program & aProgram, const std::string & aNameInShader,
                                 GLfloat aFloat)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -98,7 +100,7 @@ namespace graphics {
     }
 
 
-    inline void setUniformInt(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniformInt(const Program & aProgram, const std::string & aNameInShader,
                               GLint aInteger)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -106,7 +108,7 @@ namespace graphics {
     }
 
 
-    inline void setUniformFloatArray(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniformFloatArray(const Program & aProgram, const std::string & aNameInShader,
                                      std::span<const GLfloat> aFloats)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
@@ -114,7 +116,7 @@ namespace graphics {
     }
 
 
-    inline void setUniformIntArray(Program & aProgram, const std::string & aNameInShader,
+    inline void setUniformIntArray(const Program & aProgram, const std::string & aNameInShader,
                                    std::span<const GLint> aIntegers)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
