@@ -72,14 +72,14 @@ void setOrthographicView(T_engine3D & aEngine,
 
 
 template <class T_number>
-inline math::AffineMatrix<4, T_number> getCameraTransform(
+inline constexpr math::AffineMatrix<4, T_number> getCameraTransform(
     math::Position<3, T_number> aCameraPosition,
     math::Vec<3, T_number> aGazeDirection,
     math::Vec<3, T_number> aUpDirection = {T_number{0}, T_number{1}, T_number{0}})
 {
     math::Frame<3, T_number> cameraFrame{
         aCameraPosition,
-        math::OrthonormalBase<3, T_number>::MakeFromTwoVectors(-aGazeDirection, aUpDirection)
+        math::OrthonormalBase<3, T_number>::MakeFromWUp(-aGazeDirection, aUpDirection)
     };
 
     return math::trans3d::canonicalToFrame(cameraFrame);
