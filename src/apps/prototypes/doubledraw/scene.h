@@ -216,7 +216,7 @@ DrawContext animatedRing(const arte::ImageRgba &aImage, const math::Size<2, int>
         // First-sprite
         // Found by measuring in the image raster
         Texture texture{GL_TEXTURE_2D_ARRAY};
-        loadAnimationAsArray(texture, GL_TEXTURE0 + 2, animationArray, aFrame, framePositions.size());
+        loadAnimationAsArray(texture, animationArray, aFrame, framePositions.size());
         // Should be done just before drawing, but more convenient here
         bind(texture, GL_TEXTURE0 + 2);
 
