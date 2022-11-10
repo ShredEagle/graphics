@@ -42,35 +42,56 @@ std::optional<std::string> extractGlslError(GLuint objectId,
 
 void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
 {
+    // Diagnostic will receive the processed output.
+    std::ostringstream diagnostic;
     if (auto errorLog = 
             extractGlslError(aObjectId, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog))
     {
-        // Extract each line from the shader source code.
-        // Disclaimer: this is stupid, so many string copies \o/
-        // Some might argue that it somehow reflects the standard library (why can't you getLine on a string_view?)
-        // TODO Replace with a vector of indices range for each line in the view.
-        std::istringstream source{std::string{aSource}};
-        std::string sourceLine;
-        std::vector<std::string> sourceLines;
-        while(std::getline(source, sourceLine))
+        try
         {
-            sourceLines.push_back(sourceLine);
-        }
+            // Extract each line from the shader source code.
+            // Disclaimer: this is stupid, so many string copies \o/
+            // Some might argue that it somehow reflects the standard library (why can't you getLine on a string_view?)
+            // TODO Replace with a vector of indices range for each line in the view.
+            std::istringstream source{std::string{aSource}};
+            std::string sourceLine;
+            std::vector<std::string> sourceLines;
+            while(std::getline(source, sourceLine))
+            {
+                sourceLines.push_back(sourceLine);
+            }
 
-        // Prepare a diagnostic for each error, notably showing the offending line.
-        std::istringstream log{*errorLog};
-        std::ostringstream diagnostic;
-        std::string errorLine;
-        while(std::getline(log, errorLine) && ! errorLine.empty())
+            // Prepare a diagnostic for each error, notably showing the offending line.
+            std::istringstream log{*errorLog};
+            std::string errorLine;
+
+            std::getline(log, errorLine); // following getline calls are in the inner while
+            while(!errorLine.empty())
+            {
+                auto left = errorLine.find("(");
+                auto right = errorLine.find(")");
+                int column = std::stoi(errorLine.substr(0, left));    
+                int line = std::stoi(errorLine.substr(left + 1, right - left));    
+                assert(line > 0);
+
+                // Assemble error message with the current body, 
+                // plus all following lines that are indented.
+                std::string errorMessage = errorLine.substr(right + 4) + "\n";
+                while(std::getline(log, errorLine) && errorLine.starts_with("    "))
+                {
+                    errorMessage += errorLine + "\n";
+                }
+
+                // Once a non-indented line has been found, the error has been treated entirely.
+                diagnostic << aSource.mIdentifier << " " << column  << "(" << line << ") : "
+                    << sourceLines[line - 1] << "\n"
+                    << "- " << errorMessage << "\n";
+            }
+        }
+        catch(std::exception &aException)
         {
-            auto left = errorLine.find("(");
-            auto right = errorLine.find(")");
-            int column = std::stoi(errorLine.substr(0, left));    
-            int line = std::stoi(errorLine.substr(left + 1, right - left));    
-            assert(line > 0);
-            diagnostic << aSource.mIdentifier << " " << column  << "(" << line << ") : "
-                << sourceLines[line - 1] << "\n"
-                << errorLine.substr(right + 4) << "\n";
+            diagnostic << *errorLog
+                       << "Error log analysis failed with exception: " << aException.what();
         }
         throw ShaderCompilationError("GLSL compilation error", "\n" + diagnostic.str());
     }
