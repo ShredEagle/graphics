@@ -1,6 +1,7 @@
 set(TARGET_NAME renderer)
 
 set(${TARGET_NAME}_HEADERS
+    BufferUtilities.h
     commons.h
     Drawing.h
     Error.h
