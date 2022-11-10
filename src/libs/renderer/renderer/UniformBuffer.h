@@ -43,10 +43,12 @@ inline GLenum getBound(const UniformBufferObject &)
 template <>
 inline ScopedBind::ScopedBind(const UniformBufferObject & aResource) :
     mGuard{[previous = getBound(aResource)]
-           { glBindBuffer(GL_UNIFORM_BUFFER_BINDING, previous);}}
+           { glBindBuffer(GL_UNIFORM_BUFFER, previous);}}
 {
     bind(aResource);
 }
+
+// TODO scoped bind for Indexed version
 
 
 } // namespace graphics
