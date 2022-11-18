@@ -92,7 +92,7 @@ class ShapeSet
 public:
     ShapeSet();
 
-    void resetCircles(std::span<Shaping::Circle> aCircles);
+    void resetCircles(std::span<const Shaping::Circle> aCircles);
 
 private:
     VertexArrayObject mCirclesVAO;

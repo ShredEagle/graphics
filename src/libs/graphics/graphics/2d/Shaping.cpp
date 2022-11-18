@@ -81,7 +81,7 @@ ShapeSet::ShapeSet() :
 {}
 
 
-void ShapeSet::resetCircles(std::span<Shaping::Circle> aCircles)
+void ShapeSet::resetCircles(std::span<const Shaping::Circle> aCircles)
 {
     respecifyBuffer(mCirclesInstanceData, aCircles);
     mCirclesCount = (GLsizei)aCircles.size();
