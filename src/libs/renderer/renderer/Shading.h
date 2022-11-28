@@ -5,6 +5,7 @@
 
 #include "GL_Loader.h"
 
+#include <filesystem>
 #include <functional>
 #include <vector>
 
@@ -12,7 +13,30 @@ namespace ad {
 namespace graphics {
 
 
-/// \brief Augments the shader source code (as a string_view) with an
+/// \brief Host the shader code string, and offer preprocessing for #include
+class ShaderSource
+{
+    friend struct ShaderSourceView;
+
+public:
+    using Lookup = std::function<std::unique_ptr<std::istream>(const std::string &)>;
+
+    static ShaderSource Preprocess(std::istream & aIn, const Lookup & aLookup);
+    static ShaderSource Preprocess(std::istream && aIn, const Lookup & aLookup)
+    { return Preprocess(aIn, aLookup); }
+
+    static ShaderSource Preprocess(std::filesystem::path aFile);
+
+private:
+    static void Preprocess_impl(std::istream & aIn, std::ostream & aOut, const Lookup & aLookup);
+
+    ShaderSource(std::string aSource);
+
+    std::string mSource;
+};
+
+
+/// \brief Augments the (char *) shader source code (as a string_view) with an
 /// optional name helping to identify the shader associated to the source.
 struct ShaderSourceView
 {
@@ -24,6 +48,11 @@ struct ShaderSourceView
     /*implicit*/ ShaderSourceView(const char * aSource, std::string aIdentifier = "") :
         mSource{aSource},
         mIdentifier{std::move(aIdentifier)}
+    {}
+
+    /*implicit*/ ShaderSourceView(const ShaderSource & aShaderSource) :
+        mSource{aShaderSource.mSource}
+        // TODO handle some form of identifier
     {}
 
     operator std::string_view () const
@@ -90,6 +119,8 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource);
 
 void handleLinkError(GLuint aObjectId);
 
+
+/// \brief User defined exception to signal an error when compiling a shader.
 class ShaderCompilationError : public std::runtime_error
 {
 public:

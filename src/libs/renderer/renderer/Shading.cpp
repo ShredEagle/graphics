@@ -1,13 +1,91 @@
 #include "Shading.h"
 
 #include <algorithm>
+#include <fstream>
 #include <optional>
+#include <regex>
 #include <sstream>
 
 #include <cassert>
 
 namespace ad {
 namespace graphics {
+
+
+namespace {
+
+    std::ifstream openStream(std::filesystem::path aFile)
+    {
+        return std::ifstream{aFile};
+    }
+
+    // Only handle double-slash comments atm
+    // TODO handle /* */ style comments
+    void removeComments(std::string & aLine)
+    {
+        // Remove comments from "//" to end of the line
+        aLine.resize(std::min(aLine.size(), aLine.find("//")));
+    }
+
+    const std::regex gInclusionRegex{R"#(#include\W*"(.+?)")#"};
+
+} // anonymous
+
+
+ShaderSource::ShaderSource(std::string aSource) :
+    mSource{std::move(aSource)}
+{}
+
+
+ShaderSource ShaderSource::Preprocess(std::filesystem::path aFile)
+{
+    // TODO handle parent_path changing when the included file is in a different directory
+    // (i.e. the files it includes should not be rooted from the different directory)
+    return ShaderSource::Preprocess(
+        openStream(aFile),
+        [parentPath = aFile.parent_path()](const std::string aFilePath)
+        {
+            return std::make_unique<std::ifstream>(openStream(parentPath / aFilePath));
+        });
+}
+
+
+ShaderSource ShaderSource::Preprocess(std::istream & aIn, const Lookup & aLookup)
+{
+    std::ostringstream out;
+    Preprocess_impl(aIn, out, aLookup);
+    return ShaderSource{std::move(out.str())};
+}
+
+
+void ShaderSource::Preprocess_impl(std::istream & aIn, std::ostream & aOut, const Lookup & aLookup)
+{
+    for(std::string line; getline(aIn, line); )
+    {
+        removeComments(line);
+
+        std::smatch matches;
+        while(std::regex_search(line, matches, gInclusionRegex))
+        {
+            // Everything before the match is added to the output
+            aOut << matches.prefix();
+
+            // Recursive invocation on the included content
+            std::unique_ptr<std::istream> included = aLookup(matches[1]);
+            Preprocess_impl(*included, aOut, aLookup);
+
+            // Everything up-after the include match is removed from the line
+            line = matches.suffix();
+        }
+        // Everything on the line after the last match is added to the output
+        aOut << line ;
+        if(!aIn.eof())
+        {
+            aOut << "\n";
+        }
+    }
+}
+
 
 Shader::Shader(GLenum aStage, ShaderSourceView aSource) : Shader(aStage)
 {
@@ -44,7 +122,7 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
 {
     // Diagnostic will receive the processed output.
     std::ostringstream diagnostic;
-    if (auto errorLog = 
+    if(auto errorLog =
             extractGlslError(aObjectId, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog))
     {
         try
