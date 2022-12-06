@@ -2,6 +2,8 @@
 
 #include <renderer/Shading.h>
 
+#include <test_commons/PathProvider.h>
+
 #include <map>
 
 
@@ -61,7 +63,7 @@ std::unique_ptr<std::istringstream> lookupStringTable(const std::string aStringN
 }
 
 
-SCENARIO("Shader code include preprocessing.")
+SCENARIO("Shader code (std::string) include preprocessing.")
 {
     GIVEN("A shader source with #include statements")
     {
@@ -77,6 +79,27 @@ SCENARIO("Shader code include preprocessing.")
             {
                 ShaderSourceView view{source};
                 REQUIRE(view.mSource == gExpectedAmalgamation);
+            }
+        }
+    }
+}
+
+
+SCENARIO("Shader files include preprocessing.")
+{
+    GIVEN("The path to a top-level shader including other files.")
+    {
+        std::filesystem::path top = resource::pathFor("tests/Shaders/a.glsl");
+
+        WHEN("It is preprocessed.")
+        {
+            ShaderSource source = ShaderSource::Preprocess(top);
+
+            THEN("The resulting amalgamation includes the other strings.")
+            {
+                const std::string expected{"int a;\nint sub;\nint subsub;\nint b;"};
+                ShaderSourceView view{source};
+                REQUIRE(view.mSource == expected);
             }
         }
     }
