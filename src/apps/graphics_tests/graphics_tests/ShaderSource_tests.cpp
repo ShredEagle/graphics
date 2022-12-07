@@ -37,21 +37,19 @@ R"(int c;)";
 
 const std::string gExpectedAmalgamation =
 R"(#version 310
-
-
 int b;
 int foo()
 {}
  
-
 int a; int c;
-
 void main(void)
 {
-})";
+}
+)";
 
 
-std::unique_ptr<std::istringstream> lookupStringTable(const std::string aStringName)
+std::pair<std::unique_ptr<std::istringstream>, std::string>
+lookupStringTable(const std::string aStringName)
 {
     static const std::map<std::string, const std::string *> lookupTable{
         {"ShaderA", &gShaderA},
@@ -59,7 +57,10 @@ std::unique_ptr<std::istringstream> lookupStringTable(const std::string aStringN
         {"ShaderC", &gShaderC},
     };
 
-    return std::make_unique<std::istringstream>(*lookupTable.at(aStringName));
+    return {
+        std::make_unique<std::istringstream>(*lookupTable.at(aStringName)),
+        aStringName,
+    };
 }
 
 
@@ -73,6 +74,7 @@ SCENARIO("Shader code (std::string) include preprocessing.")
         {
             ShaderSource source = ShaderSource::Preprocess(
                 std::istringstream{gShaderA},
+                "ShaderA",
                 lookupStringTable);
 
             THEN("The resulting amalgamation includes the other strings.")
@@ -90,6 +92,7 @@ SCENARIO("Shader files include preprocessing.")
     GIVEN("The path to a top-level shader including other files.")
     {
         std::filesystem::path top = resource::pathFor("tests/Shaders/a.glsl");
+        std::filesystem::path base = top.parent_path();
 
         WHEN("It is preprocessed.")
         {
@@ -97,9 +100,42 @@ SCENARIO("Shader files include preprocessing.")
 
             THEN("The resulting amalgamation includes the other strings.")
             {
-                const std::string expected{"int a;\nint sub;\nint subsub;\nint b;"};
+                // Note: the blank line before `int a_after` is discarded.
+                const std::string expected{
+                    "int a_before;\nint sub;\nint subsub;\nint b1;\nint b2;\nint a_after;\n"
+                };
                 ShaderSourceView view{source};
                 REQUIRE(view.mSource == expected);
+            }
+
+            THEN("The source map is allowing to map each line in the output to original files.")
+            {
+                const auto & sourceMap = source.getSourceMap();
+
+                auto mapping = sourceMap.getLine(1);
+                CHECK(mapping.mIdentifier == top);
+                CHECK(mapping.mLine == 1);
+
+                mapping = sourceMap.getLine(2);
+                CHECK(mapping.mIdentifier == base / "sub" / "sub.glsl");
+                CHECK(mapping.mLine == 1);
+
+                mapping = sourceMap.getLine(3);
+                CHECK(mapping.mIdentifier == base / "sub" / "subsub" / "subsub.glsl");
+                CHECK(mapping.mLine == 1);
+
+                mapping = sourceMap.getLine(4);
+                CHECK(mapping.mIdentifier == base / "b.glsl");
+                CHECK(mapping.mLine == 1);
+
+                mapping = sourceMap.getLine(5);
+                CHECK(mapping.mIdentifier == base / "b.glsl");
+                CHECK(mapping.mLine == 2);
+
+                // Note: Yet the blank line is counted when mapping to original source
+                mapping = sourceMap.getLine(6);
+                CHECK(mapping.mIdentifier == base / "a.glsl");
+                CHECK(mapping.mLine == 5);
             }
         }
     }

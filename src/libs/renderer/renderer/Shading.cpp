@@ -58,7 +58,7 @@ namespace {
             mPathes.push(canonical(aRootFile));
         }
         
-        std::unique_ptr<PopGuard> operator()(const std::string & aRelativePath)
+        std::pair<std::unique_ptr<PopGuard>, std::string> operator()(const std::string & aRelativePath)
         {
             path filePath = mPathes.top().parent_path() / aRelativePath;
             if (!is_regular_file(filePath))
@@ -71,7 +71,15 @@ namespace {
             // Cannot be called if the file does not exist
             filePath = canonical(filePath);
             mPathes.push(filePath);
-            return std::make_unique<PopGuard>(openStream(filePath), mPathes);
+            return {
+                std::make_unique<PopGuard>(openStream(filePath), mPathes),
+                filePath.string(),
+            };
+        }
+
+        std::string top() const
+        {
+            return mPathes.top().string();
         }
 
     private:
@@ -81,8 +89,37 @@ namespace {
 } // anonymous
 
 
-ShaderSource::ShaderSource(std::string aSource) :
-    mSource{std::move(aSource)}
+SourceMap::Mapping ShaderSource::InclusionSourceMap::getLine(std::size_t aCompiledSourceLine) const
+{
+    const OriginalLine & original = mMap.at(aCompiledSourceLine);
+    return {
+        .mIdentifier = mIdentifiers[original.mIdentifierIndex],
+        .mLine = original.mLineNumber,
+    };
+}
+
+
+auto ShaderSource::InclusionSourceMap::registerSource(std::string_view aIdentifier) -> IdentifierId
+{
+    IdentifierId result = mIdentifiers.size();
+    mIdentifiers.push_back(std::string{aIdentifier});
+    return result;
+}
+
+
+void ShaderSource::InclusionSourceMap::associateLines(IdentifierId aIdentifier,
+                                                      std::size_t aAssembledLine,
+                                                      std::size_t aSourceLine)
+{
+    auto [iterator, didInsert] =
+        mMap.emplace(aAssembledLine, OriginalLine{aIdentifier, aSourceLine});
+    assert(didInsert);
+}
+
+
+ShaderSource::ShaderSource(std::string aSource, InclusionSourceMap aMapping) :
+    mSource{std::move(aSource)},
+    mMapping{std::move(aMapping)}
 {}
 
 
@@ -91,42 +128,54 @@ ShaderSource ShaderSource::Preprocess(std::filesystem::path aFile)
     // TODO handle parent_path changing when the included file is in a different directory
     // (i.e. the files it includes should not be rooted from the different directory)
     FileLookup lookup{aFile};
-    return ShaderSource::Preprocess(openStream(aFile), lookup);
+    return ShaderSource::Preprocess(openStream(aFile), lookup.top(), lookup);
 }
 
 
-ShaderSource ShaderSource::Preprocess(std::istream & aIn, const Lookup & aLookup)
+ShaderSource ShaderSource::Preprocess(std::istream & aIn,
+                                      const std::string & aIdentifier,
+                                      const Lookup & aLookup)
 {
-    std::ostringstream out;
-    Preprocess_impl(aIn, out, aLookup);
-    return ShaderSource{std::move(out.str())};
+    Assembled out;
+    Preprocess_impl({aIn, aIdentifier}, out, aLookup);
+    return ShaderSource{std::move(out.mStream.str()), std::move(out.mMapping)};
 }
 
 
-void ShaderSource::Preprocess_impl(std::istream & aIn, std::ostream & aOut, const Lookup & aLookup)
+void ShaderSource::Preprocess_impl(Input aIn, Assembled & aOut, const Lookup & aLookup)
 {
-    for(std::string line; getline(aIn, line); )
+    std::size_t sourceLine = 0;
+    InclusionSourceMap::IdentifierId sourceId = aOut.mMapping.registerSource(aIn.mIdentifier);
+    for(std::string line; getline(aIn.mStream, line); )
     {
+        ++sourceLine;
         removeComments(line);
 
         std::smatch matches;
         while(std::regex_search(line, matches, gInclusionRegex))
         {
             // Everything before the match is added to the output
-            aOut << matches.prefix();
+            aOut.mStream << matches.prefix();
 
             // Recursive invocation on the included content
-            std::unique_ptr<std::istream> included = aLookup(matches[1]);
-            Preprocess_impl(*included, aOut, aLookup);
+            std::pair<std::unique_ptr<std::istream>, std::string> included 
+                = aLookup(matches[1]);
+            Preprocess_impl({*included.first, included.second}, aOut, aLookup);
 
             // Everything up-after the include match is removed from the line
+            // before the next evalution of the condition.
             line = matches.suffix();
         }
         // Everything on the line after the last match is added to the output
-        aOut << line ;
-        if(!aIn.eof())
+        // Yet we discard empty lines. This will notably discard the remaining empty line after an include.
+        if(! line.empty())
         {
-            aOut << "\n";
+            // Note: Write a newline after last line, even if it did not contain one.
+            //   This ensures that the characters in the parent file after the include are on a newline
+            //   (TODO: Anyway, we probably should not support characters after an include directive)
+            aOut.mStream << line << "\n";
+            // Lines are 1-indexed, increment before writing to the map.
+            aOut.mMapping.associateLines(sourceId, ++aOut.mOutputLine, sourceLine);
         }
     }
 }

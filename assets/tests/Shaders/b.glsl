@@ -1,1 +1,2 @@
-int b;
+int b1;
+int b2;
