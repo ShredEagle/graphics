@@ -1,5 +1,6 @@
 #include "catch.hpp"
 
+#include <renderer/ShaderSource.h>
 #include <renderer/Shading.h>
 #include <graphics/ApplicationGlfw.h>
 

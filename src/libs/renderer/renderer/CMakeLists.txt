@@ -10,6 +10,7 @@ set(${TARGET_NAME}_HEADERS
     GL_Loader.h
     MappedGL.h
     Query.h
+    ShaderSource.h
     Shading.h
     Texture.h
     UniformBuffer.h
@@ -21,6 +22,7 @@ set(${TARGET_NAME}_HEADERS
 )
 
 set(${TARGET_NAME}_SOURCES
+    ShaderSource.cpp
     Shading.cpp
     VertexSpecification.cpp
 
