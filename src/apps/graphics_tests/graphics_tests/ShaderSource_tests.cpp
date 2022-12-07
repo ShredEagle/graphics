@@ -1,6 +1,7 @@
 #include "catch.hpp"
 
 #include <renderer/Shading.h>
+#include <graphics/ApplicationGlfw.h>
 
 #include <test_commons/PathProvider.h>
 
@@ -91,7 +92,7 @@ SCENARIO("Shader files include preprocessing.")
 {
     GIVEN("The path to a top-level shader including other files.")
     {
-        std::filesystem::path top = resource::pathFor("tests/Shaders/a.glsl");
+        std::filesystem::path top = resource::pathFor("tests/Shaders/nested_inclusion/a.glsl");
         std::filesystem::path base = top.parent_path();
 
         WHEN("It is preprocessed.")
@@ -136,6 +137,30 @@ SCENARIO("Shader files include preprocessing.")
                 mapping = sourceMap.getLine(6);
                 CHECK(mapping.mIdentifier == base / "a.glsl");
                 CHECK(mapping.mLine == 5);
+            }
+        }
+    }
+}
+
+
+SCENARIO("Shader compilatin errors mapping.")
+{
+    GIVEN("A preprocessed shader file including another-one containing an error.")
+    {
+        std::filesystem::path vert = resource::pathFor("tests/Shaders/compilation_errors/vert.glsl");
+        ShaderSource source = ShaderSource::Preprocess(vert);
+
+        WHEN("It is compiled.")
+        {
+            graphics::ApplicationGlfw app{"dummy", {1, 1}};
+
+            graphics::Shader shader{GL_VERTEX_SHADER};
+            THEN("It throws an exception pointing to the correct line in the base files.")
+            {
+                using Catch::Matchers::Contains;
+                CHECK_THROWS_WITH(compileShader(shader, source), 
+                                   Contains("helpers.glsl 0(line: 3)") 
+                                     && Contains("vert.glsl 0(line: 7)"));
             }
         }
     }

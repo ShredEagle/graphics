@@ -117,9 +117,9 @@ void ShaderSource::InclusionSourceMap::associateLines(IdentifierId aIdentifier,
 }
 
 
-ShaderSource::ShaderSource(std::string aSource, InclusionSourceMap aMapping) :
+ShaderSource::ShaderSource(std::string aSource, InclusionSourceMap aMap) :
     mSource{std::move(aSource)},
-    mMapping{std::move(aMapping)}
+    mMap{std::move(aMap)}
 {}
 
 
@@ -255,7 +255,19 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
                 }
 
                 // Once a non-indented line has been found, the error has been treated entirely.
-                diagnostic << aSource.mIdentifier << " " << column  << "(" << line << ") : "
+                auto mapping = [&]() -> SourceMap::Mapping
+                {
+                     if (aSource.mMap != nullptr)
+                     {
+                        return aSource.mMap->getLine(line);
+                     }
+                     else
+                     {
+                        return {aSource.mIdentifier, (std::size_t)line};
+                     }
+                }();
+
+                diagnostic << mapping.mIdentifier << " " << column  << "(line: " << mapping.mLine << ") : "
                     << sourceLines[line - 1] << "\n"
                     << "- " << errorMessage << "\n";
             }

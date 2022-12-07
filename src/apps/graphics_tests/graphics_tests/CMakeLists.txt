@@ -12,8 +12,6 @@ set(${TARGET_NAME}_SOURCES
     ShaderSource_tests.cpp
 )
 
-find_package(Graphics CONFIG REQUIRED COMPONENTS test_commons)
-
 add_executable(${TARGET_NAME}
                ${${TARGET_NAME}_HEADERS}
                ${${TARGET_NAME}_SOURCES}
@@ -22,6 +20,7 @@ add_executable(${TARGET_NAME}
 target_link_libraries(${TARGET_NAME}
     PRIVATE
         ad::arte
+        ad::graphics
         ad::renderer
         ad::test_commons
         )

@@ -10,6 +10,7 @@
 #include <functional>
 #include <map>
 #include <stack>
+
 #include <vector>
 
 namespace ad {
@@ -74,8 +75,8 @@ public:
 
     static ShaderSource Preprocess(std::filesystem::path aFile);
 
-    const InclusionSourceMap & getSourceMap()
-    { return mMapping; }
+    const InclusionSourceMap & getSourceMap() const
+    { return mMap; }
 
 private:
     struct Input
@@ -93,10 +94,10 @@ private:
 
     static void Preprocess_impl(Input aIn, Assembled & aOut, const Lookup & aLookup);
 
-    ShaderSource(std::string aSource, InclusionSourceMap aMapping);
+    ShaderSource(std::string aSource, InclusionSourceMap aMap);
 
     std::string mSource;
-    InclusionSourceMap mMapping;
+    InclusionSourceMap mMap;
 };
 
 
@@ -115,8 +116,8 @@ struct ShaderSourceView
     {}
 
     /*implicit*/ ShaderSourceView(const ShaderSource & aShaderSource) :
-        mSource{aShaderSource.mSource}
-        // TODO handle some form of identifier
+        mSource{aShaderSource.mSource},
+        mMap{&aShaderSource.getSourceMap()}
     {}
 
     operator std::string_view () const
@@ -129,7 +130,11 @@ struct ShaderSourceView
     { return mSource.size(); }
 
     std::string_view mSource;
-    std::string mIdentifier{""};
+    // Implementation note:
+    //   For simplicity, host a string directly that will be used if there is no SourceMap.
+    //   An alternative would be to specialize SourceMap, but I do not know where to host the instance.
+    std::string mIdentifier;
+    const SourceMap * mMap = nullptr;
 };
 
 
