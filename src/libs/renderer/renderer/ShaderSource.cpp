@@ -136,7 +136,7 @@ ShaderSource ShaderSource::Preprocess(std::istream & aIn,
 {
     Assembled out;
     Preprocess_impl({aIn, aIdentifier}, out, aLookup);
-    return ShaderSource{std::move(out.mStream.str()), std::move(out.mMap)};
+    return ShaderSource{out.mStream.str(), std::move(out.mMap)};
 }
 
 
