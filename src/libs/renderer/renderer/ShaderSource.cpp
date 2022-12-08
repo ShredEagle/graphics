@@ -91,7 +91,8 @@ namespace {
 
 SourceMap::Mapping ShaderSource::InclusionSourceMap::getLine(std::size_t aCompiledSourceLine) const
 {
-    const OriginalLine & original = mMap.at(aCompiledSourceLine);
+    // The source lines are 1-indexed in error messages, but mMap is 0-indexed.
+    const OriginalLine & original = mMap.at(aCompiledSourceLine - 1);
     return {
         .mIdentifier = mIdentifiers[original.mIdentifierIndex],
         .mLine = original.mLineNumber,
@@ -107,13 +108,10 @@ auto ShaderSource::InclusionSourceMap::registerSource(std::string_view aIdentifi
 }
 
 
-void ShaderSource::InclusionSourceMap::associateLines(IdentifierId aIdentifier,
-                                                      std::size_t aAssembledLine,
-                                                      std::size_t aSourceLine)
+void ShaderSource::InclusionSourceMap::addLineOrigin(IdentifierId aOrigin,
+                                                     std::size_t aLineNumber)
 {
-    auto [iterator, didInsert] =
-        mMap.emplace(aAssembledLine, OriginalLine{aIdentifier, aSourceLine});
-    assert(didInsert);
+    mMap.push_back(OriginalLine{aOrigin, aLineNumber});
 }
 
 
@@ -138,16 +136,17 @@ ShaderSource ShaderSource::Preprocess(std::istream & aIn,
 {
     Assembled out;
     Preprocess_impl({aIn, aIdentifier}, out, aLookup);
-    return ShaderSource{std::move(out.mStream.str()), std::move(out.mMapping)};
+    return ShaderSource{std::move(out.mStream.str()), std::move(out.mMap)};
 }
 
 
 void ShaderSource::Preprocess_impl(Input aIn, Assembled & aOut, const Lookup & aLookup)
 {
     std::size_t sourceLine = 0;
-    InclusionSourceMap::IdentifierId sourceId = aOut.mMapping.registerSource(aIn.mIdentifier);
+    InclusionSourceMap::IdentifierId sourceId = aOut.mMap.registerSource(aIn.mIdentifier);
     for(std::string line; getline(aIn.mStream, line); )
     {
+        // Lines are 1-indexed, increment before writing to the map.
         ++sourceLine;
         removeComments(line);
 
@@ -174,8 +173,7 @@ void ShaderSource::Preprocess_impl(Input aIn, Assembled & aOut, const Lookup & a
             //   This ensures that the characters in the parent file after the include are on a newline
             //   (TODO: Anyway, we probably should not support characters after an include directive)
             aOut.mStream << line << "\n";
-            // Lines are 1-indexed, increment before writing to the map.
-            aOut.mMapping.associateLines(sourceId, ++aOut.mOutputLine, sourceLine);
+            aOut.mMap.addLineOrigin(sourceId, sourceLine);
         }
     }
 }

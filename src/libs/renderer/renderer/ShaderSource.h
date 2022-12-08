@@ -3,7 +3,6 @@
 
 #include <filesystem>
 #include <functional>
-#include <map>
 #include <vector>
 
 
@@ -36,9 +35,7 @@ class ShaderSource
         SourceMap::Mapping getLine(std::size_t aCompiledSourceLine) const override;
 
         IdentifierId registerSource(std::string_view aIdentifier);
-        void associateLines(IdentifierId aIdentifier,
-                            std::size_t aAssembledLine,
-                            std::size_t aSourceLine);
+        void addLineOrigin(IdentifierId aOrigin, std::size_t aLineNumber);
         
     private:
         struct OriginalLine
@@ -48,7 +45,8 @@ class ShaderSource
         };
 
         std::vector<std::string> mIdentifiers;
-        std::map<std::size_t/*line in assembled output*/, OriginalLine> mMap;
+        // Maps the assembled output lines (vector indices) to corresponding original file.
+        std::vector<OriginalLine> mMap;
     };
 
 public:
@@ -83,8 +81,7 @@ private:
     struct Assembled
     {
         std::ostringstream mStream;
-        std::size_t mOutputLine{0};
-        InclusionSourceMap mMapping;
+        InclusionSourceMap mMap;
     };
 
     static void Preprocess_impl(Input aIn, Assembled & aOut, const Lookup & aLookup);
