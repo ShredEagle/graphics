@@ -10,23 +10,21 @@ set(${TARGET_NAME}_HEADERS
     GL_Loader.h
     MappedGL.h
     Query.h
+    ShaderSource.h
     Shading.h
     Texture.h
     UniformBuffer.h
     Uniforms.h
     VertexSpecification.h
     VertexSpecification_deduction.h
-
-    stb_image.h
 )
 
 set(${TARGET_NAME}_SOURCES
+    ShaderSource.cpp
     Shading.cpp
     VertexSpecification.cpp
 
     Texture.cpp
-
-    stb_image.c
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}

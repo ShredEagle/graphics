@@ -1,19 +1,23 @@
 #pragma once
 
 #include <handy/Guard.h>
-#include <handy/tuple_utils.h>
 
 #include "GL_Loader.h"
 
-#include <functional>
-#include <vector>
 
 namespace ad {
 namespace graphics {
 
 
-/// \brief Augments the shader source code (as a string_view) with an
-/// optional name helping to identify the shader associated to the source.
+// Defined in ShaderSource.h
+class ShaderSource;
+struct SourceMap;
+
+
+/// \brief Augments the (char *) shader source code (as a string_view) with
+/// (optional) way to map the line in error with an identifier.
+///
+/// The identifier might be a fixed string, or a mapping constructed by preprocessing includes.
 struct ShaderSourceView
 {
     /*implicit*/ ShaderSourceView(const std::string & aSource, std::string aIdentifier = "") :
@@ -26,6 +30,8 @@ struct ShaderSourceView
         mIdentifier{std::move(aIdentifier)}
     {}
 
+    /*implicit*/ ShaderSourceView(const ShaderSource & aShaderSource);
+
     operator std::string_view () const
     { return mSource; }
 
@@ -36,7 +42,11 @@ struct ShaderSourceView
     { return mSource.size(); }
 
     std::string_view mSource;
-    std::string mIdentifier{""};
+    // Implementation note:
+    //   For simplicity, host a string directly that will be used if there is no SourceMap.
+    //   An alternative would be to specialize SourceMap, but I do not know where to host the instance.
+    std::string mIdentifier;
+    const SourceMap * mMap = nullptr;
 };
 
 
@@ -90,6 +100,8 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource);
 
 void handleLinkError(GLuint aObjectId);
 
+
+/// \brief User defined exception to signal an error when compiling a shader.
 class ShaderCompilationError : public std::runtime_error
 {
 public:

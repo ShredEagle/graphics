@@ -1,18 +1,28 @@
 #include "Shading.h"
 
+#include "ShaderSource.h"
+
 #include <algorithm>
 #include <optional>
-#include <sstream>
 
 #include <cassert>
 
+
 namespace ad {
 namespace graphics {
+
+
+ShaderSourceView::ShaderSourceView(const ShaderSource & aShaderSource) :
+    mSource{aShaderSource.mSource},
+    mMap{&aShaderSource.getSourceMap()}
+{}
+
 
 Shader::Shader(GLenum aStage, ShaderSourceView aSource) : Shader(aStage)
 {
     compileShader(*this, aSource);
 }
+
 
 std::optional<std::string> extractGlslError(GLuint objectId,
                                             GLenum aStatusEnumerator,
@@ -44,7 +54,7 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
 {
     // Diagnostic will receive the processed output.
     std::ostringstream diagnostic;
-    if (auto errorLog = 
+    if(auto errorLog =
             extractGlslError(aObjectId, GL_COMPILE_STATUS, glGetShaderiv, glGetShaderInfoLog))
     {
         try
@@ -83,7 +93,19 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
                 }
 
                 // Once a non-indented line has been found, the error has been treated entirely.
-                diagnostic << aSource.mIdentifier << " " << column  << "(" << line << ") : "
+                auto mapping = [&]() -> SourceMap::Mapping
+                {
+                     if (aSource.mMap != nullptr)
+                     {
+                        return aSource.mMap->getLine(line);
+                     }
+                     else
+                     {
+                        return {aSource.mIdentifier, (std::size_t)line};
+                     }
+                }();
+
+                diagnostic << mapping.mIdentifier << " " << column  << "(line: " << mapping.mLine << ") : "
                     << sourceLines[line - 1] << "\n"
                     << "- " << errorMessage << "\n";
             }
@@ -97,6 +119,7 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
     }
 }
 
+
 void handleLinkError(GLuint aObjectId)
 {
     if (auto errorLog = 
@@ -105,6 +128,7 @@ void handleLinkError(GLuint aObjectId)
         throw ShaderCompilationError("GLSL link error", *errorLog);
     }
 }
+
 
 void compileShader(const Shader & aShader, ShaderSourceView aSource)
 {
@@ -115,6 +139,7 @@ void compileShader(const Shader & aShader, ShaderSourceView aSource)
 
     handleCompilationError(aShader, aSource);
 }
+
 
 Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
                                                           ShaderSourceView /*source*/>> aShaders)
@@ -139,6 +164,7 @@ Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
 
     return program;
 }
+
 
 } // namespace graphics
 } // namespace ad
