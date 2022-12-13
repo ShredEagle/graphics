@@ -17,8 +17,6 @@ set(${TARGET_NAME}_HEADERS
     Uniforms.h
     VertexSpecification.h
     VertexSpecification_deduction.h
-
-    stb_image.h
 )
 
 set(${TARGET_NAME}_SOURCES
@@ -27,8 +25,6 @@ set(${TARGET_NAME}_SOURCES
     VertexSpecification.cpp
 
     Texture.cpp
-
-    stb_image.c
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}
