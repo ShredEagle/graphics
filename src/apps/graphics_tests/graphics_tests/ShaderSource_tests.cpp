@@ -144,24 +144,27 @@ SCENARIO("Shader files include preprocessing.")
 }
 
 
-SCENARIO("Shader compilatin errors mapping.")
+SCENARIO("Shader compilation errors mapping.")
 {
-    GIVEN("A preprocessed shader file including another-one containing an error.")
+    if (GLAD_GL_VERSION_3_1)
     {
-        std::filesystem::path vert = resource::pathFor("tests/Shaders/compilation_errors/vert.glsl");
-        ShaderSource source = ShaderSource::Preprocess(vert);
-
-        WHEN("It is compiled.")
+        GIVEN("A preprocessed shader file including another-one containing an error.")
         {
-            graphics::ApplicationGlfw app{"dummy", {1, 1}};
+            std::filesystem::path vert = resource::pathFor("tests/Shaders/compilation_errors/vert.glsl");
+            ShaderSource source = ShaderSource::Preprocess(vert);
 
-            graphics::Shader shader{GL_VERTEX_SHADER};
-            THEN("It throws an exception pointing to the correct line in the base files.")
+            WHEN("It is compiled.")
             {
-                using Catch::Matchers::Contains;
-                CHECK_THROWS_WITH(compileShader(shader, source), 
-                                   Contains("helpers.glsl 0(line: 3)") 
-                                     && Contains("vert.glsl 0(line: 7)"));
+                graphics::ApplicationGlfw app{"dummy", {1, 1}};
+
+                graphics::Shader shader{GL_VERTEX_SHADER};
+                THEN("It throws an exception pointing to the correct line in the base files.")
+                {
+                    using Catch::Matchers::Contains;
+                    CHECK_THROWS_WITH(compileShader(shader, source),
+                                       Contains("helpers.glsl 0(line: 3)")
+                                         && Contains("vert.glsl 0(line: 7)"));
+                }
             }
         }
     }
