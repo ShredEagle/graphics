@@ -20,6 +20,7 @@ if(BUILD_tests)
     add_subdirectory(apps/prototypes/polyline)
     add_subdirectory(apps/prototypes/curve)
     add_subdirectory(apps/prototypes/font)
+    add_subdirectory(apps/prototypes/shader_introspection)
 
     add_subdirectory(apps/samples/trivial_linestr/trivial_linestr)
     add_subdirectory(apps/samples/trivial_shaping/trivial_shaping)

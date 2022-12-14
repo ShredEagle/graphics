@@ -23,7 +23,11 @@ class GraphicsConan(ConanFile):
         "build_tests": False,
         "glad:gl_version": "4.1",
         # Note: macos only provides GL_ARB_texture_storage and GL_ARB_internalformat_query
-        "glad:extensions": "GL_KHR_debug, GL_ARB_texture_storage, GL_ARB_clear_texture",
+        "glad:extensions": ("GL_KHR_debug,"
+            "GL_ARB_texture_storage,"
+            "GL_ARB_clear_texture,"
+            "GL_ARB_program_interface_query,"
+            "GL_ARB_shader_storage_buffer_object,")
     }
 
     requires = (
