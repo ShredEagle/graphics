@@ -10,6 +10,8 @@
 #include <type_traits>
 #include <vector>
 
+#include <cassert>
+
 
 namespace ad {
 namespace graphics {
@@ -119,12 +121,12 @@ struct ShaderParameter
         Integer,
     };
 
-    constexpr ShaderParameter(GLuint aValue) :
-        mIndex(aValue)
+    constexpr ShaderParameter(GLuint aAttributeIndex) :
+        mIndex(aAttributeIndex)
     {}
 
-    constexpr ShaderParameter(GLuint aValue, Access aAccess, bool aNormalize=false) :
-        mIndex(aValue),
+    constexpr ShaderParameter(GLuint aAttributeIndex, Access aAccess, bool aNormalize=false) :
+        mIndex(aAttributeIndex),
         mTypeInShader(aAccess),
         mNormalize(aNormalize)
     {}
@@ -134,14 +136,59 @@ struct ShaderParameter
     bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
 
+
+struct AttributeDimension
+{
+    /*implicit*/ constexpr AttributeDimension(GLuint aFirst, GLuint aSecond = 1) noexcept :
+        mFirstDimension{aFirst},
+        mSecondDimension{aSecond}
+    {
+        assert (mFirstDimension  <= 4);
+        assert (mSecondDimension <= 4);
+    }
+
+    constexpr GLuint & operator[](std::size_t aIndex)
+    { 
+        assert(aIndex < 2);
+        return (aIndex == 0 ? mFirstDimension : mSecondDimension);
+    }
+
+    constexpr GLuint operator[](std::size_t aIndex) const
+    { 
+        assert(aIndex < 2);
+        return (aIndex == 0 ? mFirstDimension : mSecondDimension);
+    }
+
+    constexpr GLuint countComponents() const noexcept
+    {
+        return mFirstDimension * mSecondDimension;
+    }
+
+    GLuint mFirstDimension;
+    GLuint mSecondDimension;
+
+    //static constexpr AttributeDimension gScalar{1};
+};
+
+
+std::ostream & operator<<(std::ostream & aOut, const AttributeDimension & aAttributeDimension);
+
+
 /// \brief Describes client perspective of the attribute, i.e. as an argument provided by the client.
 struct ClientAttribute
 {
     // TODO extend to multiple dimensions for "multi-attributes" entries, such as matrices
-    GLuint mDimension;  // from 1 to 4 (explicit distinct attributes must be used for matrix data)
+    AttributeDimension mDimension;
     size_t mOffset;     // offset for the attribute within the vertex data structure (interleaved)
     GLenum mDataType;   // attribute source data type
+
+    constexpr GLsizei sizeBytesFirstDimension() const
+    { return mDimension[0] * getByteSize(mDataType); }
+
+    constexpr GLsizei sizeBytes() const
+    { return mDimension[1] * sizeBytesFirstDimension(); }
 };
+
 
 /// \brief The complete description of an attribute as expected by OpenGL.
 struct AttributeDescription : public ShaderParameter, ClientAttribute
