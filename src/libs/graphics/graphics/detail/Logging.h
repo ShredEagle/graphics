@@ -10,8 +10,8 @@ namespace ad {
 namespace graphics {
 
 
-constexpr const char * gMainLogger = "logging";
-constexpr const char * gOpenglLogger = "opengl";
+constexpr const char * gMainLogger = "graphics";
+constexpr const char * gOpenglLogger = "graphics::opengl";
 
 
 namespace detail {
