@@ -121,14 +121,15 @@ struct ShaderParameter
         Integer,
     };
 
-    constexpr ShaderParameter(GLuint aAttributeIndex) :
-        mIndex(aAttributeIndex)
+    // Note: can only normalize for float shader parameters, no need to take the access parameter here.
+    /*implicit*/ constexpr ShaderParameter(GLuint aAttributeIndex, bool aNormalize=false) :
+        mIndex(aAttributeIndex),
+        mNormalize(aNormalize)
     {}
 
-    constexpr ShaderParameter(GLuint aAttributeIndex, Access aAccess, bool aNormalize=false) :
+    constexpr ShaderParameter(GLuint aAttributeIndex, Access aAccess) :
         mIndex(aAttributeIndex),
-        mTypeInShader(aAccess),
-        mNormalize(aNormalize)
+        mTypeInShader(aAccess)
     {}
 
     GLuint mIndex; // index to match in vertex shader.
