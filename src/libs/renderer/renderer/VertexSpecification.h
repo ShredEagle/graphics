@@ -200,6 +200,13 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 
+/// \brief Attach currently bound vertex buffer object to currently bound vertex array objet.
+/// \param aAttribute Describe the format of the buffer data and the associated parameter in shader program.
+void attachBoundVertexBuffer(AttributeDescription aAttribute,
+                             GLsizei aStride,
+                             GLuint aAttributeDivisor = 0);
+
+
 /***
  *
  * Vertex Buffer
