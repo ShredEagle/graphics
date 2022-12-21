@@ -143,13 +143,12 @@ struct ShaderParameter
 /// \brief Describes client perspective of the attribute, i.e. as an argument provided by the client.
 struct ClientAttribute
 {
-    // TODO extend to multiple dimensions for "multi-attributes" entries, such as matrices
     AttributeDimension mDimension;
     size_t mOffset;     // offset for the attribute within the vertex data structure (interleaved)
-    GLenum mDataType;   // attribute source data type
+    GLenum mComponentType;   // data individual components' type.
 
     constexpr GLsizei sizeBytesFirstDimension() const
-    { return mDimension[0] * getByteSize(mDataType); }
+    { return mDimension[0] * getByteSize(mComponentType); }
 
     constexpr GLsizei sizeBytes() const
     { return mDimension[1] * sizeBytesFirstDimension(); }

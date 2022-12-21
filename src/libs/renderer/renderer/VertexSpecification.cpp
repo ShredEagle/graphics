@@ -23,7 +23,7 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
     return aOut << "Index " << aDescription.mIndex << " | "
                 << "Dimension " << aDescription.mDimension << " | "
                 << "Offset " << aDescription.mOffset << " | "
-                << "Data " << aDescription.mDataType
+                << "Data " << aDescription.mComponentType
                 ;
 }
 
@@ -40,7 +40,7 @@ void attachBoundVertexBuffer(AttributeDescription aAttribute,
             {
                 glVertexAttribPointer(aAttribute.mIndex + second,
                                       aAttribute.mDimension[0],
-                                      aAttribute.mDataType,
+                                      aAttribute.mComponentType,
                                       aAttribute.mNormalize,
                                       aStride,
                                       reinterpret_cast<const void*>(aAttribute.mOffset 
@@ -55,7 +55,7 @@ void attachBoundVertexBuffer(AttributeDescription aAttribute,
             {
                 glVertexAttribIPointer(aAttribute.mIndex + second,
                                        aAttribute.mDimension[0],
-                                       aAttribute.mDataType,
+                                       aAttribute.mComponentType,
                                        aStride,
                                        reinterpret_cast<const void*>(aAttribute.mOffset
                                        + second * aAttribute.sizeBytesFirstDimension()));
