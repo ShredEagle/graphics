@@ -1,6 +1,7 @@
 set(TARGET_NAME renderer)
 
 set(${TARGET_NAME}_HEADERS
+    AttributeDimension.h
     BufferUtilities.h
     commons.h
     Drawing.h
@@ -20,6 +21,7 @@ set(${TARGET_NAME}_HEADERS
 )
 
 set(${TARGET_NAME}_SOURCES
+    AttributeDimension.cpp
     ShaderSource.cpp
     Shading.cpp
     VertexSpecification.cpp

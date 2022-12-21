@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AttributeDimension.h"
 #include "gl_helpers.h"
 #include "GL_Loader.h"
 #include "MappedGL.h"
@@ -9,8 +10,6 @@
 #include <span>
 #include <type_traits>
 #include <vector>
-
-#include <cassert>
 
 
 namespace ad {
@@ -112,7 +111,10 @@ inline void unbind(const VertexSpecification & aVertexSpecification)
 
 
 
-/// \brief Describes the shader parameter aspect of the attribute (layout id, value type, normalization)
+/// \brief Describes the shader parameter aspect of the attribute (location index, value type, normalization)
+///
+/// This is a description from the Cpp program point of view, more than a shader program introspection.
+/// In the sense that is is not concerned with the exact attribute type in the shader, but knows if the data should be normalized.
 struct ShaderParameter
 {
     enum class Access
@@ -136,43 +138,6 @@ struct ShaderParameter
     Access mTypeInShader{Access::Float}; // destination data type
     bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
-
-
-struct AttributeDimension
-{
-    /*implicit*/ constexpr AttributeDimension(GLuint aFirst, GLuint aSecond = 1) noexcept :
-        mFirstDimension{aFirst},
-        mSecondDimension{aSecond}
-    {
-        assert (mFirstDimension  <= 4);
-        assert (mSecondDimension <= 4);
-    }
-
-    constexpr GLuint & operator[](std::size_t aIndex)
-    { 
-        assert(aIndex < 2);
-        return (aIndex == 0 ? mFirstDimension : mSecondDimension);
-    }
-
-    constexpr GLuint operator[](std::size_t aIndex) const
-    { 
-        assert(aIndex < 2);
-        return (aIndex == 0 ? mFirstDimension : mSecondDimension);
-    }
-
-    constexpr GLuint countComponents() const noexcept
-    {
-        return mFirstDimension * mSecondDimension;
-    }
-
-    GLuint mFirstDimension;
-    GLuint mSecondDimension;
-
-    //static constexpr AttributeDimension gScalar{1};
-};
-
-
-std::ostream & operator<<(std::ostream & aOut, const AttributeDimension & aAttributeDimension);
 
 
 /// \brief Describes client perspective of the attribute, i.e. as an argument provided by the client.
