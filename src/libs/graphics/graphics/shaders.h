@@ -66,12 +66,12 @@ inline const GLchar* gSolidColorInstanceVertexShader = R"#(
     layout(location=1) in vec2  in_InstancePosition;
     layout(location=2) in vec2  in_InstanceDimension;
     layout(location=3) in mat3  in_ModelTransform;
-    layout(location=6) in vec3  in_InstanceColor;
+    layout(location=6) in vec4  in_InstanceColor;
 
     uniform mat3 u_camera;
     uniform mat3 u_projection;
 
-    out vec3 ex_Color;
+    out vec4 ex_Color;
     
     void main(void)
     {
