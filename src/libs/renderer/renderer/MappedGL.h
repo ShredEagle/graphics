@@ -79,7 +79,7 @@ constexpr GLenum getByteSize(GLenum aTypeEnum)
         return #enumval;
 
 
-constexpr std::string to_string(GLenum aTypeEnum) 
+inline std::string to_string(GLenum aTypeEnum) 
 {
     switch(aTypeEnum)
     {
