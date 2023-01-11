@@ -12,6 +12,8 @@
 #include <math/Vector.h>
 #include <math/VectorUtilities.h>
 
+#include <cmath>
+
 
 // The approach is to draw miter joints with the minimal number of vertices.
 // A geometry shader is used to find the miter vector, 
