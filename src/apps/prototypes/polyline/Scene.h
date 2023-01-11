@@ -16,7 +16,7 @@
 
 
 // The approach is to draw miter joints with the minimal number of vertices.
-// A geometry shader is used to find the miter vector, 
+// A geometry shader is used to find the miter vector,
 // then place the corner vertices at the correct distance along miter vector.
 // see: https://en.sfml-dev.org/forums/index.php?topic=21620.msg153681#msg153681
 // It is compared to the naive approach with overdraw and discontinuities.
@@ -81,8 +81,9 @@ inline Scene::Scene() :
 
 inline void Scene::step(const Timer & aTimer)
 {
-    setUniform(mProgramNaive, "lineHalfWidth", 0.05f + 0.04f * std::cosf(aTimer.time()));
-    setUniform(mProgramMiter, "lineHalfWidth", 0.05f + 0.04f * std::cosf(aTimer.time()));
+    // Note: cosf is not currently available in GNU's lib (see bug #79700)
+    setUniform(mProgramNaive, "lineHalfWidth", 0.05f + 0.04f * std::cos((float)aTimer.time()));
+    setUniform(mProgramMiter, "lineHalfWidth", 0.05f + 0.04f * std::cos((float)aTimer.time()));
 }
 
 
