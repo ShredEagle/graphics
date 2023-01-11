@@ -2,6 +2,7 @@
 
 
 #include "MappedGL.h"
+#include "UniformBuffer.h" // TODO remove when generalized
 
 #include <span>
 
