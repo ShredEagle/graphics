@@ -83,6 +83,7 @@ inline void inspectProgram(const graphics::Program & aProgram)
         auto blockIterate = [&](const std::string & aCategory, GLenum aVariableInterface)
         {
             auto nameBuffer = std::make_unique<char[]>(maxNameLength);
+            // Note: I suppose blockId is the block index returned from glGetUniformBlockIndex()
             for(GLuint blockId = 0; blockId != resourceCount; ++blockId)
             {
                 const GLenum properties[] = {
@@ -105,6 +106,7 @@ inline void inspectProgram(const graphics::Program & aProgram)
                 std::string blockName(nameBuffer.get(), params[0]);
 
                 std::cout << aCategory << " " << blockName 
+                    << " (block index: " << blockId << ")"
                     << " at binding index " << params[1]
                     << " has " << params[2] << " active variables"
                     << "." << std::endl;
