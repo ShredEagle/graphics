@@ -1,6 +1,8 @@
 #include <renderer/GL_Loader.h>
 #include <renderer/Shading.h>
 
+#include <memory>
+
 #include <cassert>
 
 
@@ -55,9 +57,9 @@ inline void inspectProgram(const graphics::Program & aProgram)
                 // use it as a q&d filter.
                 if (params[2] != -1)
                 {
-                    std::cout << aCategory << " " << attributeName 
+                    std::cout << aCategory << " " << attributeName
                         << " at location " << params[2]
-                        << " has type " << params[1] 
+                        << " has type " << params[1]
                         << "." << std::endl;
                 }
             }
@@ -105,7 +107,7 @@ inline void inspectProgram(const graphics::Program & aProgram)
                 // No need to substract 1 from the length, as it does not include null terminator.
                 std::string blockName(nameBuffer.get(), params[0]);
 
-                std::cout << aCategory << " " << blockName 
+                std::cout << aCategory << " " << blockName
                     << " (block index: " << blockId << ")"
                     << " at binding index " << params[1]
                     << " has " << params[2] << " active variables"
@@ -150,7 +152,7 @@ inline void inspectProgram(const graphics::Program & aProgram)
 
                     assert(params[2] == blockId);
                     //assert(params[3] == -1);
-                    std::cout << "\t* " << variableName 
+                    std::cout << "\t* " << variableName
                         << " has type " << params[1]
                         << "." << std::endl;
                 }
