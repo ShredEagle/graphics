@@ -24,7 +24,7 @@ Fade::Fade() :
             {GL_FRAGMENT_SHADER, fade::gFragmentShader}
     })}
 {
-    setUniformInt(mProgram, "image", gTextureUnit); 
+    setUniform(mProgram, "image", gTextureUnit); 
 }
 
 

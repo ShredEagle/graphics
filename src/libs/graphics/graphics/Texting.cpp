@@ -64,7 +64,7 @@ Texting::Texting(const filesystem::path & aFontPath,
     mPixelToWorld = {pixelToWorld, pixelToWorld};
     setUniform(mGpuProgram, "u_PixelToWorld", mPixelToWorld);
 
-    setUniformInt(mGpuProgram, "u_FontAtlas", gTextureUnit);
+    setUniform(mGpuProgram, "u_FontAtlas", gTextureUnit);
 
     // use recommended ribon margins
     auto ribonMargins = detail::TextureRibon::gRecommendedMargins;

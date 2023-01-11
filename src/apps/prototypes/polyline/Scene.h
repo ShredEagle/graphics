@@ -79,8 +79,8 @@ inline Scene::Scene() :
 
 inline void Scene::step(const Timer & aTimer)
 {
-    setUniformFloat(mProgramNaive, "lineHalfWidth", 0.05f + 0.04f * std::cos(aTimer.time()));
-    setUniformFloat(mProgramMiter, "lineHalfWidth", 0.05f + 0.04f * std::cos(aTimer.time()));
+    setUniform(mProgramNaive, "lineHalfWidth", 0.05f + 0.04f * std::cosf(aTimer.time()));
+    setUniform(mProgramMiter, "lineHalfWidth", 0.05f + 0.04f * std::cosf(aTimer.time()));
 }
 
 
