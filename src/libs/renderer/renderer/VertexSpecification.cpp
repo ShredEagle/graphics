@@ -4,14 +4,66 @@
 namespace ad {
 namespace graphics {
 
+namespace {
+
+    void enableAndDivisor(GLuint aAttributeIndex, GLuint aAttributeDivisor)
+    {
+        if (aAttributeDivisor)
+        {
+            glVertexAttribDivisor(aAttributeIndex, aAttributeDivisor);
+        }
+        glEnableVertexAttribArray(aAttributeIndex);
+    };
+
+} // anonymous
+
 
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription)
 {
     return aOut << "Index " << aDescription.mIndex << " | "
                 << "Dimension " << aDescription.mDimension << " | "
                 << "Offset " << aDescription.mOffset << " | "
-                << "Data " << aDescription.mDataType
+                << "Data " << aDescription.mComponentType
                 ;
+}
+
+
+void attachBoundVertexBuffer(AttributeDescription aAttribute,
+                             GLsizei aStride,
+                             GLuint aAttributeDivisor)
+{
+    switch(aAttribute.mTypeInShader)
+    {
+        case ShaderParameter::Access::Float :
+        {
+            for(GLuint second = 0; second != aAttribute.mDimension[1]; ++second)
+            {
+                glVertexAttribPointer(aAttribute.mIndex + second,
+                                      aAttribute.mDimension[0],
+                                      aAttribute.mComponentType,
+                                      aAttribute.mNormalize,
+                                      aStride,
+                                      reinterpret_cast<const void*>(aAttribute.mOffset 
+                                      + second * aAttribute.sizeBytesFirstDimension()));
+                enableAndDivisor(aAttribute.mIndex + second, aAttributeDivisor);
+            }
+            break;
+        }
+        case ShaderParameter::Access::Integer :
+        {
+            for(GLuint second = 0; second != aAttribute.mDimension[1]; ++second)
+            {
+                glVertexAttribIPointer(aAttribute.mIndex + second,
+                                       aAttribute.mDimension[0],
+                                       aAttribute.mComponentType,
+                                       aStride,
+                                       reinterpret_cast<const void*>(aAttribute.mOffset
+                                       + second * aAttribute.sizeBytesFirstDimension()));
+                enableAndDivisor(aAttribute.mIndex + second, aAttributeDivisor);
+            }
+            break;
+        }
+    }
 }
 
 
@@ -27,35 +79,7 @@ void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
 
     for (const auto & attribute : aAttributes)
     {
-        switch(attribute.mTypeInShader)
-        {
-            case ShaderParameter::Access::Float :
-            {
-                glVertexAttribPointer(attribute.mIndex,
-                                      attribute.mDimension,
-                                      attribute.mDataType,
-                                      attribute.mNormalize,
-                                      aStride,
-                                      reinterpret_cast<const void*>(attribute.mOffset));
-                break;
-            }
-            case ShaderParameter::Access::Integer :
-            {
-                glVertexAttribIPointer(attribute.mIndex,
-                                       attribute.mDimension,
-                                       attribute.mDataType,
-                                       aStride,
-                                       reinterpret_cast<const void*>(attribute.mOffset));
-                break;
-            }
-        }
-
-        if (aAttributeDivisor)
-        {
-            glVertexAttribDivisor(attribute.mIndex, aAttributeDivisor);
-        }
-
-        glEnableVertexAttribArray(attribute.mIndex);
+        attachBoundVertexBuffer(attribute, aStride, aAttributeDivisor);
     }
 }
 

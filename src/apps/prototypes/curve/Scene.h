@@ -162,7 +162,7 @@ inline Scene::Scene() :
 
 inline void Scene::step(const Timer & aTimer)
 {
-    setUniformFloat(mGenerativeProgram, "halfWidth", 0.1f);
+    setUniform(mGenerativeProgram, "halfWidth", 0.1f);
     respecifyBuffer(mGenerativeVertexSpecification.mVertexBuffers[1],
                     std::span{mBezier.p});
 }

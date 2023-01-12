@@ -16,108 +16,119 @@ namespace graphics {
     // Note: It is not obvious whether a const program should allow to change its parameters.
     // Yet, designing the API this way allow to make most render() member method constant.
 
+    // Note: not taking a string_view, as we need a null-terminated c string from the name.
+    /// \brief Overload taking the uniform name instead of its location.
+    template <class T_value>
     inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+                           const T_value & aValue)
+    {
+        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
+        setUniform(aProgram, location, aValue);
+    }
+    
+
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Matrix<3, 3, GLfloat> & aMatrix)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniformMatrix3fv(aProgram, location, 1, false, aMatrix.data());
+        glProgramUniformMatrix3fv(aProgram, aLocation, 1, false, aMatrix.data());
     }
 
 
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Matrix<4, 4, GLfloat> & aMatrix)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniformMatrix4fv(aProgram, location, 1, false, aMatrix.data());
+        glProgramUniformMatrix4fv(aProgram, aLocation, 1, false, aMatrix.data());
     }
 
     template <class T_derived>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Vector<T_derived, 2, GLint> & aVector)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform2i(aProgram, location, aVector[0], aVector[1]);
+        glProgramUniform2i(aProgram, aLocation, aVector[0], aVector[1]);
     }
 
 
     template <class T_derived>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Vector<T_derived, 3, GLint> & aVector)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform3i(aProgram, location, aVector[0], aVector[1], aVector[2]);
+        glProgramUniform3i(aProgram, aLocation, aVector[0], aVector[1], aVector[2]);
     }
 
+
     template <class T_derived>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Vector<T_derived, 2, GLfloat> & aVector)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform2f(aProgram, location, aVector[0], aVector[1]);
+        glProgramUniform2f(aProgram, aLocation, aVector[0], aVector[1]);
     }
 
 
     template <class T_derived>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Vector<T_derived, 3, GLfloat> & aVector)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform3f(aProgram, location, aVector[0], aVector[1], aVector[2]);
+        glProgramUniform3f(aProgram, aLocation, aVector[0], aVector[1], aVector[2]);
     }
 
 
     template <class T_hdrNumber>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::hdr::Rgb<T_hdrNumber> & aColor)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform3f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2]);
+        glProgramUniform3f(aProgram, aLocation, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2]);
     }
 
 
     template <class T_derived>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Vector<T_derived, 4, GLfloat> & aVector)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform4f(aProgram, location, aVector[0], aVector[1], aVector[2], aVector[3]);
+        glProgramUniform4f(aProgram, aLocation, aVector[0], aVector[1], aVector[2], aVector[3]);
     }
 
 
     template <class T_hdrNumber>
-    inline void setUniform(const Program & aProgram, const std::string & aNameInShader,
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::hdr::Rgba<T_hdrNumber> & aColor)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform4f(aProgram, location, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2], (GLfloat)aColor[3]);
+        glProgramUniform4f(aProgram, aLocation, (GLfloat)aColor[0], (GLfloat)aColor[1], (GLfloat)aColor[2], (GLfloat)aColor[3]);
     }
 
-    inline void setUniformFloat(const Program & aProgram, const std::string & aNameInShader,
-                                GLfloat aFloat)
+
+    inline void setUniform(const Program & aProgram, GLint aLocation,
+                           GLfloat aFloat)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform1f(aProgram, location, aFloat);
+        glProgramUniform1f(aProgram, aLocation, aFloat);
     }
 
 
-    inline void setUniformInt(const Program & aProgram, const std::string & aNameInShader,
-                              GLint aInteger)
+    inline void setUniform(const Program & aProgram, GLint aLocation,
+                           GLint aInteger)
     {
-        GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
-        glProgramUniform1i(aProgram, location, aInteger);
+        glProgramUniform1i(aProgram, aLocation, aInteger);
     }
 
 
-    inline void setUniformFloatArray(const Program & aProgram, const std::string & aNameInShader,
-                                     std::span<const GLfloat> aFloats)
+    inline void setUniform(const Program & aProgram, GLint aLocation,
+                           GLuint aUnsignedInteger)
+    {
+        glProgramUniform1ui(aProgram, aLocation, aUnsignedInteger);
+    }
+
+
+    /// \brief  Set an array of scalar uniforms (i.e. each uniform in the array has dimension 1).
+    inline void setUniformArray(const Program & aProgram, const std::string & aNameInShader,
+                                std::span<const GLfloat> aFloats)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform1fv(aProgram, location, (GLsizei)aFloats.size(), aFloats.data());
     }
 
 
-    inline void setUniformIntArray(const Program & aProgram, const std::string & aNameInShader,
-                                   std::span<const GLint> aIntegers)
+    /// \brief  Set an array of scalar uniforms (i.e. each uniform in the array has dimension 1).
+    inline void setUniformArray(const Program & aProgram, const std::string & aNameInShader,
+                                std::span<const GLint> aIntegers)
     {
         GLint location = glGetUniformLocation(aProgram, aNameInShader.c_str());
         glProgramUniform1iv(aProgram, location, (GLsizei)aIntegers.size(), aIntegers.data());

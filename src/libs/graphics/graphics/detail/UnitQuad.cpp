@@ -52,7 +52,7 @@ Program make_PassthroughProgram(GLint aTextureUnit)
         {GL_FRAGMENT_SHADER, gTexturingFragmentShader}
     });
 
-    setUniformInt(passthrough, "inputTexture", aTextureUnit);
+    setUniform(passthrough, "inputTexture", aTextureUnit);
 
     return passthrough;
 }

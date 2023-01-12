@@ -135,10 +135,10 @@ inline Scene::Scene(const filesystem::path & aFontPath,
         initVertexBuffer<GlyphInstance>(mGlyphQuadVertex.mVertexArray, gGlyphInstanceDescription, 1));
 
     // Screen program
-    setUniformInt(mPassthrough, "inputTexture", gTextureUnit);
+    setUniform(mPassthrough, "inputTexture", gTextureUnit);
 
     // Font program
-    setUniformInt(mFontProgram, "inputTexture", gTextureUnit);
+    setUniform(mFontProgram, "inputTexture", gTextureUnit);
     setUniform(mFontProgram, "u_PixelToWorld", mPixelToWorld);
     setUniform(mFontProgram, "u_WorldToCamera", math::AffineMatrix<4, GLfloat>::Identity());
     setUniform(mFontProgram, "u_Projection", 
@@ -149,7 +149,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
     // Font atlas generation
     auto startingCharcode = gStartingCharcode;
     GLsizei textureWidth = gGlyphPerLine * (aGlyphPixelHeight + gHorizontalMargin);
-    // Add 1 in height, for example character 253 'ý' from DejaVuSans
+    // Add 1 in height, for example character 253 'ï¿½' from DejaVuSans
     // has 129 rows when the pixel height is set to 128...
     allocateStorage(mFontAtlas, GL_R8, textureWidth, aGlyphPixelHeight + 1);
     bind(mFontAtlas);

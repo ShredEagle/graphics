@@ -1,5 +1,6 @@
 #pragma once
 
+#include "AttributeDimension.h"
 #include "gl_helpers.h"
 #include "GL_Loader.h"
 #include "MappedGL.h"
@@ -110,7 +111,10 @@ inline void unbind(const VertexSpecification & aVertexSpecification)
 
 
 
-/// \brief Describes the shader parameter aspect of the attribute (layout id, value type, normalization)
+/// \brief Describes the shader parameter aspect of the attribute (location index, value type, normalization)
+///
+/// This is a description from the Cpp program point of view, more than a shader program introspection.
+/// In the sense that is is not concerned with the exact attribute type in the shader, but knows if the data should be normalized.
 struct ShaderParameter
 {
     enum class Access
@@ -119,14 +123,15 @@ struct ShaderParameter
         Integer,
     };
 
-    constexpr ShaderParameter(GLuint aValue) :
-        mIndex(aValue)
+    // Note: can only normalize for float shader parameters, no need to take the access parameter here.
+    /*implicit*/ constexpr ShaderParameter(GLuint aAttributeIndex, bool aNormalize=false) :
+        mIndex(aAttributeIndex),
+        mNormalize(aNormalize)
     {}
 
-    constexpr ShaderParameter(GLuint aValue, Access aAccess, bool aNormalize=false) :
-        mIndex(aValue),
-        mTypeInShader(aAccess),
-        mNormalize(aNormalize)
+    constexpr ShaderParameter(GLuint aAttributeIndex, Access aAccess) :
+        mIndex(aAttributeIndex),
+        mTypeInShader(aAccess)
     {}
 
     GLuint mIndex; // index to match in vertex shader.
@@ -134,14 +139,21 @@ struct ShaderParameter
     bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
 
+
 /// \brief Describes client perspective of the attribute, i.e. as an argument provided by the client.
 struct ClientAttribute
 {
-    // TODO extend to multiple dimensions for "multi-attributes" entries, such as matrices
-    GLuint mDimension;  // from 1 to 4 (explicit distinct attributes must be used for matrix data)
+    AttributeDimension mDimension;
     size_t mOffset;     // offset for the attribute within the vertex data structure (interleaved)
-    GLenum mDataType;   // attribute source data type
+    GLenum mComponentType;   // data individual components' type.
+
+    constexpr GLsizei sizeBytesFirstDimension() const
+    { return mDimension[0] * getByteSize(mComponentType); }
+
+    constexpr GLsizei sizeBytes() const
+    { return mDimension[1] * sizeBytesFirstDimension(); }
 };
+
 
 /// \brief The complete description of an attribute as expected by OpenGL.
 struct AttributeDescription : public ShaderParameter, ClientAttribute
@@ -150,6 +162,13 @@ struct AttributeDescription : public ShaderParameter, ClientAttribute
 std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
 
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
+
+
+/// \brief Attach currently bound vertex buffer object to currently bound vertex array objet.
+/// \param aAttribute Describe the format of the buffer data and the associated parameter in shader program.
+void attachBoundVertexBuffer(AttributeDescription aAttribute,
+                             GLsizei aStride,
+                             GLuint aAttributeDivisor = 0);
 
 
 /***

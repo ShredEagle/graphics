@@ -35,6 +35,7 @@ namespace {
         { 5, {3, offsetof(Inst, bezier) + 3 * sizeof(Inst::Position_t), MappedGL<GLfloat>::enumerator}},
         { 6, {1, offsetof(Inst, startHalfWidth), MappedGL<GLfloat>::enumerator}},
         { 7, {1, offsetof(Inst,   endHalfWidth), MappedGL<GLfloat>::enumerator}},
+        // Manual specification of a matrix over several attributes
         { 8, {4, offsetof(Inst, modelTransform) +  0 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator}},
         { 9, {4, offsetof(Inst, modelTransform) +  4 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator}},
         {10, {4, offsetof(Inst, modelTransform) +  8 * sizeof(GLfloat), MappedGL<GLfloat>::enumerator}},

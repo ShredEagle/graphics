@@ -11,12 +11,15 @@ namespace graphics {
 
 #define MAP(trait, gltype, enumval)                     \
     template <> struct trait<gltype>                    \
-    { static constexpr GLenum enumerator = enumval; };  \
+    { static constexpr GLenum enumerator = enumval; };  
+
+#define REVERSE_MAP(trait, gltype, enumval)             \
+    template <> struct trait##_r<enumval>               \
+    { using type = gltype; };
 
 #define MAP_AND_REVERSE(trait, gltype, enumval)         \
     MAP(trait, gltype, enumval)                         \
-    template <> struct trait##_r<enumval>               \
-    { using type = gltype; };
+    REVERSE_MAP(trait, gltype, enumval)
 
 //
 // Built-in types
@@ -41,6 +44,8 @@ MAP_AND_REVERSE(MappedGL, GLshort, GL_SHORT);
 MAP_AND_REVERSE(MappedGL, GLushort, GL_UNSIGNED_SHORT);
 MAP_AND_REVERSE(MappedGL, GLint, GL_INT);
 MAP_AND_REVERSE(MappedGL, GLuint, GL_UNSIGNED_INT);
+// Only reverse is possible, because GLboolean is the same type as GLubyte
+REVERSE_MAP(MappedGL, GLboolean, GL_BOOL);
 
 
 #define TYPEENUMCASE(enumval)           \
@@ -60,6 +65,7 @@ constexpr GLenum getByteSize(GLenum aTypeEnum)
         TYPEENUMCASE(GL_UNSIGNED_SHORT);
         TYPEENUMCASE(GL_INT);
         TYPEENUMCASE(GL_UNSIGNED_INT);
+        TYPEENUMCASE(GL_BOOL);
     default:
         throw std::domain_error{"Invalid type enumerator."};
     }
@@ -67,6 +73,31 @@ constexpr GLenum getByteSize(GLenum aTypeEnum)
 
 #undef TYPEENUMCASE
 
+
+#define TYPEENUMCASE(enumval)           \
+    case enumval:                       \
+        return #enumval;
+
+
+inline std::string to_string(GLenum aTypeEnum) 
+{
+    switch(aTypeEnum)
+    {
+        TYPEENUMCASE(GL_FLOAT);
+        TYPEENUMCASE(GL_DOUBLE);
+        TYPEENUMCASE(GL_BYTE);
+        TYPEENUMCASE(GL_UNSIGNED_BYTE);
+        TYPEENUMCASE(GL_SHORT);
+        TYPEENUMCASE(GL_UNSIGNED_SHORT);
+        TYPEENUMCASE(GL_INT);
+        TYPEENUMCASE(GL_UNSIGNED_INT);
+        TYPEENUMCASE(GL_BOOL);
+    default:
+        throw std::domain_error{"Invalid type enumerator."};
+    }
+}
+
+#undef TYPEENUMCASE
 
 //
 // Pixel formats

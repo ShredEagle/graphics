@@ -171,7 +171,14 @@ void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
         }
         default:
         {
-            ADLOG(gOpenglLogger, debug)(oss.str());
+            if(severity == GL_DEBUG_SEVERITY_NOTIFICATION)
+            {
+                ADLOG(gOpenglLogger, trace)(oss.str());
+            }
+            else
+            {
+                ADLOG(gOpenglLogger, debug)(oss.str());
+            }
             break;
         }
     }

@@ -168,9 +168,9 @@ GaussianBlur::GaussianBlur()
     LinearFilteredKernel<3> linear = computeLinearFilteredWeights(discreteWeights);
     for (auto & program : mProgramSequence)
     {
-        setUniformInt(program, "image", gTextureUnit); 
-        setUniformFloatArray(program, "offsets", linear.offsets);
-        setUniformFloatArray(program, "weights", linear.weights);
+        setUniform(program, "image", gTextureUnit); 
+        setUniformArray(program, "offsets", linear.offsets);
+        setUniformArray(program, "weights", linear.weights);
     }
 
     // Setup the filter directions.
