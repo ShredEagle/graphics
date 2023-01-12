@@ -2,6 +2,7 @@ set(TARGET_NAME renderer)
 
 set(${TARGET_NAME}_HEADERS
     AttributeDimension.h
+    BufferBase.h
     BufferUtilities.h
     commons.h
     Drawing.h

@@ -28,6 +28,23 @@ inline GLuint reserve(void(GLAPIENTRY * aGlGenFunction)(GLsizei, GLuint *))
     return name;
 }
 
+
+// TODO should we use the GLenum directly instead?
+// It should be in BufferBase, but ScopedBind needs it atm
+enum class BufferType
+{
+    Array = GL_ARRAY_BUFFER,
+    ElementArray = GL_ELEMENT_ARRAY_BUFFER,
+    Uniform = GL_UNIFORM_BUFFER,
+};
+
+
+// Forward declaration
+template <BufferType>
+struct Buffer;
+
+
+// TODO might become a single template function once all other stuff is made generic
 class ScopedBind
 {
 public:
@@ -40,6 +57,16 @@ public:
     //{
     //    bind(aResource, std::forward<VT_args>(aArgs)...);
     //}
+
+    template <BufferType N_type>
+    inline ScopedBind(const Buffer<N_type> & aBuffer) :
+        mGuard{[previous = getBound(aBuffer)]
+            { bind(previous);}}
+    {
+        bind(aBuffer);
+    }
+
+    // TODO scoped bind for Indexed version
 
 private:
     Guard mGuard;
