@@ -32,18 +32,34 @@ inline void bind(const VertexArrayObject & aVertexArray)
     glBindVertexArray(aVertexArray);
 }
 
-// TODO Ad 2022/02/02: Is it a good idea to "expect" the object to unbind
-// when the underlying unbinding mechanism does not use it (just reset a default)? 
+
+inline void bind(const Name<VertexArrayObject> & aVertexArray)
+{
+    glBindVertexArray(aVertexArray);
+}
+
+
 inline void unbind(const VertexArrayObject & /*aVertexArray*/)
 {
     glBindVertexArray(0);
 }
 
 
+Name<VertexArrayObject> getBound(const VertexArrayObject &)
+{
+    GLint current;
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current);
+    return Name<VertexArrayObject>{(GLuint)current};
+}
+
+
 using VertexBufferObject = Buffer<BufferType::Array>;
+
 using IndexBufferObject = Buffer<BufferType::ElementArray>;
 
+
 /// \brief A VertexArray with a vector of VertexBuffers
+/// \deprecated
 struct [[nodiscard]] VertexSpecification
 {
     VertexSpecification(VertexArrayObject aVertexArray={},

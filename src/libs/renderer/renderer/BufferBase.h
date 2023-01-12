@@ -21,17 +21,19 @@ struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 
 };
 
-/// \brief A non-owning version of Buffer, storing the value.
+/// \brief A non-owning version of the resource, storing a copy of the GLuint "name" of the resource.
 /// The advantage over the plain GLuint is it preserves some strong typing.
 /// \attention Buffer name in the sense of the "name" returned by glGenBuffers (which is an unsigned integer)
-template <BufferType N_type>
-class BufferName
+template <class T_resource>
+class Name 
 {
+    friend Name<T_resource> getBound(const T_resource &);
+    
     template <BufferType N_type>
-    friend BufferName<N_type> getBound(const Buffer<N_type> &);
+    friend Name<Buffer<N_type>> getBound(const Buffer<N_type> &);
 
 public:
-    /*implicit*/ BufferName(const Buffer<N_type> & aBuffer) :
+    /*implicit*/ Name(const T_resource & aBuffer) :
         mResource{aBuffer}
     {}
 
@@ -41,7 +43,7 @@ public:
     }
 
 private:
-    explicit BufferName(GLuint aResource) :
+    explicit Name(GLuint aResource) :
         mResource{aResource}
     {}
 
@@ -57,7 +59,7 @@ void bind(const Buffer<N_type> & aBuffer)
 
 
 template <BufferType N_type>
-void bind(const BufferName<N_type> & aBufferView)
+void bind(const Name<Buffer<N_type>> & aBufferView)
 {
     glBindBuffer(static_cast<GLenum>(N_type), aBufferView);
 }
@@ -71,11 +73,11 @@ void unbind(const Buffer<N_type> &)
 
 
 template <BufferType N_type>
-BufferName<N_type> getBound(const Buffer<N_type> &)
+Name<Buffer<N_type>> getBound(const Buffer<N_type> &)
 {
     GLint current;
     glGetIntegerv(static_cast<GLenum>(N_type), &current);
-    return BufferName<N_type>{(GLuint)current};
+    return Name<Buffer<N_type>>{(GLuint)current};
 }
 
 
