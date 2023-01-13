@@ -21,35 +21,6 @@ struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 
 };
 
-/// \brief A non-owning version of the resource, storing a copy of the GLuint "name" of the resource.
-/// The advantage over the plain GLuint is it preserves some strong typing.
-/// \attention Buffer name in the sense of the "name" returned by glGenBuffers (which is an unsigned integer)
-template <class T_resource>
-class Name 
-{
-    friend Name<T_resource> getBound(const T_resource &);
-    
-    template <BufferType N_type>
-    friend Name<Buffer<N_type>> getBound(const Buffer<N_type> &);
-
-public:
-    /*implicit*/ Name(const T_resource & aBuffer) :
-        mResource{aBuffer}
-    {}
-
-    /*implicit*/ operator const GLuint() const
-    {
-        return mResource;
-    }
-
-private:
-    explicit Name(GLuint aResource) :
-        mResource{aResource}
-    {}
-
-    GLuint mResource;
-};
-
 
 template <BufferType N_type>
 void bind(const Buffer<N_type> & aBuffer)
@@ -77,7 +48,7 @@ Name<Buffer<N_type>> getBound(const Buffer<N_type> &)
 {
     GLint current;
     glGetIntegerv(static_cast<GLenum>(N_type), &current);
-    return Name<Buffer<N_type>>{(GLuint)current};
+    return Name<Buffer<N_type>>{(GLuint)current, typename Name<Buffer<N_type>>::UnsafeTag{}};
 }
 
 

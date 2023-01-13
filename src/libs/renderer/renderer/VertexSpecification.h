@@ -45,11 +45,11 @@ inline void unbind(const VertexArrayObject & /*aVertexArray*/)
 }
 
 
-Name<VertexArrayObject> getBound(const VertexArrayObject &)
+inline Name<VertexArrayObject> getBound(const VertexArrayObject &)
 {
     GLint current;
     glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current);
-    return Name<VertexArrayObject>{(GLuint)current};
+    return Name<VertexArrayObject>{(GLuint)current, Name<VertexArrayObject>::UnsafeTag{}};
 }
 
 

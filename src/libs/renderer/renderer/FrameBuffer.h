@@ -5,8 +5,6 @@
 
 #include <handy/Guard.h>
 
-#include "GL_Loader.h"
-
 
 namespace ad {
 namespace graphics {
@@ -32,44 +30,63 @@ private:
 };
 
 
+enum class FrameBufferTarget
+{
+    Draw = GL_DRAW_FRAMEBUFFER,
+    Read = GL_READ_FRAMEBUFFER,
+};
+
+/// \brief Bind the framebuffer to both Read and Draw targets.
 inline void bind(const FrameBuffer & aFrameBuffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, aFrameBuffer);
 }
 
 
+inline void bind(const Name<FrameBuffer> & aFrameBuffer)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, aFrameBuffer);
+}
+
+
+/// \brief Reset to default framebuffer for both Read and Draw targets.
 inline void unbind(const FrameBuffer & /*aFrameBuffer*/)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
-enum class FramebufferTarget
+inline void bind(const FrameBuffer & aFrameBuffer, FrameBufferTarget aTarget)
 {
-    Draw,
-    Read,
-};
-
-inline GLenum getBound(const FrameBuffer &, FramebufferTarget aTarget)
-{
-    GLint current;
-    switch(aTarget)
-    {
-    case FramebufferTarget::Draw:
-        glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current);
-        break;
-    case FramebufferTarget::Read:
-        glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &current);
-        break;
-    }
-    return current;
+    glBindFramebuffer(static_cast<GLenum>(aTarget), aFrameBuffer);
 }
 
 
+inline void bind(const Name<FrameBuffer> & aFrameBuffer, FrameBufferTarget aTarget)
+{
+    glBindFramebuffer(static_cast<GLenum>(aTarget), aFrameBuffer);
+}
+
+
+inline void unbind(const FrameBuffer &, FrameBufferTarget aTarget)
+{
+    glBindFramebuffer(static_cast<GLenum>(aTarget), 0);
+}
+
+
+inline Name<FrameBuffer> getBound(const FrameBuffer &, FrameBufferTarget aTarget)
+{
+    GLint current;
+    glGetIntegerv(getGLMappedBufferBinding(static_cast<GLenum>(aTarget)), &current);
+    return Name<FrameBuffer>{(GLuint)current, Name<FrameBuffer>::UnsafeTag{}};
+}
+
+
+/// \brief Specialization for the situation where both Read and Write targets are bound.
 template <>
 inline ScopedBind::ScopedBind(const FrameBuffer & aResource) :
-    mGuard{[previousRead = getBound(aResource, FramebufferTarget::Read),
-            previousDraw = getBound(aResource, FramebufferTarget::Draw)]()
+    mGuard{[previousRead = getBound(aResource, FrameBufferTarget::Read),
+            previousDraw = getBound(aResource, FrameBufferTarget::Draw)]()
            {
                glBindFramebuffer(GL_DRAW_FRAMEBUFFER, previousDraw);
                glBindFramebuffer(GL_READ_FRAMEBUFFER, previousRead);
@@ -77,6 +94,7 @@ inline ScopedBind::ScopedBind(const FrameBuffer & aResource) :
 {
     bind(aResource);
 }
+
 
 // make a system to attach a render image (with depth?)
 inline void attachImage(

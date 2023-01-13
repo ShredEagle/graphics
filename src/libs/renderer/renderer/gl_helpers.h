@@ -29,6 +29,41 @@ inline GLuint reserve(void(GLAPIENTRY * aGlGenFunction)(GLsizei, GLuint *))
 }
 
 
+/// \brief A non-owning version of the resource, storing a copy of the GLuint "name" of the resource.
+/// The advantage over the plain GLuint is it preserves some strong typing.
+/// \attention Buffer name in the sense of the "name" returned by glGenBuffers (which is an unsigned integer)
+template <class T_resource>
+class Name 
+{
+    //friend Name<T_resource> getBound(const T_resource &);
+    
+    //template <BufferType N_type>
+    //friend Name<Buffer<N_type>> getBound(const Buffer<N_type> &);
+
+public:
+    struct UnsafeTag{};
+
+    /// \attention I intended this ctor to be private, but then there is a lot of friending to do.
+    /// The provided name must be a valid name for T_resource.
+    explicit Name(GLuint aResource, UnsafeTag) :
+        mResource{aResource}
+    {}
+    /*implicit*/ Name(const T_resource & aBuffer) :
+        mResource{aBuffer}
+    {}
+
+    /*implicit*/ operator const GLuint() const
+    {
+        return mResource;
+    }
+
+private:
+
+    GLuint mResource;
+};
+
+
+
 // TODO should we use the GLenum directly instead?
 // It should be in BufferBase, but ScopedBind needs it atm
 enum class BufferType
@@ -49,21 +84,11 @@ class ScopedBind
 {
 public:
     template <class T_resource, class... VT_args>
-    ScopedBind(const T_resource & aResource, VT_args &&... aArgs);
-    // TODO Make the generic implementation work.
-    // The problem is with the bind in the guard, as it expects a wrapped type.
-    //:
-    //    mGuard{[previous = getBound(aResource)](){ bind(previous); }}
-    //{
-    //    bind(aResource, std::forward<VT_args>(aArgs)...);
-    //}
-
-    template <BufferType N_type>
-    inline ScopedBind(const Buffer<N_type> & aBuffer) :
-        mGuard{[previous = getBound(aBuffer)]
-            { bind(previous);}}
+    ScopedBind(const T_resource & aResource, VT_args &&... aArgs) :
+        mGuard{[previous = getBound(aResource, aArgs...), aArgs...]()
+               { bind(previous, aArgs...); }}
     {
-        bind(aBuffer);
+        bind(aResource, aArgs...);
     }
 
     // TODO scoped bind for Indexed version
