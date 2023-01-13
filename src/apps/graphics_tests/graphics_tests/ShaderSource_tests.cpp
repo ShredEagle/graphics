@@ -146,6 +146,7 @@ SCENARIO("Shader files include preprocessing.")
 
 SCENARIO("Shader compilation errors mapping.")
 {
+    graphics::ApplicationGlfw app{"dummy", {1, 1}};
     if (GLAD_GL_VERSION_3_1)
     {
         GIVEN("A preprocessed shader file including another-one containing an error.")
@@ -155,8 +156,6 @@ SCENARIO("Shader compilation errors mapping.")
 
             WHEN("It is compiled.")
             {
-                graphics::ApplicationGlfw app{"dummy", {1, 1}};
-
                 graphics::Shader shader{GL_VERTEX_SHADER};
                 THEN("It throws an exception pointing to the correct line in the base files.")
                 {
