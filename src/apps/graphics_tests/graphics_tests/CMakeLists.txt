@@ -9,6 +9,7 @@ set(${TARGET_NAME}_SOURCES
     main.cpp
 
     Image_tests.cpp
+    Scope_tests.cpp
     ShaderSource_tests.cpp
 )
 

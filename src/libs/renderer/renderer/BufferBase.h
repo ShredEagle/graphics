@@ -3,6 +3,7 @@
 
 #include "gl_helpers.h"
 #include "GL_Loader.h"
+#include "MappedGL.h"
 
 #include <handy/Guard.h>
 
@@ -47,7 +48,7 @@ template <BufferType N_type>
 Name<Buffer<N_type>> getBound(const Buffer<N_type> &)
 {
     GLint current;
-    glGetIntegerv(static_cast<GLenum>(N_type), &current);
+    glGetIntegerv(getGLMappedBufferBinding(static_cast<GLenum>(N_type)), &current);
     return Name<Buffer<N_type>>{(GLuint)current, typename Name<Buffer<N_type>>::UnsafeTag{}};
 }
 
