@@ -3,7 +3,8 @@ set(TARGET_NAME renderer)
 set(${TARGET_NAME}_HEADERS
     AttributeDimension.h
     BufferBase.h
-    BufferUtilities.h
+    BufferIndexedBinding.h
+    BufferLoad.h
     commons.h
     Drawing.h
     Error.h
