@@ -151,7 +151,8 @@ void Spriting::render(const sprite::LoadedAtlas & aAtlas) const
 {
     activate(mVertexSpecification, mProgram);
 
-    ScopedBind scopedTexture{*aAtlas.texture, GL_TEXTURE0 + gTextureUnit};
+    auto unitGuard = scopeTextureUnitActivation(gTextureUnit);
+    ScopedBind scopedTexture{*aAtlas.texture};
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,

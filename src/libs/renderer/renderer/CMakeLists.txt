@@ -2,7 +2,9 @@ set(TARGET_NAME renderer)
 
 set(${TARGET_NAME}_HEADERS
     AttributeDimension.h
-    BufferUtilities.h
+    BufferBase.h
+    BufferIndexedBinding.h
+    BufferLoad.h
     commons.h
     Drawing.h
     Error.h
@@ -11,6 +13,7 @@ set(${TARGET_NAME}_HEADERS
     GL_Loader.h
     MappedGL.h
     Query.h
+    ScopeGuards.h
     ShaderSource.h
     Shading.h
     Texture.h

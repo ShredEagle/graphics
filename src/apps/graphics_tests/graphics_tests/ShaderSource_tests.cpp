@@ -7,6 +7,7 @@
 #include <test_commons/PathProvider.h>
 
 #include <map>
+#include <memory>
 
 
 using namespace ad;
@@ -146,25 +147,31 @@ SCENARIO("Shader files include preprocessing.")
 
 SCENARIO("Shader compilation errors mapping.")
 {
-    if (GLAD_GL_VERSION_3_1)
+    std::unique_ptr<graphics::ApplicationGlfw> glApp;
+    try 
     {
-        GIVEN("A preprocessed shader file including another-one containing an error.")
+        glApp = std::make_unique<graphics::ApplicationGlfw>("dummy", math::Size<2, int>{1, 1});
+    }
+    catch (const std::exception &)
+    {
+        // We are on a platform where we cannot obtain the GL context via Glfw, just pass.
+        return;
+    }
+
+    GIVEN("A preprocessed shader file including another-one containing an error.")
+    {
+        std::filesystem::path vert = resource::pathFor("tests/Shaders/compilation_errors/vert.glsl");
+        ShaderSource source = ShaderSource::Preprocess(vert);
+
+        WHEN("It is compiled.")
         {
-            std::filesystem::path vert = resource::pathFor("tests/Shaders/compilation_errors/vert.glsl");
-            ShaderSource source = ShaderSource::Preprocess(vert);
-
-            WHEN("It is compiled.")
+            graphics::Shader shader{GL_VERTEX_SHADER};
+            THEN("It throws an exception pointing to the correct line in the base files.")
             {
-                graphics::ApplicationGlfw app{"dummy", {1, 1}};
-
-                graphics::Shader shader{GL_VERTEX_SHADER};
-                THEN("It throws an exception pointing to the correct line in the base files.")
-                {
-                    using Catch::Matchers::Contains;
-                    CHECK_THROWS_WITH(compileShader(shader, source),
-                                       Contains("helpers.glsl 0(line: 3)")
-                                         && Contains("vert.glsl 0(line: 7)"));
-                }
+                using Catch::Matchers::Contains;
+                CHECK_THROWS_WITH(compileShader(shader, source),
+                                    Contains("helpers.glsl 0(line: 3)")
+                                        && Contains("vert.glsl 0(line: 7)"));
             }
         }
     }

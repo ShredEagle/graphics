@@ -22,7 +22,7 @@ struct SourceMap
 };
 
 
-/// \brief Host the shader code string, and offer preprocessing for #include
+/// \brief Host the shader code string, and provide preprocessing for #include
 class ShaderSource
 {
     friend struct ShaderSourceView;

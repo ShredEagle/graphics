@@ -4,6 +4,7 @@
 #include "gl_helpers.h"
 #include "GL_Loader.h"
 #include "MappedGL.h"
+#include "ScopeGuards.h"
 
 #include <arte/Image.h>
 
@@ -30,6 +31,10 @@ inline Guard scopeUnpackAlignment(GLint aAlignment)
 
 } // namespace detail
 
+
+// Note: alternatively to hosting the target in a data member (and specializing Name for Texture),
+//       we could do like for Buffers and have the target as a template non-type parameter.
+//       Yet, this would imply that all functions taking a texture have to be templated too.
 struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 {
     /// \parameter aTarget for values see `target` parameter of
@@ -38,6 +43,24 @@ struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
         ResourceGuard<GLuint>(reserve(glGenTextures),
                               [](GLuint textureId){glDeleteTextures(1, &textureId);}),
         mTarget(aTarget)
+    {}
+
+    GLenum mTarget;
+};
+
+
+template <>
+class Name<Texture> : public detail::NameBase<Texture>
+{
+public:
+    explicit Name(GLuint aResource, GLenum aTarget, UnsafeTag) :
+        NameBase{aResource, UnsafeTag{}},
+        mTarget{aTarget}
+    {}
+
+    /*implicit*/ Name(const Texture & aTexture) :
+        NameBase{aTexture},
+        mTarget{aTexture.mTarget}
     {}
 
     GLenum mTarget;
@@ -79,16 +102,24 @@ inline void bind(const Texture & aTexture)
     glBindTexture(aTexture.mTarget, aTexture);
 }
 
+
+inline void bind(Name<Texture> aTexture)
+{
+    glBindTexture(aTexture.mTarget, aTexture);
+}
+
+
 inline void unbind(const Texture & aTexture)
 {
     glBindTexture(aTexture.mTarget, 0);
 }
 
-inline GLenum getBound(const Texture & aTexture)
+
+inline Name<Texture> getBound(const Texture & aTexture)
 {
     GLint current;
     glGetIntegerv(getGLMappedTextureBinding(aTexture.mTarget), &current);
-    return current;
+    return Name<Texture>{(GLuint)current, aTexture.mTarget, Name<Texture>::UnsafeTag{}};
 }
 
 
@@ -105,32 +136,6 @@ inline void unbind(const Texture & aTexture, GLenum aTextureUnit)
 {
     glActiveTexture(aTextureUnit);
     unbind(aTexture);
-}
-
-
-template <>
-inline ScopedBind::ScopedBind(const Texture & aResource) :
-    mGuard{[previousTexture = getBound(aResource), target = aResource.mTarget]
-           {
-                glBindTexture(target, previousTexture);
-}}
-{
-    bind(aResource);
-}
-
-
-// TODO I specially dislike this one:
-// * It requires an overload for each variation of the texture unit type (even if implicitly convertible)
-// * The logic is convoluted, activated a texture unit in several places, but never returning to the previously active unit
-template <>
-inline ScopedBind::ScopedBind(const Texture & aResource, GLint && aTextureUnit) :
-    mGuard{[aTextureUnit, previousTexture = (glActiveTexture(aTextureUnit), getBound(aResource)), target = aResource.mTarget]
-           {
-                glActiveTexture(aTextureUnit);
-                glBindTexture(target, previousTexture);
-           }}
-{
-    bind(aResource, aTextureUnit);
 }
 
 

@@ -2,6 +2,7 @@
 
 #include <handy/Guard.h>
 
+#include "gl_helpers.h"
 #include "GL_Loader.h"
 
 
@@ -77,6 +78,12 @@ inline void use(const Program & aProgram)
 }
 
 
+inline void use(Name<Program> aProgram)
+{
+    glUseProgram(aProgram);
+}
+
+
 inline void disableProgram()
 {
     glUseProgram(0);
@@ -89,10 +96,25 @@ inline void bind(const Program & aProgram)
     use(aProgram);
 }
 
+
+inline void bind(Name<Program> aProgram)
+{
+    use(aProgram);
+}
+
+
 /// \note Provided for ability to use bind_guard
 inline void unbind(const Program &)
 {
     disableProgram();
+}
+
+
+inline Name<Program> getBound(const Program & aBuffer)
+{
+    GLint current;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &current);
+    return Name<Program>{(GLuint)current, typename Name<Program>::UnsafeTag{}};
 }
 
 

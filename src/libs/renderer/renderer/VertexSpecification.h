@@ -1,9 +1,10 @@
 #pragma once
 
 #include "AttributeDimension.h"
-#include "gl_helpers.h"
+#include "BufferBase.h"
 #include "GL_Loader.h"
 #include "MappedGL.h"
+
 
 #include <handy/Guard.h>
 
@@ -31,60 +32,34 @@ inline void bind(const VertexArrayObject & aVertexArray)
     glBindVertexArray(aVertexArray);
 }
 
-// TODO Ad 2022/02/02: Is it a good idea to "expect" the object to unbind
-// when the underlying unbinding mechanism does not use it (just reset a default)? 
+
+inline void bind(Name<VertexArrayObject> aVertexArray)
+{
+    glBindVertexArray(aVertexArray);
+}
+
+
 inline void unbind(const VertexArrayObject & /*aVertexArray*/)
 {
     glBindVertexArray(0);
 }
 
 
-/// \TODO understand when glDisableVertexAttribArray should actually be called
-///       (likely not specially before destruction, but more when rendering other objects
-///        since it is a current(i.e. global) VAO state)
-/// \Note Well note even that: Activated vertex attribute array are per VAO, so changing VAO
-///       Already correctly handles that.
-struct [[nodiscard]] VertexBufferObject : public ResourceGuard<GLuint>
+inline Name<VertexArrayObject> getBound(const VertexArrayObject &)
 {
-    VertexBufferObject() :
-        ResourceGuard<GLuint>{reserve(glGenBuffers),
-                              [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
-    {}
-};
-
-
-inline void bind(const VertexBufferObject & aVertexBuffer)
-{
-    glBindBuffer(GL_ARRAY_BUFFER, aVertexBuffer);
-}
-
-inline void unbind(const VertexBufferObject &)
-{
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    GLint current;
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current);
+    return Name<VertexArrayObject>{(GLuint)current, Name<VertexArrayObject>::UnsafeTag{}};
 }
 
 
-struct [[nodiscard]] IndexBufferObject : public ResourceGuard<GLuint>
-{
-    IndexBufferObject() :
-        ResourceGuard<GLuint>{reserve(glGenBuffers),
-                              [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
-    {}
-};
+using VertexBufferObject = Buffer<BufferType::Array>;
 
-
-inline void bind(const IndexBufferObject & aIndexBuffer)
-{
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIndexBuffer);
-}
-
-inline void unbind(const IndexBufferObject &)
-{
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
+using IndexBufferObject = Buffer<BufferType::ElementArray>;
 
 
 /// \brief A VertexArray with a vector of VertexBuffers
+/// \deprecated
 struct [[nodiscard]] VertexSpecification
 {
     VertexSpecification(VertexArrayObject aVertexArray={},
@@ -164,18 +139,18 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 
+/***
+ *
+ * Vertex Buffer
+ *
+ ***/
+
 /// \brief Attach currently bound vertex buffer object to currently bound vertex array objet.
 /// \param aAttribute Describe the format of the buffer data and the associated parameter in shader program.
 void attachBoundVertexBuffer(AttributeDescription aAttribute,
                              GLsizei aStride,
                              GLuint aAttributeDivisor = 0);
 
-
-/***
- *
- * Vertex Buffer
- *
- ***/
 
 /// \brief Attach an existing VertexBuffer to an exisiting VertexArray,
 /// without providing initial data.

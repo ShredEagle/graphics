@@ -198,7 +198,8 @@ void Tiling::render(const sprite::LoadedAtlas & aAtlas, const TileSet & aTileSet
     //
     // Draw
     //
-    ScopedBind scopedTexture{*aAtlas.texture, GL_TEXTURE0 + gTextureUnit};
+    auto unitGuard = scopeTextureUnitActivation(gTextureUnit);
+    ScopedBind scopedTexture{*aAtlas.texture};
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,
