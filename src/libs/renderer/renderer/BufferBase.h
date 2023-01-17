@@ -31,7 +31,7 @@ void bind(const Buffer<N_type> & aBuffer)
 
 
 template <BufferType N_type>
-void bind(const Name<Buffer<N_type>> & aBufferView)
+void bind(Name<Buffer<N_type>> aBufferView)
 {
     glBindBuffer(static_cast<GLenum>(N_type), aBufferView);
 }

@@ -33,7 +33,7 @@ inline void bind(const VertexArrayObject & aVertexArray)
 }
 
 
-inline void bind(const Name<VertexArrayObject> & aVertexArray)
+inline void bind(Name<VertexArrayObject> aVertexArray)
 {
     glBindVertexArray(aVertexArray);
 }

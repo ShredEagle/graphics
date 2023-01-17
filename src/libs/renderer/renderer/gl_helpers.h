@@ -29,27 +29,24 @@ inline GLuint reserve(void(GLAPIENTRY * aGlGenFunction)(GLsizei, GLuint *))
 }
 
 
-/// \brief A non-owning version of the resource, storing a copy of the GLuint "name" of the resource.
-/// The advantage over the plain GLuint is it preserves some strong typing.
-/// \attention Buffer name in the sense of the "name" returned by glGenBuffers (which is an unsigned integer)
-template <class T_resource>
-class Name 
+namespace detail 
 {
-    //friend Name<T_resource> getBound(const T_resource &);
-    
-    //template <BufferType N_type>
-    //friend Name<Buffer<N_type>> getBound(const Buffer<N_type> &);
 
+
+template <class T_resource>
+class NameBase
+{
 public:
     struct UnsafeTag{};
 
     /// \attention I intended this ctor to be private, but then there is a lot of friending to do.
     /// The provided name must be a valid name for T_resource.
-    explicit Name(GLuint aResource, UnsafeTag) :
+    explicit NameBase(GLuint aResource, UnsafeTag) :
         mResource{aResource}
     {}
-    /*implicit*/ Name(const T_resource & aBuffer) :
-        mResource{aBuffer}
+
+    /*implicit*/ NameBase(const T_resource & aResource) :
+        mResource{aResource}
     {}
 
     /*implicit*/ operator const GLuint() const
@@ -58,10 +55,25 @@ public:
     }
 
 private:
-
     GLuint mResource;
 };
 
+
+} // namespace detail
+
+
+/// \brief A non-owning copy of the resource, notably storing a copy of the GLuint "name" of the resource.
+/// The advantage over the plain GLuint is it preserves some strong typing.
+///
+/// \attention Name is a misnomer, see for example Name<Texture> which also store the target.
+/// Buffer name in the sense of the "name" returned by glGenBuffers (which is an unsigned integer)
+template <class T_resource>
+// TODO find a better class name, such a Value, or View (but it is not a view, since it does not get to the current value)
+class Name : public detail::NameBase<T_resource>
+{
+public:
+    using detail::NameBase<T_resource>::NameBase;
+};
 
 
 // TODO should we use the GLenum directly instead?
