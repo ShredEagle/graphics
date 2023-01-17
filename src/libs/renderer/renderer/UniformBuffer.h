@@ -2,6 +2,7 @@
 
 
 #include "BufferBase.h"
+#include "BufferUtilities.h"
 
 
 namespace ad {

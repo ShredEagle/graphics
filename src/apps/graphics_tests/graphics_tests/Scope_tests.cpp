@@ -3,6 +3,8 @@
 #include <graphics/ApplicationGlfw.h>
 
 #include <renderer/FrameBuffer.h>
+#include <renderer/Shading.h>
+#include <renderer/UniformBuffer.h>
 #include <renderer/VertexSpecification.h>
 
 #include <memory>
@@ -167,7 +169,201 @@ SCENARIO("Framebuffer scoping.")
     }
 }
 
+
+SCENARIO("Uniform buffer scoping, indexed.")
+{
+    INITIALIZE_GL_CONTEXT();
+
+    GIVEN("Two uniform buffers.")
+    {
+        UniformBufferObject ubo_1;
+        UniformBufferObject ubo_2;
+
+        WHEN("The first is (unguarded) bound in a scope, then the second is bound to a specific index.")
+        {
+            const GLint bindingIndex = 3;
+            {
+                bind(ubo_1);
+                bind(ubo_2, BindingIndex{bindingIndex});
+
+                THEN("The second UBO is bound to the both the indexed and general binding points.")
+                {
+                    CHECK(getBound(ubo_1) == ubo_2);
+                    CHECK(getBound(ubo_1, BindingIndex{bindingIndex}) == ubo_2);
+                }
+
+                WHEN("Another UBO is scope-bound to a specific index, inside a nested scope.")
+                {
+                    UniformBufferObject ubo_3;
+
+                    {
+                        ScopedBind scopedUbo{ubo_3, BindingIndex{bindingIndex}};
+
+                        THEN("The third UBO is bound to the both the indexed and general binding points.")
+                        {
+                            CHECK(getBound(ubo_1) == ubo_3);
+                            CHECK(getBound(ubo_1, BindingIndex{bindingIndex}) == ubo_3);
+                        }
+                    }
+
+                    WHEN("The nested scope is exited.")
+                    {
+                        THEN("The second UBO is bound to the both the indexed and general binding points.")
+                        {
+                            CHECK(getBound(ubo_1) == ubo_2);
+                            CHECK(getBound(ubo_1, BindingIndex{bindingIndex}) == ubo_2);
+                        }
+                    }
+                }
+            }
+
+            WHEN("The scope is exited.")
+            {
+                THEN("The second UBO is still the bound to the both the indexed and general binding points.")
+                {
+                    CHECK(getBound(ubo_1) == ubo_2);
+                    CHECK(getBound(ubo_1, BindingIndex{bindingIndex}) == ubo_2);
+                }
+            }
+        }
+    }
+}
+
+
+template <class T_tested, class ... VT_aArgs>
+void testScoping(const std::string aName, VT_aArgs && ... aCtorArgs)
+{
+    GIVEN("A " + aName + ".")
+    {
+        T_tested tested_1{std::forward<VT_aArgs>(aCtorArgs)...};
+
+        WHEN("It is (unguarded) bound in a scope.")
+        {
+            {
+                bind(tested_1);
+
+                THEN("It is the currently bound " + aName + " within the scope.")
+                {
+                    CHECK(getBound(tested_1) == tested_1);
+                }
+
+                WHEN("Another " + aName + " is scope-bound, inside a nested scope.")
+                {
+                    T_tested tested_2{std::forward<VT_aArgs>(aCtorArgs)...};
+                    REQUIRE(tested_2 != tested_1); // Sanity check
+
+                    {
+                        ScopedBind scopedtested{tested_2};
+
+                        THEN("The second " + aName + " is the currently bound tested within the scope.")
+                        {
+                            CHECK(getBound(tested_2) == tested_2);
+                            CHECK(getBound(tested_1) == tested_2); // same thing
+                        }
+                    }
+
+                    WHEN("The nested scope is exited.")
+                    {
+                        THEN("The first " + aName + " is the currently bound tested.")
+                        {
+                            CHECK(getBound(tested_1) == tested_1);
+                        }
+                    }
+                }
+            }
+
+            WHEN("The scope is exited.")
+            {
+                THEN("It is still the bound " + aName + ".")
+                {
+                    CHECK(getBound(tested_1) == tested_1);
+                }
+            }
+        }
+    }
+}
+
+
+SCENARIO("Uniform buffer scoping (non-indexed).")
+{
+    INITIALIZE_GL_CONTEXT();
+
+    testScoping<UniformBufferObject>("UBO");
+}
+
+
 SCENARIO("Texture scoping.")
 {
     INITIALIZE_GL_CONTEXT();
+
+    testScoping<Texture>("texture", (GLenum)GL_TEXTURE_2D);
+}
+
+
+SCENARIO("VertexArrayObject scoping.")
+{
+    INITIALIZE_GL_CONTEXT();
+
+    testScoping<VertexArrayObject>("VAO");
+}
+
+
+SCENARIO("Program scoping.")
+{
+    INITIALIZE_GL_CONTEXT();
+
+    GIVEN("A program.")
+    {
+        Program tested_1 = makeLinkedProgram({
+            {GL_VERTEX_SHADER, "void main(){gl_Position = vec4(0.);}"},
+            {GL_FRAGMENT_SHADER, "void main(){}"},
+        });
+
+        WHEN("It is (unguarded) bound in a scope.")
+        {
+            {
+                bind(tested_1);
+
+                THEN("It is the currently bound program within the scope.")
+                {
+                    CHECK(getBound(tested_1) == tested_1);
+                }
+
+                WHEN("Another program is scope-bound, inside a nested scope.")
+                {
+                    Program tested_2 = makeLinkedProgram({
+                        {GL_VERTEX_SHADER, "void main(){gl_Position = vec4(0.);}"},
+                        {GL_FRAGMENT_SHADER, "void main(){}"},
+                    });
+                    REQUIRE(tested_2 != tested_1); // Sanity check
+
+                    {
+                        ScopedBind scopedtested{tested_2};
+
+                        THEN("The second program is the currently bound tested within the scope.")
+                        {
+                            CHECK(getBound(tested_2) == tested_2);
+                            CHECK(getBound(tested_1) == tested_2); // same thing
+                        }
+                    }
+
+                    WHEN("The nested scope is exited.")
+                    {
+                        THEN("The first program is the currently bound tested.")
+                        {
+                            CHECK(getBound(tested_1) == tested_1);
+                        }
+                    }
+                }
+            }
+
+            WHEN("The scope is exited.")
+            {
+                THEN("It is still the bound program.")
+                {
+                    CHECK(getBound(tested_1) == tested_1);
+                }
+            }
+        }
+    }
 }
