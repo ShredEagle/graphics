@@ -37,6 +37,7 @@ enum class FrameBufferTarget
     Read = GL_READ_FRAMEBUFFER,
 };
 
+
 /// \brief Bind the framebuffer to both Read and Draw targets.
 inline void bind(const FrameBuffer & aFrameBuffer)
 {
@@ -44,7 +45,7 @@ inline void bind(const FrameBuffer & aFrameBuffer)
 }
 
 
-inline void bind(const Name<FrameBuffer> & aFrameBuffer)
+inline void bind(Name<FrameBuffer> aFrameBuffer)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, aFrameBuffer);
 }
@@ -63,7 +64,7 @@ inline void bind(const FrameBuffer & aFrameBuffer, FrameBufferTarget aTarget)
 }
 
 
-inline void bind(const Name<FrameBuffer> & aFrameBuffer, FrameBufferTarget aTarget)
+inline void bind(Name<FrameBuffer> aFrameBuffer, FrameBufferTarget aTarget)
 {
     glBindFramebuffer(static_cast<GLenum>(aTarget), aFrameBuffer);
 }
@@ -114,6 +115,7 @@ inline void attachImage(
         throw std::runtime_error("Incomplete framebuffer (" + std::to_string(__LINE__) + ")" );
     }
 }
+
 
 } // namespace graphics
 } // namespace ad

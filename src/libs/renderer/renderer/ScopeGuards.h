@@ -12,6 +12,9 @@ namespace ad {
 namespace graphics {
 
 
+// Note: The naming convention here is that "scoping" means changing the value,
+// then returning it to the previous value when the scope is exited.
+
 // TODO might become a single template function.
 class ScopedBind
 {
@@ -72,6 +75,35 @@ inline Guard scopeViewport(math::Rectangle<GLint> aViewport)
         {
             glViewport(previous[0], previous[1], previous[2], previous[3]);
         }};
+}
+
+
+template <class T_index>
+inline Guard scopePrimitiveRestartIndex(T_index aIndex)
+{
+    bool wasEnabled = isEnabled(GL_PRIMITIVE_RESTART);
+    // We want to restore the restart index value even if it is not enabled.
+    GLint previousIndex;
+    glGetIntegerv(GL_PRIMITIVE_RESTART_INDEX, &previousIndex);
+
+    glPrimitiveRestartIndex(aIndex);
+
+    if(wasEnabled)
+    {
+        return Guard{ [previousIndex]()
+            {
+                glPrimitiveRestartIndex(previousIndex); 
+            }};
+    }
+    else
+    {
+        glEnable(GL_PRIMITIVE_RESTART);
+        return Guard{ [previousIndex]()
+            {
+                glDisable(GL_PRIMITIVE_RESTART);
+                glPrimitiveRestartIndex(previousIndex);
+            }};
+    }
 }
 
 

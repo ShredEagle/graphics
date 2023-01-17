@@ -7,6 +7,8 @@
 namespace ad {
 namespace graphics {
 
+
+/// \deprecated This is too integrated and makes too many assumptions for a low-level library.
 struct [[nodiscard]] DrawContext
 {
     DrawContext(VertexSpecification aVertexSpecification,
@@ -80,38 +82,6 @@ inline void deactivate(const DrawContext & aDrawContext)
 inline std::vector<VertexBufferObject> & buffers(DrawContext & aDrawContext)
 {
     return aDrawContext.mVertexSpecification.mVertexBuffers;
-}
-
-
-// TODO Ad 2022/02/02 Pick a naming convention. Make the distinction between:
-// * Guarding some resource "activation" or value, then returning it to the default value.
-// * Guarding it, but then returning it to its **previous** state (which might not be default).
-template <class T_index>
-inline Guard scopePrimitiveRestartIndex(T_index aIndex)
-{
-    bool wasEnabled = isEnabled(GL_PRIMITIVE_RESTART);
-    // We want to restore the restart index value even if it is not enabled.
-    GLint previousIndex;
-    glGetIntegerv(GL_PRIMITIVE_RESTART_INDEX, &previousIndex);
-
-    glPrimitiveRestartIndex(aIndex);
-
-    if(wasEnabled)
-    {
-        return Guard{ [previousIndex]()
-            {
-                glPrimitiveRestartIndex(previousIndex); 
-            }};
-    }
-    else
-    {
-        glEnable(GL_PRIMITIVE_RESTART);
-        return Guard{ [previousIndex]()
-            {
-                glDisable(GL_PRIMITIVE_RESTART);
-                glPrimitiveRestartIndex(previousIndex);
-            }};
-    }
 }
 
 
