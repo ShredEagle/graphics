@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gl_helpers.h"
+#include "ScopeGuards.h"
 #include "Texture.h"
 
 #include <handy/Guard.h>

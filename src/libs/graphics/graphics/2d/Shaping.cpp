@@ -2,6 +2,8 @@
 
 #include "Shaping-shaders.h"
 
+#include <renderer/ScopeGuards.h>
+
 #include <math/Constants.h>
 
 

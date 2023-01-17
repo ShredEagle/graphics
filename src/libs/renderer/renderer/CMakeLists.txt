@@ -12,6 +12,7 @@ set(${TARGET_NAME}_HEADERS
     GL_Loader.h
     MappedGL.h
     Query.h
+    ScopeGuards.h
     ShaderSource.h
     Shading.h
     Texture.h

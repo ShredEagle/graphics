@@ -4,6 +4,7 @@
 #include "gl_helpers.h"
 #include "GL_Loader.h"
 #include "MappedGL.h"
+#include "ScopeGuards.h"
 
 #include <arte/Image.h>
 

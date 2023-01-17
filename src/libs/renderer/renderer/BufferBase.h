@@ -12,6 +12,14 @@ namespace ad {
 namespace graphics {
 
 
+enum class BufferType
+{
+    Array = GL_ARRAY_BUFFER,
+    ElementArray = GL_ELEMENT_ARRAY_BUFFER,
+    Uniform = GL_UNIFORM_BUFFER,
+};
+
+
 template <BufferType N_type>
 struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 {

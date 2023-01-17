@@ -3,6 +3,7 @@
 
 #include "MappedGL.h"
 #include "UniformBuffer.h" // TODO remove when generalized
+#include "ScopeGuards.h"
 
 #include <span>
 
