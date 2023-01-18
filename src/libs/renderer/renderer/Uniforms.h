@@ -13,6 +13,7 @@
 namespace ad {
 namespace graphics {
 
+
     // Note: It is not obvious whether a const program should allow to change its parameters.
     // Yet, designing the API this way allow to make most render() member method constant.
 

@@ -146,6 +146,7 @@ inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, aFiltering);
 }
 
+
 /// \brief Allocate texture storage.
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             const GLsizei aWidth, const GLsizei aHeight,
@@ -174,6 +175,7 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
     }
 }
 
+
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             math::Size<2, GLsizei> aResolution,
                             const GLsizei aMipmapLevels = 1)
@@ -182,6 +184,7 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
                            aResolution.width(), aResolution.height(),
                            aMipmapLevels);
 }
+
 
 void clear(const Texture & aTexture, math::hdr::Rgba_f aClearValue);
 
@@ -232,6 +235,7 @@ inline void writeTo(const Texture & aTexture,
                     aRawData);
 }
 
+
 /// \brief Allocate storage and read `aImage` into `aTexture`.
 template <class T_pixel>
 inline void loadImage(const Texture & aTexture,
@@ -244,6 +248,7 @@ inline void loadImage(const Texture & aTexture,
     allocateStorage(aTexture, GL_RGBA8, aImage.dimensions());
     writeTo(aTexture, static_cast<const std::byte *>(aImage), InputImageParameters::From(aImage));
 }
+
 
 /// \brief Load an animation from an image containing a (column) array of frames.
 template <class T_pixel>

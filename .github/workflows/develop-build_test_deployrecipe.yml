@@ -8,12 +8,12 @@ on:
 
 jobs:
   build-test-deployrecipe:
-    uses: shredeagle/reusable-workflows/.github/workflows/main_build.yml@v2.4.2
+    uses: shredeagle/reusable-workflows/.github/workflows/main_build.yml@develop
     with:
       # Disable macos while spdlog crashes its compiler
       # see: https://github.com/conan-io/conan-center-index/issues/8480
       os: >-
-        ["ubuntu-20.04", "windows-2022"]
+        ["ubuntu-22.04", "windows-2022"]
       deployrecipe_userchannel: adnn/develop
     secrets:
       SHREDROBOT_GITHUB_TOKEN: ${{ secrets.SHREDROBOT_GITHUB_TOKEN }}
