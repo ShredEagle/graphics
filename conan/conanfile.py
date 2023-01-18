@@ -34,7 +34,7 @@ class GraphicsConan(ConanFile):
         ("freetype/2.12.1"),
         ("glad/0.1.36"),
         ("glfw/3.3.8@adnn/patch"),
-        ("nlohmann_json/3.9.1"),
+        ("nlohmann_json/3.11.2"),
         ("spdlog/1.11.0"),
         ("utfcpp/3.2.1"),
         ("imgui/1.88"),
