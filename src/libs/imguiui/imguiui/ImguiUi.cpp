@@ -2,8 +2,10 @@
 
 #include <GLFW/glfw3.h>
 
+#include <cassert>
 #include <imgui_backends/imgui_impl_glfw.h>
 #include <imgui_backends/imgui_impl_opengl3.h>
+#include <mutex>
 
 namespace {
 
@@ -18,6 +20,14 @@ namespace {
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(aWindow, true);
         ImGui_ImplOpenGL3_Init();
+        
+        // on first call NewFrame create all the shader 
+        // and font texture so it NEEDS to be called
+        // once before the first backend render
+        // Since we want to avoid all call in the render thread
+        // We call this once in the ImguiUi constructor
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
 
         return io;
     }
@@ -48,8 +58,14 @@ ImguiUi::~ImguiUi()
     terminateImgui();
 }
 
+void ImguiUi::renderBackend()
+{
+    std::lock_guard lock{mFrameMutex};
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
 
-void ImguiUi::newFrame() const
+
+void ImguiUi::newFrame()
 {
     // Start the Dear ImGui frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -58,21 +74,22 @@ void ImguiUi::newFrame() const
 }
 
 
-void ImguiUi::render() const
+void ImguiUi::render()
 {
     ImGui::Render();
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 
-bool ImguiUi::isCapturingKeyboard() const
+bool ImguiUi::isCapturingKeyboard()
 {
+    std::lock_guard lock{mFrameMutex};
     return mIo.WantCaptureKeyboard;
 }
 
 
-bool ImguiUi::isCapturingMouse() const
+bool ImguiUi::isCapturingMouse()
 {
+    std::lock_guard lock{mFrameMutex};
     return mIo.WantCaptureMouse;
 }
 
