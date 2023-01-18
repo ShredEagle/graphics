@@ -31,13 +31,13 @@ class GraphicsConan(ConanFile):
     }
 
     requires = (
-        ("freetype/2.12.1"),
-        ("glad/0.1.36"),
-        ("glfw/3.3.8@adnn/patch"),
-        ("nlohmann_json/3.9.1"),
-        ("spdlog/1.11.0"),
-        ("utfcpp/3.2.1"),
-        ("imgui/1.88"),
+        ("freetype/2.12.1"), # Freetype license must state the binary must contain a mention that it use freetype
+        ("glad/0.1.36"), # MIT
+        ("glfw/3.3.8@adnn/patch"), # zlib license (cool)
+        ("nlohmann_json/3.9.1"), # MIT
+        ("spdlog/1.11.0"), # MIT
+        ("utfcpp/3.2.1"), # Boost license (cool)
+        ("imgui/1.88"), # MIT
 
         ("handy/2c23377423@adnn/develop"),
         ("math/bb33788924@adnn/develop"),
