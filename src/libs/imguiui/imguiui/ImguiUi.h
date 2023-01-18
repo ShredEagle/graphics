@@ -3,6 +3,7 @@
 #include <imgui.h>
 
 #include <graphics/ApplicationGlfw.h>
+#include <mutex>
 
 
 namespace ad {
@@ -15,11 +16,15 @@ public:
 
     ~ImguiUi();
 
-    void newFrame() const;
-    void render() const;
+    void renderBackend();
 
-    bool isCapturingKeyboard() const;
-    bool isCapturingMouse() const;
+    void newFrame();
+    void render();
+
+    bool isCapturingKeyboard();
+    bool isCapturingMouse();
+
+    std::mutex mFrameMutex;
 
 private:
     // Could be pimpled
