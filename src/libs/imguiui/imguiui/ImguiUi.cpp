@@ -82,14 +82,12 @@ void ImguiUi::render()
 
 bool ImguiUi::isCapturingKeyboard()
 {
-    std::lock_guard lock{mFrameMutex};
     return mIo.WantCaptureKeyboard;
 }
 
 
 bool ImguiUi::isCapturingMouse()
 {
-    std::lock_guard lock{mFrameMutex};
     return mIo.WantCaptureMouse;
 }
 
