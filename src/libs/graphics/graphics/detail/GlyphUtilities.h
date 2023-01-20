@@ -77,10 +77,12 @@ inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters a
 struct RenderedGlyph
 {
     // TODO Storing a naked texture pointer is not ideal
+    // Note: the texture is stored here for the cases where several textures are used for a single logical font atlas (dynamic)
+    // Ideally, this association should be handled by the client, but it would mean 1 GlyphMap / texture (complicating lookups).
     Texture * texture;
     GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position.
-    math::Size<2, GLfloat> controlBoxSize;
-    math::Vec<2, GLfloat> bearing;
+    math::Size<2, GLfloat> controlBoxSize; // Including added margin if any
+    math::Vec<2, GLfloat> bearing; // Including the added margin if any
     math::Vec<2, GLfloat> penAdvance;
     unsigned int freetypeIndex; // Notably usefull for kerning queries.
 };
@@ -103,10 +105,6 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
 
 struct StaticGlyphCache
 {
-    Texture atlas{0};
-    GlyphMap glyphMap;
-    arte::CharCode placeholder = 0x3F; // '?'
-
     // The empty cache
     StaticGlyphCache() = default;
 
@@ -115,6 +113,10 @@ struct StaticGlyphCache
                      math::Vec<2, GLint> aDimensionExtension = {1, 0});
 
     RenderedGlyph at(arte::CharCode aCharCode) const;
+
+    Texture atlas{0};
+    GlyphMap glyphMap;
+    arte::CharCode placeholder = 0x3F; // '?'
 };
 
 

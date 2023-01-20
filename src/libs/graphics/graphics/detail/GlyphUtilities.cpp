@@ -97,7 +97,7 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
                 // Adding margin on each dimension allows to make sure the top and right border pixels are not discarded, when rendering at matching resolution.
                 // Important: add half horizontal margin on each side to avoid bleeding, and whole vertical margin on top and bottom (no vertical bleeding in a ribbon).
                 {fixedToFloat(slot.metric().width) + margins.x(), fixedToFloat(slot.metric().height) + 2 * margins.y()}, 
-                {fixedToFloat(slot.metric().horiBearingX), fixedToFloat(slot.metric().horiBearingY)},
+                {fixedToFloat(slot.metric().horiBearingX) - margins.x() / 2.f, fixedToFloat(slot.metric().horiBearingY) + margins.y()},
                 {fixedToFloat(slot.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
                 slot.index()
             };
@@ -170,7 +170,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                     0,
                     // See DynamicGlyphCache::at() for the ratrionale behind the addition
                     {fixedToFloat(slot.metric().width) + aMargins.x(), fixedToFloat(slot.metric().height) + 2 * aMargins.y()}, 
-                    {fixedToFloat(slot.metric().horiBearingX), fixedToFloat(slot.metric().horiBearingY)},
+                    {fixedToFloat(slot.metric().horiBearingX) - aMargins.x() / 2.f, fixedToFloat(slot.metric().horiBearingY) + aMargins.y()},
                     {fixedToFloat(slot.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
                     slot.index()
                 }
@@ -201,7 +201,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
             GL_UNSIGNED_BYTE,
             1
         };
-        rendered.texture = &ribon.texture;
+        rendered.texture = &ribon.texture; // Replace the nullptr with the actual the ribon texture.
         rendered.offsetInTexture = ribon.write(bitmap.data(), inputParams) - (aMargins.x() / 2);
         aGlyphMap.insert({charcode, rendered});
     }

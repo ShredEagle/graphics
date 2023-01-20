@@ -143,7 +143,7 @@ private:
 // the instance becoming independant of the FontFace and its currently active glyph.
 // Yet, we keep it minimal (and optimal) as the current use case can live with the limitations.
 /// \brief Wrap the glyph slot currently active in a FontFace.
-/// \warning The FontFace instance must outlive the GlyphBitmap.
+/// \warning The FontFace instance must outlive the GlyphBitmap. // TODO 
 class GlyphSlot
 {
     friend class FontFace;

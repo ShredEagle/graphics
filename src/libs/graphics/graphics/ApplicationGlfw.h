@@ -155,6 +155,7 @@ public:
         return handleEvents();
     }
 
+    // TODO should return a plain reference, the app interface will not be valide anyway if this is destroyed.
     std::shared_ptr<AppInterface> getAppInterface()
     {
         return mAppInterface;

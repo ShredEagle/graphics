@@ -75,12 +75,6 @@ Texting::Texting(const filesystem::path & aFontPath,
         (aTextureFiltering == Filtering::Linear) ? (GLenum)GL_LINEAR : GL_NEAREST
     };
 
-    // TODO I don't like this coupling to GlyphUtilities.cpp, DynamicGlyphCache::at()
-    // where we have to provide the same offset to the shader.
-    setUniform(mGpuProgram, "u_BoundingOffsets_pixel", math::Vec<2, GLfloat>{
-        (GLfloat)ribonMargins.x() / 2.f, // division by 2 matches RenderedGlyph data 
-        (GLfloat)ribonMargins.y()});
-
     // Font setup
     mFontFace.inverseYAxis(true);
     mFontFace.setPixelHeight(static_cast<int>(glyphPixelHeight));
