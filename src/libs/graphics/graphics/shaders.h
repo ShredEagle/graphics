@@ -241,7 +241,6 @@ namespace texting
         layout(location=5) in vec2  in_Bearing;
         layout(location=6) in vec4  in_Color;
         
-        uniform vec2 u_BoundingOffsets_pixel;
         uniform vec2 u_PixelToWorld;
         uniform mat3 u_WorldToCamera;
         uniform mat3 u_Projection;
@@ -252,7 +251,7 @@ namespace texting
         void main(void)
         {
             // Go back (left) by horizontal offset, but advance (up) by vertical offset.
-            vec2 worldBearing     = vec2(in_Bearing.x - u_BoundingOffsets_pixel.x, in_Bearing.y + u_BoundingOffsets_pixel.y) * u_PixelToWorld;
+            vec2 worldBearing     = in_Bearing * u_PixelToWorld;
             vec2 worldBoundingBox = in_BoundingBox * u_PixelToWorld;
             vec2 worldPosition    = in_Position_w + worldBearing + (ve_Position_u * worldBoundingBox);
 

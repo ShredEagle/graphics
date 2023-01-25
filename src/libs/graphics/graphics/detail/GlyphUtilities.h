@@ -29,19 +29,21 @@ struct TextureRibon
     TextureRibon(Texture aTexture, GLint aWidth, math::Vec<2, GLint> aMargins) :
         texture{std::move(aTexture)},
         width{aWidth},
-        margins{std::move(aMargins)}
+        margins{aMargins}
     {}
 
     Texture texture;
     GLint width{0};
     math::Vec<2, GLint> margins;
-    GLint nextXOffset = margins.x(); // Add the margin before the first glyph
+    GLint nextXOffset{0}; // The left margin before the first glyph will be added by  write()
 
-    static constexpr math::Vec<2, GLint> gRecommendedMargins{2, 1};
+    static constexpr math::Vec<2, GLint> gRecommendedMargins{1, 1};
 
     GLint isFitting(GLint aCandidateWidth)
     { return aCandidateWidth <= (width - nextXOffset); }
 
+    /// @brief Write the raw bitmap `aData` to the ribon.
+    /// @return The horizontal offset to the written data.
     GLint write(const std::byte * aData, InputImageParameters aInputParameters);
 };
 
@@ -67,9 +69,13 @@ inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum a
 
 inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters aInputParameters)
 {
-    writeTo(texture, aData, aInputParameters, {nextXOffset, margins.y()});
-    GLint thisOffset = nextXOffset;
-    nextXOffset += aInputParameters.resolution.width() + margins.x();
+    // Start writing after the left margin.
+    writeTo(texture, aData, aInputParameters, {margins.x() + nextXOffset, margins.y()});
+    // The pointed-to bitmap includes the left margin (i.e. the offset does not get the margin added).
+    // (which is consistent with controlBoxSize including the margin)
+    GLint thisOffset = nextXOffset; 
+    // The next glyph can start after the current glyph width plus the margins on both sides.
+    nextXOffset += margins.x() + aInputParameters.resolution.width() + margins.x();
     return thisOffset;
 }
 
@@ -77,10 +83,12 @@ inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters a
 struct RenderedGlyph
 {
     // TODO Storing a naked texture pointer is not ideal
+    // Note: the texture is stored here for the cases where several textures are used for a single logical font atlas (dynamic)
+    // Ideally, this association should be handled by the client, but it would mean 1 GlyphMap / texture (complicating lookups).
     Texture * texture;
-    GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position.
-    math::Size<2, GLfloat> controlBoxSize;
-    math::Vec<2, GLfloat> bearing;
+    GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position. This is the position where the left margin starts.
+    math::Size<2, GLfloat> controlBoxSize; // Including added margin if any
+    math::Vec<2, GLfloat> bearing; // Including the added margin if any
     math::Vec<2, GLfloat> penAdvance;
     unsigned int freetypeIndex; // Notably usefull for kerning queries.
 };
@@ -103,18 +111,18 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
 
 struct StaticGlyphCache
 {
-    Texture atlas{0};
-    GlyphMap glyphMap;
-    arte::CharCode placeholder = 0x3F; // '?'
-
     // The empty cache
     StaticGlyphCache() = default;
 
     StaticGlyphCache(const arte::FontFace & aFontFace,
                      arte::CharCode aFirst, arte::CharCode aLast,
-                     math::Vec<2, GLint> aDimensionExtension = {1, 0});
+                     math::Vec<2, GLint> aDimensionExtension = TextureRibon::gRecommendedMargins);
 
     RenderedGlyph at(arte::CharCode aCharCode) const;
+
+    Texture atlas{0};
+    GlyphMap glyphMap;
+    static const arte::CharCode placeholder = 0x3F; // '?'
 };
 
 
@@ -151,12 +159,28 @@ struct DynamicGlyphCache
 
 
 // TODO aPixelToLocal should be removed, when the Texting rendering does all "local layout" in pixel coordinates
+/// \deprecated
 void forEachGlyph(const std::string & aString,
                   math::Position<2, GLfloat> aPenOrigin_w,
                   DynamicGlyphCache & aGlyphCache,
                   arte::FontFace & aFontFace,
                   math::Size<2, GLfloat> aPixelToLocal,
                   std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback);
+
+
+/// @brief Prepare a string for rendering by invoking `aGlyphCallback` for each glyph in `aString`.
+/// @param aPenOrigin_u Pen origin when starting to write the string, expressed in pixels of the render target.
+void forEachGlyph(const std::string & aString,
+                  math::Position<2, GLfloat> aPenOrigin_p,
+                  const StaticGlyphCache & aGlyphCache,
+                  const arte::FontFace & aFontFace,
+                  std::function<void(const RenderedGlyph &, math::Position<2, GLfloat>)> aGlyphCallback);
+
+
+// TODO only provide the dimension in the direction of writing at the moment (the other will be zero).
+math::Size<2, GLfloat> getStringDimension(const std::string & aString,
+                                          const StaticGlyphCache & aGlyphCache,
+                                          const arte::FontFace & aFontFace);
 
 
 } // namespace detail
