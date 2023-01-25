@@ -29,19 +29,21 @@ struct TextureRibon
     TextureRibon(Texture aTexture, GLint aWidth, math::Vec<2, GLint> aMargins) :
         texture{std::move(aTexture)},
         width{aWidth},
-        margins{std::move(aMargins)}
+        margins{aMargins}
     {}
 
     Texture texture;
     GLint width{0};
     math::Vec<2, GLint> margins;
-    GLint nextXOffset = margins.x(); // Add the margin before the first glyph
+    GLint nextXOffset{0}; // The left margin before the first glyph will be added by  write()
 
-    static constexpr math::Vec<2, GLint> gRecommendedMargins{2, 1};
+    static constexpr math::Vec<2, GLint> gRecommendedMargins{1, 1};
 
     GLint isFitting(GLint aCandidateWidth)
     { return aCandidateWidth <= (width - nextXOffset); }
 
+    /// @brief Write the raw bitmap `aData` to the ribon.
+    /// @return The horizontal offset to the written data.
     GLint write(const std::byte * aData, InputImageParameters aInputParameters);
 };
 
@@ -67,9 +69,13 @@ inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum a
 
 inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters aInputParameters)
 {
-    writeTo(texture, aData, aInputParameters, {nextXOffset, margins.y()});
-    GLint thisOffset = nextXOffset;
-    nextXOffset += aInputParameters.resolution.width() + margins.x();
+    // Start writing after the left margin.
+    writeTo(texture, aData, aInputParameters, {margins.x() + nextXOffset, margins.y()});
+    // The pointed-to bitmap includes the left margin (i.e. the offset does not get the margin added).
+    // (which is consistent with controlBoxSize including the margin)
+    GLint thisOffset = nextXOffset; 
+    // The next glyph can start after the current glyph width plus the margins on both sides.
+    nextXOffset += margins.x() + aInputParameters.resolution.width() + margins.x();
     return thisOffset;
 }
 
@@ -80,7 +86,7 @@ struct RenderedGlyph
     // Note: the texture is stored here for the cases where several textures are used for a single logical font atlas (dynamic)
     // Ideally, this association should be handled by the client, but it would mean 1 GlyphMap / texture (complicating lookups).
     Texture * texture;
-    GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position.
+    GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position. This is the position where the left margin starts.
     math::Size<2, GLfloat> controlBoxSize; // Including added margin if any
     math::Vec<2, GLfloat> bearing; // Including the added margin if any
     math::Vec<2, GLfloat> penAdvance;

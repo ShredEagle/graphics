@@ -51,7 +51,7 @@ DynamicGlyphCache::DynamicGlyphCache(math::Size<2, GLint> aRibonDimension_p,
             }
             return aRibonDimension_p;
         }()},
-    margins{std::move(aMargins)}
+    margins{aMargins}
 {
     growAtlas();
 }
@@ -89,15 +89,14 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
 
             RenderedGlyph rendered{
                 &atlases.back().texture,
-                // TODO it would simplify overall comprehension to get rid of this division by 2 of the margin (yet it would currently lead to bleeding).
-                atlases.back().write(bitmap.data(), inputParams) - (margins.x() / 2), // go back half the horizontal margin (not full margin to avoid bleeding)
-                //{fixedToFloat(slot.metric().width), fixedToFloat(slot.metric().height)},
+                atlases.back().write(bitmap.data(), inputParams),
                 // Note: We observe noticeable "edge trimming" when using the exact glyph bounding box.
                 // This is because a fragment is generated only if the primitive hits the center of the pixel.
                 // Adding margin on each dimension allows to make sure the top and right border pixels are not discarded, when rendering at matching resolution.
-                // Important: add half horizontal margin on each side to avoid bleeding, and whole vertical margin on top and bottom (no vertical bleeding in a ribbon).
-                {fixedToFloat(slot.metric().width) + margins.x(), fixedToFloat(slot.metric().height) + 2 * margins.y()}, 
-                {fixedToFloat(slot.metric().horiBearingX) - margins.x() / 2.f, fixedToFloat(slot.metric().horiBearingY) + margins.y()},
+                // Important: The margin is added to each side, so each glyph dimension is agumented by 2 horizontal and 2 vertical margins.
+                {fixedToFloat(slot.metric().width) + 2 * margins.x(), fixedToFloat(slot.metric().height) + 2 * margins.y()}, 
+                // The bearing goes **back** the left horizontal margin, and goes **up** the top vertical margin.
+                {fixedToFloat(slot.metric().horiBearingX) - margins.x(), fixedToFloat(slot.metric().horiBearingY) + margins.y()},
                 {fixedToFloat(slot.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
                 slot.index()
             };
@@ -139,20 +138,17 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                     nullptr,
                     0,
                     // See DynamicGlyphCache::at() for the ratrionale behind the addition
-                    {fixedToFloat(slot.metric().width) + aMargins.x(), fixedToFloat(slot.metric().height) + 2 * aMargins.y()}, 
-                    {fixedToFloat(slot.metric().horiBearingX) - (float)aMargins.x() / 2.f, fixedToFloat(slot.metric().horiBearingY) + (float)aMargins.y()},
+                    {fixedToFloat(slot.metric().width) + 2 * aMargins.x(), fixedToFloat(slot.metric().height) + 2 * aMargins.y()}, 
+                    {fixedToFloat(slot.metric().horiBearingX) - aMargins.x(), fixedToFloat(slot.metric().horiBearingY) + aMargins.y()},
                     {fixedToFloat(slot.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
                     slot.index()
                 }
             });
             math::Size<2, int> glyphSize = std::get<1>(glyphs.back()).getBoundingDimension();
-            atlasDimensions.width() += glyphSize.width();
+            atlasDimensions.width() += glyphSize.width() + 2 * aMargins.x();
             atlasDimensions.height() = std::max(atlasDimensions.height(), glyphSize.height());
-
-            atlasDimensions.width() += aMargins.x();
         }
     }
-    // The margin is present in the ribon before the first glyph, no need to remove the initial x extension
     atlasDimensions.height() += 2 * aMargins.y();
 
     //
@@ -172,7 +168,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
             1
         };
         rendered.texture = &ribon.texture; // Replace the nullptr with the actual the ribon texture.
-        rendered.offsetInTexture = ribon.write(bitmap.data(), inputParams) - (aMargins.x() / 2);
+        rendered.offsetInTexture = ribon.write(bitmap.data(), inputParams);
         aGlyphMap.insert({charcode, rendered});
     }
 
