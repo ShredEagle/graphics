@@ -113,36 +113,6 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode, const arte::FontFa
 }
 
 
-void forEachGlyph(const std::string & aString,
-                  math::Position<2, GLfloat> aPenOrigin_w,
-                  DynamicGlyphCache & aGlyphCache, 
-                  arte::FontFace & aFontFace,
-                  math::Size<2, GLfloat> aPixelToLocal,
-                  std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback)
-{
-    unsigned int previousIndex = 0;
-    for (std::string::const_iterator it = aString.begin();
-         it != aString.end();
-         /* in body */)
-    {
-        // Decode utf8 encoded string to individual Unicode code points
-        arte::CharCode codePoint = utf8::next(it, aString.end());
-        detail::RenderedGlyph rendered = aGlyphCache.at(codePoint, aFontFace);
-        
-        // Kerning
-        if (previousIndex != 0)
-        {
-            Vec2<GLfloat> kerning = aFontFace.kern(previousIndex, rendered.freetypeIndex);
-            aPenOrigin_w += kerning.cwMul(aPixelToLocal.as<math::Vec>());
-        }
-        previousIndex = rendered.freetypeIndex;
-
-        aGlyphCallback(rendered, aPenOrigin_w);
-        aPenOrigin_w += rendered.penAdvance.cwMul(aPixelToLocal.as<math::Vec>());
-    }
-}
-
-
 Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                             arte::CharCode aFirst, arte::CharCode aLast,
                             GlyphMap & aGlyphMap,
@@ -170,7 +140,7 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
                     0,
                     // See DynamicGlyphCache::at() for the ratrionale behind the addition
                     {fixedToFloat(slot.metric().width) + aMargins.x(), fixedToFloat(slot.metric().height) + 2 * aMargins.y()}, 
-                    {fixedToFloat(slot.metric().horiBearingX) - aMargins.x() / 2.f, fixedToFloat(slot.metric().horiBearingY) + aMargins.y()},
+                    {fixedToFloat(slot.metric().horiBearingX) - (float)aMargins.x() / 2.f, fixedToFloat(slot.metric().horiBearingY) + (float)aMargins.y()},
                     {fixedToFloat(slot.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
                     slot.index()
                 }
@@ -207,6 +177,77 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
     }
 
     return std::move(ribon.texture);
+}
+
+
+void forEachGlyph(const std::string & aString,
+                  math::Position<2, GLfloat> aPenOrigin_w,
+                  DynamicGlyphCache & aGlyphCache, 
+                  arte::FontFace & aFontFace,
+                  math::Size<2, GLfloat> aPixelToLocal,
+                  std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback)
+{
+    unsigned int previousIndex = 0;
+    for (std::string::const_iterator it = aString.begin();
+         it != aString.end();
+         /* in body */)
+    {
+        // Decode utf8 encoded string to individual Unicode code points
+        arte::CharCode codePoint = utf8::next(it, aString.end());
+        detail::RenderedGlyph rendered = aGlyphCache.at(codePoint, aFontFace);
+        
+        // Kerning
+        if (previousIndex != 0)
+        {
+            Vec2<GLfloat> kerning = aFontFace.kern(previousIndex, rendered.freetypeIndex);
+            aPenOrigin_w += kerning.cwMul(aPixelToLocal.as<math::Vec>());
+        }
+        previousIndex = rendered.freetypeIndex;
+
+        aGlyphCallback(rendered, aPenOrigin_w);
+        aPenOrigin_w += rendered.penAdvance.cwMul(aPixelToLocal.as<math::Vec>());
+    }
+}
+
+
+void forEachGlyph(const std::string & aString,
+                  math::Position<2, GLfloat> aPenOrigin_p,
+                  const StaticGlyphCache & aGlyphCache,
+                  const arte::FontFace & aFontFace,
+                  std::function<void(const RenderedGlyph &, math::Position<2, GLfloat>)> aGlyphCallback)
+{
+    unsigned int previousIndex = 0;
+    for (std::string::const_iterator it = aString.begin();
+         it != aString.end();
+         /* in body */)
+    {
+        // Decode utf8 encoded string to individual Unicode code points
+        arte::CharCode codePoint = utf8::next(it, aString.end());
+        detail::RenderedGlyph rendered = aGlyphCache.at(codePoint);
+        
+        // Kerning
+        if (previousIndex != 0)
+        {
+            aPenOrigin_p += aFontFace.kern(previousIndex, rendered.freetypeIndex);
+        }
+        previousIndex = rendered.freetypeIndex;
+
+        aGlyphCallback(rendered, aPenOrigin_p);
+        aPenOrigin_p += rendered.penAdvance;
+    }
+}
+
+
+math::Size<2, GLfloat> getStringDimension(const std::string & aString,
+                                          const StaticGlyphCache & aGlyphCache,
+                                          const arte::FontFace & aFontFace)
+{
+    math::Size<2, GLfloat> result{static_cast<math::Size<2, GLfloat>>(aFontFace.getPixelSize())};
+    forEachGlyph(aString, math::Position<2, GLfloat>{0.f, 0.f}, aGlyphCache, aFontFace, [&result](const auto & rendered, auto position)
+    {
+        result = result, (position + rendered.penAdvance).as<math::Size>();
+    });
+    return result;
 }
 
 

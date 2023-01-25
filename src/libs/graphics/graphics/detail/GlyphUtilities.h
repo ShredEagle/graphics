@@ -110,13 +110,13 @@ struct StaticGlyphCache
 
     StaticGlyphCache(const arte::FontFace & aFontFace,
                      arte::CharCode aFirst, arte::CharCode aLast,
-                     math::Vec<2, GLint> aDimensionExtension = {1, 0});
+                     math::Vec<2, GLint> aDimensionExtension = TextureRibon::gRecommendedMargins);
 
     RenderedGlyph at(arte::CharCode aCharCode) const;
 
     Texture atlas{0};
     GlyphMap glyphMap;
-    arte::CharCode placeholder = 0x3F; // '?'
+    static const arte::CharCode placeholder = 0x3F; // '?'
 };
 
 
@@ -153,12 +153,28 @@ struct DynamicGlyphCache
 
 
 // TODO aPixelToLocal should be removed, when the Texting rendering does all "local layout" in pixel coordinates
+/// \deprecated
 void forEachGlyph(const std::string & aString,
                   math::Position<2, GLfloat> aPenOrigin_w,
                   DynamicGlyphCache & aGlyphCache,
                   arte::FontFace & aFontFace,
                   math::Size<2, GLfloat> aPixelToLocal,
                   std::function<void(RenderedGlyph, math::Position<2, GLfloat>)> aGlyphCallback);
+
+
+/// @brief Prepare a string for rendering by invoking `aGlyphCallback` for each glyph in `aString`.
+/// @param aPenOrigin_u Pen origin when starting to write the string, expressed in pixels of the render target.
+void forEachGlyph(const std::string & aString,
+                  math::Position<2, GLfloat> aPenOrigin_p,
+                  const StaticGlyphCache & aGlyphCache,
+                  const arte::FontFace & aFontFace,
+                  std::function<void(const RenderedGlyph &, math::Position<2, GLfloat>)> aGlyphCallback);
+
+
+// TODO only provide the dimension in the direction of writing at the moment (the other will be zero).
+math::Size<2, GLfloat> getStringDimension(const std::string & aString,
+                                          const StaticGlyphCache & aGlyphCache,
+                                          const arte::FontFace & aFontFace);
 
 
 } // namespace detail

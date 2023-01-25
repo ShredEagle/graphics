@@ -226,6 +226,13 @@ public:
         return setPixelSize({0, aHeight});
     }
 
+    math::Size<2, int> getPixelSize() const
+    {
+        // Note: this is likely not the real pixel size, but will be revisited if the need arises.
+        // It returns the "Pixels per EM", which seems to be set by setPixelSize() .
+        return {get()->size->metrics.x_ppem, get()->size->metrics.y_ppem};
+    }
+
     bool hasGlyph(CharCode aCharcode) const
     {
         // Explicit conversion to check it cannot lose precision.
@@ -248,7 +255,7 @@ public:
         return GlyphSlot{get()->glyph, glyphIndex};
     }
 
-    math::Vec<2, float> kern(FT_UInt aLeftGlyphIndex, FT_UInt aRightGlyphIndex)
+    math::Vec<2, float> kern(FT_UInt aLeftGlyphIndex, FT_UInt aRightGlyphIndex) const
     {
         FT_Vector kerning;
         FT_Get_Kerning(*this, aLeftGlyphIndex, aRightGlyphIndex, FT_KERNING_DEFAULT, &kerning);
