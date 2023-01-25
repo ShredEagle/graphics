@@ -241,7 +241,7 @@ math::Size<2, GLfloat> getStringDimension(const std::string & aString,
     math::Size<2, GLfloat> result{static_cast<math::Size<2, GLfloat>>(aFontFace.getPixelSize())};
     forEachGlyph(aString, math::Position<2, GLfloat>{0.f, 0.f}, aGlyphCache, aFontFace, [&result](const auto & rendered, auto position)
     {
-        result = (position + rendered.penAdvance).as<math::Size>();
+        result = (position + rendered.penAdvance).template as<math::Size>();
     });
     return result;
 }
