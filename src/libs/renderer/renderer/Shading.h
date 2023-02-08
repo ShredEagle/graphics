@@ -144,11 +144,37 @@ private:
 
 void compileShader(const Shader & aShader, ShaderSourceView aSource);
 
-//Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
-//                                                          const char * /*source*/>> aShaders);
 
-Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
-                                                          ShaderSourceView /*source*/>> aShaders);
+template <std::forward_iterator T_iterator>
+Program makeLinkedProgram(T_iterator aFirst, const T_iterator aLast)
+{
+    Program program;
+
+    std::vector<Shader> attached;
+    for (; aFirst != aLast; ++aFirst)
+    {
+        attached.emplace_back(aFirst->first, aFirst->second);
+        glAttachShader(program, attached.back());
+    }
+
+    glLinkProgram(program);
+    handleLinkError(program);
+
+    // Apparently, it is a good practice to detach as soon as link is done
+    for(const auto & shader : attached)
+    {
+        glDetachShader(program, shader);
+    };
+
+    return program;
+}
+
+
+inline Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
+                                                                 ShaderSourceView /*source*/>> aShaders)
+{
+    return makeLinkedProgram(aShaders.begin(), aShaders.end());
+}
 
 
 } // namespace graphics

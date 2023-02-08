@@ -2,10 +2,11 @@
 
 #include "Shading.h"
 
+#include "utilities/FileLookup.h"
+
 #include <fstream>
 #include <regex>
 #include <sstream>
-#include <stack>
 
 #include <cassert>
 
@@ -16,11 +17,6 @@ namespace graphics {
 
 namespace {
 
-    std::ifstream openStream(std::filesystem::path aFile)
-    {
-        return std::ifstream{aFile};
-    }
-
     // Only handle double-slash comments atm
     // TODO handle /* */ style comments
     void removeComments(std::string & aLine)
@@ -30,61 +26,6 @@ namespace {
     }
 
     const std::regex gInclusionRegex{R"#(#include\W*"(.+?)")#"};
-
-    class FileLookup
-    {
-        using path = std::filesystem::path;
-
-        class PopGuard : public std::ifstream
-        {
-        public:
-            PopGuard(std::ifstream && aIn, std::stack<path> & aStack) :
-                std::ifstream{std::move(aIn)},
-                mStack{aStack}
-            {}
-
-            ~PopGuard() override
-            {
-                mStack.pop();
-            }
-
-        private:
-            std::stack<path> & mStack;
-        };
-
-    public:
-        FileLookup(const path & aRootFile)
-        {
-            mPathes.push(canonical(aRootFile));
-        }
-        
-        std::pair<std::unique_ptr<PopGuard>, std::string> operator()(const std::string & aRelativePath)
-        {
-            path filePath = mPathes.top().parent_path() / aRelativePath;
-            if (!is_regular_file(filePath))
-            {
-                throw ShaderCompilationError{
-                    "GLSL inclusion error",
-                    "Cannot include '" + filePath.make_preferred().string() 
-                        + "', requested from '" + mPathes.top().string() + "'."};
-            }
-            // Cannot be called if the file does not exist
-            filePath = canonical(filePath);
-            mPathes.push(filePath);
-            return {
-                std::make_unique<PopGuard>(openStream(filePath), mPathes),
-                filePath.string(),
-            };
-        }
-
-        std::string top() const
-        {
-            return mPathes.top().string();
-        }
-
-    private:
-        std::stack<path> mPathes;
-    };
 
 } // anonymous
 
@@ -126,7 +67,7 @@ ShaderSource ShaderSource::Preprocess(std::filesystem::path aFile)
     // TODO handle parent_path changing when the included file is in a different directory
     // (i.e. the files it includes should not be rooted from the different directory)
     FileLookup lookup{aFile};
-    return ShaderSource::Preprocess(openStream(aFile), lookup.top(), lookup);
+    return ShaderSource::Preprocess(std::ifstream{aFile}, lookup.top(), lookup);
 }
 
 

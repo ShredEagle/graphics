@@ -21,6 +21,8 @@ set(${TARGET_NAME}_HEADERS
     Uniforms.h
     VertexSpecification.h
     VertexSpecification_deduction.h
+
+    utilities/FileLookup.h
 )
 
 set(${TARGET_NAME}_SOURCES

@@ -2,7 +2,6 @@
 
 #include "ShaderSource.h"
 
-#include <algorithm>
 #include <optional>
 
 #include <cassert>
@@ -138,31 +137,6 @@ void compileShader(const Shader & aShader, ShaderSourceView aSource)
     glCompileShader(aShader);
 
     handleCompilationError(aShader, aSource);
-}
-
-
-Program makeLinkedProgram(std::initializer_list<std::pair<const GLenum/*stage*/,
-                                                          ShaderSourceView /*source*/>> aShaders)
-{
-    Program program;
-
-    std::vector<Shader> attached;
-    for (const auto & pair : aShaders)
-    {
-        attached.emplace_back(pair.first, pair.second);
-        glAttachShader(program, attached.back());
-    }
-
-    glLinkProgram(program);
-    handleLinkError(program);
-
-    // Apparently, it is a good practice to detach as soon as link is done
-    std::for_each(attached.begin(), attached.end(), [&program](const Shader & shader)
-    {
-        glDetachShader(program, shader);
-    });
-
-    return program;
 }
 
 
