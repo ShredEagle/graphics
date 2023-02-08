@@ -122,7 +122,7 @@ struct StaticGlyphCache
 
     Texture atlas{0};
     GlyphMap glyphMap;
-    static const arte::CharCode placeholder = 0x3F; // '?'
+    static constexpr arte::CharCode placeholder = 0x3F; // '?'
 };
 
 
