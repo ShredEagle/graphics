@@ -276,12 +276,16 @@ Image<math::hdr::Rgb<T_hdrChannel>> to_hdr(const Image<math::sdr::Rgb> & aSource
 template <class T_hdrChannel>
 Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSource);
 
+template<class T_pixelFormat>
+Image<T_pixelFormat> & decodeSRGBToLinear(Image<T_pixelFormat> & aImage);
+
 
 template <class T_pixelFormat, std::forward_iterator T_iterator, class T_proj = std::identity>
 Image<T_pixelFormat> stackVertical(T_iterator aFirst, T_iterator aLast, T_proj proj = {});
 
 template <class T_pixelFormat, std::ranges::input_range T_range, class T_proj = std::identity>
 Image<T_pixelFormat> stackVertical(T_range && aRange, T_proj proj = {});
+
 
 using ImageRgb = Image<math::sdr::Rgb>;
 using ImageRgba = Image<math::sdr::Rgba>;
