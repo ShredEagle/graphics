@@ -147,17 +147,35 @@ inline void setFiltering(const Texture & aTexture, GLenum aFiltering)
 }
 
 
+inline GLsizei countCompleteMipmaps(math::Size<2, int> aResolution)
+{
+    return static_cast<GLsizei>(std::floor(
+        std::log2(
+            std::max(aResolution.width(), aResolution.height())
+    ))) + 1;
+}
+
+
+inline constexpr math::Size<2, GLsizei> getMipmapSize(math::Size<2, int> aFullResolution, unsigned int aLevel)
+{
+    return {
+        std::max(1, aFullResolution.width() / (int)std::pow(2, aLevel)),
+        std::max(1, aFullResolution.height() / (int)std::pow(2, aLevel)),
+    };
+}
+
+
 /// \brief Allocate texture storage.
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             const GLsizei aWidth, const GLsizei aHeight,
-                            const GLsizei aMipmapLevels = 1)
+                            const GLsizei aMipmapLevelsCount = 1)
 {
     ScopedBind bound(aTexture);
 
     if (GL_ARB_texture_storage)
     {
         // TODO allow to specify the number of mipmap levels.
-        glTexStorage2D(aTexture.mTarget, aMipmapLevels, aInternalFormat, aWidth, aHeight);
+        glTexStorage2D(aTexture.mTarget, aMipmapLevelsCount, aInternalFormat, aWidth, aHeight);
         { // scoping isSuccess
             GLint isSuccess;
             glGetTexParameteriv(aTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
@@ -178,11 +196,11 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
 
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             math::Size<2, GLsizei> aResolution,
-                            const GLsizei aMipmapLevels = 1)
+                            const GLsizei aMipmapLevelsCount = 1)
 {
     return allocateStorage(aTexture, aInternalFormat,
                            aResolution.width(), aResolution.height(),
-                           aMipmapLevels);
+                           aMipmapLevelsCount);
 }
 
 
@@ -218,7 +236,7 @@ inline void writeTo(const Texture & aTexture,
                     const std::byte * aRawData,
                     const InputImageParameters & aInput,
                     math::Position<2, GLint> aTextureOffset = {0, 0},
-                    GLint aMipmapLevel = 0)
+                    GLint aMipmapLevelId = 0)
 {
     // Cubemaps individual faces muste be accessed explicitly in glTexSubImage2D.
     assert(aTexture.mTarget != GL_TEXTURE_CUBE_MAP);
@@ -228,7 +246,7 @@ inline void writeTo(const Texture & aTexture,
     // Handle alignment
     Guard scopedAlignemnt = detail::scopeUnpackAlignment(aInput.alignment);
 
-    glTexSubImage2D(aTexture.mTarget, aMipmapLevel,
+    glTexSubImage2D(aTexture.mTarget, aMipmapLevelId,
                     aTextureOffset.x(), aTextureOffset.y(),
                     aInput.resolution.width(), aInput.resolution.height(),
                     aInput.format, aInput.type,
@@ -237,18 +255,36 @@ inline void writeTo(const Texture & aTexture,
 
 
 /// \brief Allocate storage and read `aImage` into `aTexture`.
+/// \note The number of mipmap levels allocated for the texture can be specified,
+/// but the provided image is always written to mipmal level #0.
 template <class T_pixel>
-inline void loadImage(const Texture & aTexture,
-                      const arte::Image<T_pixel> & aImage)
+void loadImage(const Texture & aTexture,
+               const arte::Image<T_pixel> & aImage,
+               GLint aMipmapLevelsCount = 1)
 {
     // Probably too restrictive
     assert(aTexture.mTarget == GL_TEXTURE_2D
         || aTexture.mTarget == GL_TEXTURE_RECTANGLE);
 
-    allocateStorage(aTexture, GL_RGBA8, aImage.dimensions());
-    writeTo(aTexture, static_cast<const std::byte *>(aImage), InputImageParameters::From(aImage));
+    allocateStorage(
+        aTexture,
+        MappedSizedPixel_v<T_pixel>,
+        aImage.dimensions(),
+        aMipmapLevelsCount);
+    writeTo(
+        aTexture, 
+        static_cast<const std::byte *>(aImage),
+        InputImageParameters::From(aImage));
 }
 
+template <class T_pixel>
+void loadImageCompleteMipmaps(const Texture & aTexture,
+                              const arte::Image<T_pixel> & aImage)
+{
+    loadImage(aTexture, aImage, countCompleteMipmaps(aImage.dimensions()));
+    ScopedBind bound(aTexture);
+    glGenerateMipmap(GL_TEXTURE_2D);
+}
 
 /// \brief Load an animation from an image containing a (column) array of frames.
 template <class T_pixel>
@@ -276,24 +312,6 @@ inline void loadAnimationAsArray(const Texture & aTexture,
     // Sampler parameters
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(aTexture.mTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-}
-
-
-inline GLsizei countCompleteMipmaps(math::Size<2, int> aResolution)
-{
-    return static_cast<GLsizei>(std::floor(
-        std::log2(
-            std::max(aResolution.width(), aResolution.height())
-    ))) + 1;
-}
-
-
-inline constexpr math::Size<2, GLsizei> getMipmapSize(math::Size<2, int> aFullResolution, unsigned int aLevel)
-{
-    return {
-        std::max(1, aFullResolution.width() / (int)std::pow(2, aLevel)),
-        std::max(1, aFullResolution.height() / (int)std::pow(2, aLevel)),
-    };
 }
 
 

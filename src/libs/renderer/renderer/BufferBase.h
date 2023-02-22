@@ -23,6 +23,8 @@ enum class BufferType
 template <BufferType N_type>
 struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 {
+    static constexpr GLenum GLTarget_v = static_cast<GLenum>(N_type);
+
     Buffer() :
         ResourceGuard<GLuint>{reserve(glGenBuffers),
                               [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}

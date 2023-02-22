@@ -74,30 +74,52 @@ constexpr GLenum getByteSize(GLenum aTypeEnum)
 #undef TYPEENUMCASE
 
 
-#define TYPEENUMCASE(enumval)           \
+#define GLENUMCASE(enumval)           \
     case enumval:                       \
         return #enumval;
 
 
-inline std::string to_string(GLenum aTypeEnum) 
+inline std::string to_string(GLenum aGLEnumerator) 
 {
-    switch(aTypeEnum)
+    switch(aGLEnumerator)
     {
-        TYPEENUMCASE(GL_FLOAT);
-        TYPEENUMCASE(GL_DOUBLE);
-        TYPEENUMCASE(GL_BYTE);
-        TYPEENUMCASE(GL_UNSIGNED_BYTE);
-        TYPEENUMCASE(GL_SHORT);
-        TYPEENUMCASE(GL_UNSIGNED_SHORT);
-        TYPEENUMCASE(GL_INT);
-        TYPEENUMCASE(GL_UNSIGNED_INT);
-        TYPEENUMCASE(GL_BOOL);
+        //
+        // Types
+        //
+        GLENUMCASE(GL_FLOAT);
+        GLENUMCASE(GL_DOUBLE);
+        GLENUMCASE(GL_BYTE);
+        GLENUMCASE(GL_UNSIGNED_BYTE);
+        GLENUMCASE(GL_SHORT);
+        GLENUMCASE(GL_UNSIGNED_SHORT);
+        GLENUMCASE(GL_INT);
+        GLENUMCASE(GL_UNSIGNED_INT);
+        GLENUMCASE(GL_BOOL);
+
+        //
+        // Targets
+        //
+        GLENUMCASE(GL_ARRAY_BUFFER);
+        GLENUMCASE(GL_ATOMIC_COUNTER_BUFFER);
+        GLENUMCASE(GL_COPY_READ_BUFFER);
+        GLENUMCASE(GL_COPY_WRITE_BUFFER);
+        //TYPEENUMCASE(GL_DISPATCH_INDIRECT_BUFFER);
+        GLENUMCASE(GL_DRAW_INDIRECT_BUFFER);
+        GLENUMCASE(GL_ELEMENT_ARRAY_BUFFER);
+        GLENUMCASE(GL_PIXEL_PACK_BUFFER);
+        GLENUMCASE(GL_PIXEL_UNPACK_BUFFER);
+        //TYPEENUMCASE(GL_QUERY_BUFFER);
+        GLENUMCASE(GL_SHADER_STORAGE_BUFFER);
+        GLENUMCASE(GL_TEXTURE_BUFFER);
+        GLENUMCASE(GL_TRANSFORM_FEEDBACK_BUFFER);
+        GLENUMCASE(GL_UNIFORM_BUFFER);
+
     default:
-        throw std::domain_error{"Invalid type enumerator."};
+        throw std::domain_error{"Invalid GL enumerator."};
     }
 }
 
-#undef TYPEENUMCASE
+#undef GLENUMCASE
 
 //
 // Pixel formats
@@ -111,6 +133,15 @@ constexpr GLenum MappedPixel_v = MappedPixel<T_pixel>::enumerator;
 MAP(MappedPixel, math::sdr::Rgb, GL_RGB);
 MAP(MappedPixel, math::sdr::Rgba, GL_RGBA);
 MAP(MappedPixel, math::hdr::Rgb_f, GL_RGB);
+
+template <class T_pixel>
+struct MappedSizedPixel;
+
+template <class T_pixel>
+constexpr GLenum MappedSizedPixel_v = MappedSizedPixel<T_pixel>::enumerator;
+
+MAP(MappedSizedPixel, math::sdr::Rgb, GL_RGB8);
+MAP(MappedSizedPixel, math::sdr::Rgba, GL_RGBA8);
 
 #undef MAP_AND_REVERSE
 #undef MAP
@@ -229,6 +260,7 @@ constexpr GLenum getGLBufferHint(const BufferHint aBufferHint)
 
 template <BufferHint N_customEnum>
 constexpr GLenum BufferHint_v = BufferHintGL<N_customEnum>::enumerator;
+
 
 } // namespace graphics
 } // namespace ad
