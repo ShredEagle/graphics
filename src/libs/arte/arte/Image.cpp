@@ -301,6 +301,17 @@ Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSourc
 }
 
 
+template<class T_pixelFormat>
+Image<T_pixelFormat> & decodeSRGBToLinear(Image<T_pixelFormat> & aImage)
+{
+    std::transform(aImage.begin(), aImage.end(), aImage.begin(),
+                   [](T_pixelFormat aPixel) -> T_pixelFormat
+                   {
+                        return decode_sRGB(aPixel);
+                   });
+    return aImage;
+}
+
 //
 // Explicit instantiations
 //
@@ -312,6 +323,9 @@ template class Image<math::hdr::Rgb_f>;
 
 template Image<math::hdr::Rgb_f> to_hdr(const Image<math::sdr::Rgb> &);
 template Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb_f> &);
+
+template Image<math::sdr::Rgb> & decodeSRGBToLinear(Image<math::sdr::Rgb> & aImage);
+template Image<math::sdr::Rgba> & decodeSRGBToLinear(Image<math::sdr::Rgba> & aImage);
 
 
 } // namespace arte

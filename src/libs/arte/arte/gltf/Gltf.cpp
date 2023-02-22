@@ -62,6 +62,7 @@ constexpr const char * gTagName                 = "name";
 constexpr const char * gTagNode                 = "node";
 constexpr const char * gTagNodes                = "nodes";
 constexpr const char * gTagNormalized           = "normalized";
+constexpr const char * gTagNormalTexture        = "normalTexture";
 constexpr const char * gTagOcclusionTexture     = "occlusionTexture";
 constexpr const char * gTagOrthographic         = "orthographic";
 constexpr const char * gTagOutput               = "output";
@@ -352,6 +353,7 @@ Mesh load(const Json & aMeshObject)
 
     return Mesh{
         .primitives = std::move(primitives),
+        .name = aMeshObject.value(gTagName, ""),
     };
 }
 
@@ -509,6 +511,17 @@ TextureInfo load(const Json & aJson)
 
 
 template <>
+NormalTextureInfo load(const Json & aJson)
+{
+    return {
+        .index = aJson.at(gTagIndex).get<Index<Texture>>(),
+        .texCoord = aJson.value<unsigned int>(gTagTexCoord, 0),
+        .scale = aJson.value<float>(gTagScale, 1.0),
+    };
+}
+
+
+template <>
 OcclusionTextureInfo load(const Json & aJson)
 {
     return {
@@ -541,6 +554,7 @@ Material load(const Json & aJson)
         .name = aJson.value(gTagName, ""),
         .pbrMetallicRoughness = 
             loadOptional<material::PbrMetallicRoughness>(aJson, gTagPbrMetallicRoughness),
+        .normalTexture = loadOptional<NormalTextureInfo>(aJson, gTagNormalTexture),
         .occlusionTexture = loadOptional<OcclusionTextureInfo>(aJson, gTagOcclusionTexture),
         .alphaCutoff = getOptional<float>(aJson, gTagAlphaCutoff),
         .doubleSided = aJson.value(gTagDoubleSided, gDefaultMaterial.doubleSided),
