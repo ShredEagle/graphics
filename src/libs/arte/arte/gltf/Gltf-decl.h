@@ -156,6 +156,12 @@ namespace gltf {
         unsigned int texCoord;
     };
 
+    struct NormalTextureInfo
+    {
+        Index<Texture> index;
+        unsigned int texCoord;
+        float scale;
+    };
 
     struct OcclusionTextureInfo
     {
@@ -190,6 +196,7 @@ namespace gltf {
 
         std::string name;
         std::optional<material::PbrMetallicRoughness> pbrMetallicRoughness;
+        std::optional<NormalTextureInfo> normalTexture;
         std::optional<OcclusionTextureInfo> occlusionTexture;
         AlphaMode alphaMode{AlphaMode::Opaque};
         std::optional<float> alphaCutoff;
@@ -333,6 +340,7 @@ namespace gltf {
     struct Mesh
     {
         std::vector<Primitive> primitives;
+        std::string name;
     };
 
     struct Node

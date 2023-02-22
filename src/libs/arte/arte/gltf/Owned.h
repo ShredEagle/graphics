@@ -11,6 +11,8 @@
 #include <optional>
 #include <vector>
 
+#include <cassert>
+
 
 namespace ad {
 namespace arte {
