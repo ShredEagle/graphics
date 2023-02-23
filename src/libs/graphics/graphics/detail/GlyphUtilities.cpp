@@ -90,7 +90,6 @@ RenderedGlyph DynamicGlyphCache::at(arte::CharCode aCharCode,
 
             RenderedGlyph rendered{
                 &atlases.back().texture,
-                aCharCode,
                 atlases.back().write(
                     reinterpret_cast<const std::byte *>(bitmap.buffer),
                     inputParams),
@@ -174,7 +173,6 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
             GL_UNSIGNED_BYTE,
             1};
         RenderedGlyph rendered{&ribon.texture,
-                               charcode,
                                ribon.write(
             reinterpret_cast<const std::byte *>(bitmap.buffer), inputParams),
                                // See DynamicGlyphCache::at() for the ratrionale

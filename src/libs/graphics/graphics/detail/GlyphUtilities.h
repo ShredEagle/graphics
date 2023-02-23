@@ -86,7 +86,6 @@ struct RenderedGlyph
     // Note: the texture is stored here for the cases where several textures are used for a single logical font atlas (dynamic)
     // Ideally, this association should be handled by the client, but it would mean 1 GlyphMap / texture (complicating lookups).
     Texture * texture;
-    arte::CharCode charcode;
     GLint offsetInTexture; // The texture is a "1D" strip, only horizontal position. This is the position where the left margin starts.
     math::Size<2, GLfloat> controlBoxSize; // Including added margin if any
     math::Vec<2, GLfloat> bearing; // Including the added margin if any
