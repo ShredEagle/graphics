@@ -146,8 +146,8 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
             // https://lists.gnu.org/archive/html/freetype/2010-09/msg00036.html
             glyphs.push_back(aFirst);
             math::Size<2, int> glyphSize{
-                static_cast<int>(slot->bitmap.width),
-                static_cast<int>(slot->bitmap.rows)};
+                static_cast<int>(slot->bitmap.width) + 2 * aMargins.x(),
+                static_cast<int>(slot->bitmap.rows) + 2 * aMargins.y()};
             atlasDimensions.width() += glyphSize.width();
             atlasDimensions.height() =
                 std::max(atlasDimensions.height(), glyphSize.height());
@@ -177,10 +177,10 @@ Texture makeTightGlyphAtlas(const arte::FontFace & aFontFace,
             reinterpret_cast<const std::byte *>(bitmap.buffer), inputParams),
                                // See DynamicGlyphCache::at() for the ratrionale
                                // behind the addition
-                               {static_cast<float>(slot->bitmap.width),
-                                static_cast<float>(slot->bitmap.rows)},
-                               {static_cast<float>(slot->bitmap_left),
-                                static_cast<float>(slot->bitmap.rows - slot->bitmap_top)},
+                               {static_cast<float>(slot->bitmap.width) + 2 * aMargins.x(),
+                                static_cast<float>(slot->bitmap.rows) + 2 * aMargins.y()},
+                               {static_cast<float>(slot->bitmap_left) - 2 * aMargins.x(),
+                                static_cast<float>(slot->bitmap.rows - slot->bitmap_top) + aMargins.y()},
                                {fixedToFloat(slot->metrics.horiAdvance),
                                 0.f /* hardcoded horizontal layout */},
                                slot->glyph_index};
