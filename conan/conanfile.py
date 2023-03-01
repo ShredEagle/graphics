@@ -39,8 +39,8 @@ class GraphicsConan(ConanFile):
         ("utfcpp/3.2.1"),
         ("imgui/1.88"),
 
-        ("handy/2c23377423@adnn/develop"),
-        ("math/e2f4683040@adnn/develop"),
+        ("handy/401faf9024@adnn/develop"),
+        ("math/a486ceadb8@adnn/develop"),
     )
 
     build_policy = "missing"

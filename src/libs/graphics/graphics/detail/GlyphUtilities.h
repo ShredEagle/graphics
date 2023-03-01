@@ -99,7 +99,7 @@ using GlyphMap = std::unordered_map<arte::CharCode, RenderedGlyph>;
 
 inline GLfloat fixedToFloat(FT_Pos aPos, int aFixedDecimals = 6)
 {
-    return (GLfloat)aPos / (1 << aFixedDecimals);
+    return (GLfloat)(aPos >> aFixedDecimals);
 }
 
 

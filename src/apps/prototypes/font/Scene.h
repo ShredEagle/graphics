@@ -5,6 +5,8 @@
 
 #include "shaders.h"
 
+#include <freetype/freetype.h>
+#include <freetype/ftimage.h>
 #include <graphics/AppInterface.h>
 #include <graphics/CameraUtilities.h>
 #include <graphics/Timer.h>
@@ -114,7 +116,7 @@ inline Scene::Scene(const filesystem::path & aFontPath,
                     GLfloat aGlyphWorldHeight, 
                     GLfloat aScreenWorldHeight,
                     graphics::AppInterface & aAppInterface) :
-    mPixelToWorld{aGlyphWorldHeight / aGlyphPixelHeight, aGlyphWorldHeight / aGlyphPixelHeight},
+    mPixelToWorld{aGlyphWorldHeight / static_cast<float>(aGlyphPixelHeight), aGlyphWorldHeight / static_cast<float>(aGlyphPixelHeight)},
     mFontAtlas{GL_TEXTURE_RECTANGLE},
     mPassthrough{ makeLinkedProgram({
         {GL_VERTEX_SHADER, graphics::gPassthroughVertexShader},
@@ -166,30 +168,30 @@ inline Scene::Scene(const filesystem::path & aFontPath,
         auto charcode = startingCharcode++;
         if (mFontface.hasGlyph(charcode))
         {
-            arte::GlyphSlot glyph = mFontface.getGlyphSlot(charcode);
-            arte::GlyphBitmap bitmap = glyph.render();
+            FT_GlyphSlot slot = mFontface.loadChar(charcode, FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF));
+            FT_Bitmap bitmap = slot->bitmap;
             InputImageParameters inputParams{
-                {bitmap.width(), bitmap.rows()},
+                {static_cast<int>(bitmap.width), static_cast<int>(bitmap.rows)},
                 GL_RED,
                 GL_UNSIGNED_BYTE,
                 1
             };
 
-            if ( (textureX + bitmap.width() + gHorizontalMargin) > textureWidth )
+            if ( (textureX + bitmap.width + gHorizontalMargin) > textureWidth )
             {
                 break;
             }
-            writeTo(mFontAtlas, bitmap.data(), inputParams, {textureX, 0});
+            writeTo(mFontAtlas, reinterpret_cast<std::byte *>(bitmap.buffer), inputParams, {textureX, 0});
 
             mGlyphCache.push_back({
                 textureX,
-                {toFloat(glyph.metric().width), toFloat(glyph.metric().height)},
-                {toFloat(glyph.metric().horiBearingX), toFloat(glyph.metric().horiBearingY)},
-                {toFloat(glyph.metric().horiAdvance), 0.f /* hardcoded horizontal layout */},
-                glyph.index(),
+                {toFloat(slot->bitmap.width), toFloat(slot->bitmap.rows)},
+                {toFloat(slot->bitmap_left), toFloat(slot->bitmap.rows - slot->bitmap_top)},
+                {toFloat(slot->metrics.horiAdvance), 0.f /* hardcoded horizontal layout */},
+                slot->glyph_index,
             });
 
-            textureX += bitmap.width() + gHorizontalMargin;
+            textureX += static_cast<int>(bitmap.width) + gHorizontalMargin;
         }
     }
 
@@ -239,7 +241,7 @@ inline void Scene::step(const Timer & aTimer)
     addMessage({"WAV!"}, penPosition);
 
     respecifyBuffer(mGlyphQuadVertex.mVertexBuffers.back(), std::span{instances});
-    mGlyphCount = instances.size();
+    mGlyphCount = static_cast<int>(instances.size());
 }
 
 

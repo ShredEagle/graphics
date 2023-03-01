@@ -3,6 +3,8 @@
 #include <arte/Freetype.h>
 #include <arte/Image.h>
 
+#include <freetype/freetype.h>
+#include <freetype/ftimage.h>
 #include <graphics/ApplicationGlfw.h>
 #include <graphics/AppInterface.h>
 #include <graphics/Timer.h>
@@ -24,12 +26,12 @@ void bitmapToFile(FT_ULong aCharacterCode, const ad::filesystem::path & aOutputP
     ad::arte::Freetype freetype;
     ad::arte::FontFace dejavu = freetype.load(ad::resource::pathFor("fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"));
     dejavu.setPixelHeight(640);
-    ad::arte::GlyphBitmap bitmap = dejavu.getGlyphSlot(aCharacterCode).render();
-    std::unique_ptr<unsigned char []> raster{new unsigned char[bitmap.bytesize()]};
-    std::memcpy(raster.get(), bitmap.data(), bitmap.bytesize());
+    FT_Bitmap bitmap = dejavu.loadChar(aCharacterCode, FT_LOAD_RENDER | FT_LOAD_TARGET_(FT_RENDER_MODE_SDF))->bitmap;
+    std::unique_ptr<unsigned char []> raster{new unsigned char[bitmap.rows * bitmap.width]};
+    std::memcpy(raster.get(), bitmap.buffer, bitmap.rows * bitmap.width);
 
     ad::arte::Image<ad::math::sdr::Grayscale>{
-        ad::math::Size<2, int>{bitmap.width(), bitmap.rows()},
+        ad::math::Size<2, int>{static_cast<int>(bitmap.width), static_cast<int>(bitmap.rows)},
         std::move(raster)
     }.saveFile(aOutputPgm);
 }
@@ -52,7 +54,7 @@ int main(int argc, const char * argv[])
         // cross multiplication to get the glyph world height which maps to the actual pixel height.
         const GLfloat glyphWorldHeight =
             glyphPixelHeight * screenWorldHeight
-            / application.getAppInterface()->getFramebufferSize().height();
+            / static_cast<float>(application.getAppInterface()->getFramebufferSize().height());
         //ad::filesystem::path relativeFontPath{"fonts/souvenir/souvenirdemiitalic.otf"};
         ad::filesystem::path relativeFontPath{"fonts/dejavu-fonts-ttf-2.37/DejaVuSans.ttf"};
         ad::font::Scene scene{ad::resource::pathFor(relativeFontPath),
