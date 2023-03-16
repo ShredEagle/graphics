@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <span>
 #include <vector>
 
 
@@ -36,6 +37,8 @@ class ShaderSource
 
         IdentifierId registerSource(std::string_view aIdentifier);
         void addLineOrigin(IdentifierId aOrigin, std::size_t aLineNumber);
+
+        static constexpr IdentifierId gInternalSource{0};
         
     private:
         struct OriginalLine
@@ -44,7 +47,7 @@ class ShaderSource
             std::size_t mLineNumber;
         };
 
-        std::vector<std::string> mIdentifiers;
+        std::vector<std::string> mIdentifiers = {"<ShaderSource preprocessor>"};
         // Maps the assembled output lines (vector indices) to corresponding original file.
         std::vector<OriginalLine> mMap;
     };
@@ -56,17 +59,33 @@ public:
     /// whereas the input (from the include directive) might be a relative path from the current folder.
     using Lookup = std::function<
         std::pair<std::unique_ptr<std::istream>, std::string/*identifier*/>(const std::string &)>;
+    
+    using Defines = std::span<std::string>;
 
     static ShaderSource Preprocess(std::istream & aIn,
+                                   const Defines & aMacros,
                                    const std::string & aIdentifier,
                                    const Lookup & aLookup);
 
     static ShaderSource Preprocess(std::istream && aIn,
+                                   const Defines & aMacros,
                                    const std::string & aIdentifier,
                                    const Lookup & aLookup)
-    { return Preprocess(aIn, aIdentifier, aLookup); }
+    { return Preprocess(aIn, aMacros, aIdentifier, aLookup); }
 
-    static ShaderSource Preprocess(std::filesystem::path aFile);
+    // Overloads without Defines
+    static ShaderSource Preprocess(std::istream & aIn,
+                                   const std::string & aIdentifier,
+                                   const Lookup & aLookup)
+    { return Preprocess(aIn, Defines{}, aIdentifier, aLookup); }
+
+    static ShaderSource Preprocess(std::istream && aIn,
+                                   const std::string & aIdentifier,
+                                   const Lookup & aLookup)
+    { return Preprocess(aIn, Defines{}, aIdentifier, aLookup); }
+
+    static ShaderSource Preprocess(std::filesystem::path aFile,
+                                   const Defines & aMacros = {});
 
     const InclusionSourceMap & getSourceMap() const
     { return mMap; }
@@ -75,6 +94,7 @@ private:
     struct Input
     {
         std::istream & mStream;
+        const Defines & mMacros;
         std::string_view mIdentifier;
     };
 
