@@ -25,11 +25,17 @@ struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 {
     static constexpr GLenum GLTarget_v = static_cast<GLenum>(N_type);
 
+    struct NullTag{};
+
     Buffer() :
         ResourceGuard<GLuint>{reserve(glGenBuffers),
                               [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
     {}
 
+    Buffer(NullTag) :
+        ResourceGuard<GLuint>{0,
+                              [](GLuint aIndex){}}
+    {}
 };
 
 
