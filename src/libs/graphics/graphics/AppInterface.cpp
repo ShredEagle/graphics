@@ -103,6 +103,26 @@ void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
                                                    const GLchar* message,
                                                    const void* userParam)
 {
+    std::string sourceString = [source]() -> std::string
+    {
+        switch(source)
+        {
+            case GL_DEBUG_SOURCE_API:
+                return "api";
+            case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+                return "window_system";
+            case GL_DEBUG_SOURCE_SHADER_COMPILER:
+                return "shader_compiler";
+            case GL_DEBUG_SOURCE_THIRD_PARTY:
+                return "third_party";
+            case GL_DEBUG_SOURCE_APPLICATION:
+                return "application";
+            case GL_DEBUG_SOURCE_OTHER:
+                return "other";
+            default:
+                return "<UNKNOWN> " + std::to_string(source);
+        }
+    }();
 
     std::string typeString = [type]() -> std::string
     {
@@ -127,7 +147,7 @@ void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
             case GL_DEBUG_TYPE_OTHER:
                 return "other";
             default:
-                return "UNKNOWN " + std::to_string(type);
+                return "<UNKNOWN> " + std::to_string(type);
         }
     }();
 
@@ -144,13 +164,15 @@ void GLAPIENTRY AppInterface::OpenGLMessageLogging(GLenum source,
             case GL_DEBUG_SEVERITY_NOTIFICATION:
                 return "notification";
             default:
-                return "UNKNOWN " + std::to_string(severity);
+                return "<UNKNOWN> " + std::to_string(severity);
         }
     }();
 
     std::ostringstream oss;
-    oss << "(type = " << typeString
+    oss << "(source = " << sourceString
+        << ", type = " << typeString
         << ", severity = " << severityString
+        << ", id = " << id
         << ")\n" << message
     ;
 
