@@ -24,5 +24,13 @@ inline bool isEnabled(GLenum aTestedFeature)
 }
 
 
+inline GLenum getEnum(GLenum aParameter)
+{
+    GLint data;
+    glGetIntegerv(aParameter, &data);
+    return (GLenum)data;
+}
+
+
 } // namespace graphics
 } // namespace ad

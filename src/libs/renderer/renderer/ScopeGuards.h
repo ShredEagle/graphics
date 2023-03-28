@@ -63,6 +63,20 @@ inline Guard scopeDepthMask(bool aEnable)
 }
 
 
+inline Guard scopeCullFace(GLenum aMode)
+{
+    GLenum previousMode = getEnum(GL_CULL_FACE_MODE);
+
+    auto handler = [](GLenum mode)
+    {
+        glCullFace(mode);
+    };
+    handler(aMode);
+
+    return Guard{ std::bind(handler, previousMode) };
+}
+
+
 inline Guard scopeViewport(math::Rectangle<GLint> aViewport)
 {
     std::array<GLint, 4> previous;

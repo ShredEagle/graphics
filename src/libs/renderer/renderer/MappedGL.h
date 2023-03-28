@@ -124,6 +124,15 @@ inline std::string to_string(GLenum aGLEnumerator)
         GLENUMCASE(GL_NEAREST_MIPMAP_LINEAR);
         GLENUMCASE(GL_LINEAR_MIPMAP_LINEAR);
 
+        //
+        // Culling
+        //
+        GLENUMCASE(GL_CW);
+        GLENUMCASE(GL_CCW);
+        GLENUMCASE(GL_FRONT);
+        GLENUMCASE(GL_FRONT_AND_BACK);
+        GLENUMCASE(GL_BACK);
+
     default:
         throw std::domain_error{"Invalid GL enumerator."};
     }
