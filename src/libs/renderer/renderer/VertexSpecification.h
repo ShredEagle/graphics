@@ -324,11 +324,13 @@ inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIBO);
 
-    // Orphan the previous buffer
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, aSize, NULL, GL_STATIC_DRAW);
+    // Note: initially, we passed NULL then set the data following GL wiki:
+    // see: https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming
+    // Yet, this seems to be counter productive: https://stackoverflow.com/q/31419578/1027706
+    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, aSize, NULL, GL_STATIC_DRAW);
+    //glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, aSize, aData);
 
-    // Copy value to new buffer
-    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, aSize, aData);
+    glBufferData(GL_ARRAY_BUFFER, aSize, aData, GL_STATIC_DRAW);
 }
 
 
