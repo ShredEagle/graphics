@@ -776,6 +776,27 @@ std::vector<Const_Owned<gltf::Animation>> Gltf::getAnimations() const
 }
 
 
+std::vector<Owned<gltf::Mesh>> Gltf::getMeshes()
+{
+    std::vector<Owned<gltf::Mesh>> result;
+    for (std::size_t id = 0; id != mMeshes.size(); ++id)
+    {
+        result.emplace_back(*this, mMeshes[id], id);
+    }
+    return result;
+}
+
+std::vector<Const_Owned<gltf::Mesh>> Gltf::getMeshes() const
+{
+    std::vector<Const_Owned<gltf::Mesh>> result;
+    for (std::size_t id = 0; id != mMeshes.size(); ++id)
+    {
+        result.emplace_back(*this, mMeshes[id], id);
+    }
+    return result;
+}
+
+
 Owned<gltf::Accessor> Gltf::get(gltf::Index<gltf::Accessor> aAccessorIndex)
 {
     return {*this, mAccessors.at(aAccessorIndex), aAccessorIndex};

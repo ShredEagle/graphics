@@ -399,6 +399,9 @@ public:
     std::vector<Owned<gltf::Animation>> getAnimations();
     std::vector<Const_Owned<gltf::Animation>> getAnimations() const;
 
+    std::vector<Owned<gltf::Mesh>> getMeshes();
+    std::vector<Const_Owned<gltf::Mesh>> getMeshes() const;
+
     Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex);
     Const_Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex) const;
 
