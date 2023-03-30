@@ -71,7 +71,8 @@ DrawContext animatedRing()
                     },
                     sizeof(Vertex),
                     sizeof(gVerticesQuad),
-                    gVerticesQuad
+                    gVerticesQuad,
+                    BufferHint::StaticDraw
                 ));
 
         //
@@ -178,7 +179,8 @@ Scene setupScene()
                 {2, 2, offsetof(Ring, mPosition),       MappedGL<GLfloat>::enumerator},
                 {3, 1, offsetof(Ring, mRotationsPerSec),MappedGL<GLfloat>::enumerator},
             },
-            std::span{scene.mRings}));
+            std::span{scene.mRings},
+            BufferHint::StaticDraw));
 
     glVertexAttribDivisor(2, 1);
     glVertexAttribDivisor(3, 1);
@@ -201,7 +203,8 @@ void updateScene(Scene &aScene, double aTimeSeconds)
     }
 
     respecifyBufferSameSize(aScene.mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                            aScene.mRings.data());
+                            aScene.mRings.data(),
+                            BufferHint::DynamicDraw);
 }
 
 void renderScene(Scene &aScene)

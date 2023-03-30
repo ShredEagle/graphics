@@ -28,7 +28,7 @@ namespace
     VertexSpecification make_VertexSpecification()
     {
         VertexSpecification specification;
-        appendToVertexSpecification(specification, gVertexDescription, std::span<LinePoint>{});
+        appendToVertexSpecification(specification, gVertexDescription, std::span<LinePoint>{}, BufferHint::StaticDraw);
         return specification;
     }
 
@@ -92,12 +92,15 @@ void TrivialLineStrip::render() const
     // Stream vertex attributes
     //
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
-                    std::span{mVertexAttributes});
+                    std::span{mVertexAttributes},
+                    BufferHint::StreamDraw);
 
     //
     // Stream index buffer
     //
-    respecifyBuffer(mIbo, std::span{mIndices});
+    respecifyBuffer(mIbo,
+                    std::span{mIndices},
+                    BufferHint::StreamDraw);
 
     //
     // Draw

@@ -203,6 +203,7 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     GLsizei aStride,
                                     size_t aSize,
                                     const GLvoid * aData,
+                                    BufferHint aHint,
                                     GLuint aAttributeDivisor = 0);
 
 
@@ -214,6 +215,7 @@ template <class T_vertex, std::size_t N_spanExtent>
 VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     AttributeDescriptionList aAttributes,
                                     std::span<T_vertex, N_spanExtent> aVertices,
+                                    BufferHint aHint,
                                     GLuint aAttributeDivisor = 0)
 {
     return loadVertexBuffer(aVertexArray,
@@ -221,6 +223,7 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                             sizeof(T_vertex),
                             aVertices.size_bytes(),
                             aVertices.data(),
+                            aHint,
                             aAttributeDivisor);
 }
 
@@ -232,11 +235,11 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
 /// `attachVertexBuffer()`.
 template <class T_vertex>
 VertexBufferObject loadUnattachedVertexBuffer(std::span<const T_vertex> aVertices,
-                                              GLenum aHint = GL_STATIC_DRAW)
+                                              BufferHint aHint)
 {
     VertexBufferObject vbo;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, aVertices.size_bytes(), aVertices.data(), aHint);
+    glBufferData(GL_ARRAY_BUFFER, aVertices.size_bytes(), aVertices.data(), getGLBufferHint(aHint));
     return vbo;
 }
 
@@ -248,12 +251,14 @@ template <class T_vertex, std::size_t N_spanExtent>
 void appendToVertexSpecification(VertexSpecification & aSpecification,
                                  const AttributeDescriptionList & aAttributes,
                                  std::span<T_vertex, N_spanExtent> aVertices,
+                                 BufferHint aHint,
                                  GLuint aAttributeDivisor = 0)
 {
     aSpecification.mVertexBuffers.push_back(
             loadVertexBuffer(aSpecification.mVertexArray,
                              aAttributes,
                              std::move(aVertices),
+                             aHint,
                              aAttributeDivisor));
 }
 
@@ -292,7 +297,7 @@ inline IndexBufferObject initIndexBuffer(const VertexArrayObject & aVertexArray)
 template <class T_index>
 IndexBufferObject loadIndexBuffer(const VertexArrayObject & aVertexArray,
                                   const std::span<T_index> aIndices,
-                                  const BufferHint aHint)
+                                  BufferHint aHint)
 {
     IndexBufferObject ibo = initIndexBuffer(aVertexArray);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, aIndices.size_bytes(), aIndices.data(), getGLBufferHint(aHint));
@@ -307,12 +312,15 @@ IndexBufferObject loadIndexBuffer(const VertexArrayObject & aVertexArray,
  ***/
 
 /// \brief Respecify content of a vertex buffer.
-inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aData, GLsizei aSize)
+inline void respecifyBuffer(const VertexBufferObject & aVBO,
+                            const GLvoid * aData,
+                            GLsizei aSize,
+                            BufferHint aHint)
 {
     glBindBuffer(GL_ARRAY_BUFFER, aVBO);
 
     // Orphan the previous buffer
-    glBufferData(GL_ARRAY_BUFFER, aSize, NULL, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, aSize, NULL, getGLBufferHint(aHint));
 
     // Copy value to new buffer
     glBufferSubData(GL_ARRAY_BUFFER, 0, aSize, aData);
@@ -320,7 +328,10 @@ inline void respecifyBuffer(const VertexBufferObject & aVBO, const GLvoid * aDat
 
 
 /// \brief Respecify content of an index buffer.
-inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData, GLsizei aSize)
+inline void respecifyBuffer(const IndexBufferObject & aIBO,
+                            const GLvoid * aData,
+                            GLsizei aSize,
+                            BufferHint aHint)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, aIBO);
 
@@ -330,18 +341,21 @@ inline void respecifyBuffer(const IndexBufferObject & aIBO, const GLvoid * aData
     //glBufferData(GL_ELEMENT_ARRAY_BUFFER, aSize, NULL, GL_STATIC_DRAW);
     //glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, aSize, aData);
 
-    glBufferData(GL_ARRAY_BUFFER, aSize, aData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, aSize, aData, getGLBufferHint(aHint));
 }
 
 
 /// \brief Overload accepting a span of generic values, instead of low-level void pointer.
 /// It works with both vertex and index buffers.
 template <class T_values, class T_buffer, std::size_t N_spanExtent>
-void respecifyBuffer(const T_buffer & aBufferObject, std::span<T_values, N_spanExtent> aValues)
+void respecifyBuffer(const T_buffer & aBufferObject,
+                     std::span<T_values, N_spanExtent> aValues,
+                     BufferHint aHint)
 {
     respecifyBuffer(aBufferObject,
                     aValues.data(),
-                    static_cast<GLsizei>(aValues.size_bytes()));
+                    static_cast<GLsizei>(aValues.size_bytes()),
+                    aHint);
 }
 
 
@@ -349,12 +363,14 @@ void respecifyBuffer(const T_buffer & aBufferObject, std::span<T_values, N_spanE
 ///
 /// \attention This is undefined behaviour is aData does not point to at least the same amount
 /// of data that was present before in the re-specified vertex buffer.
-inline void respecifyBufferSameSize(const VertexBufferObject & aVBO, const GLvoid * aData)
+inline void respecifyBufferSameSize(const VertexBufferObject & aVBO,
+                                    const GLvoid * aData,
+                                    BufferHint aHint)
 {
     GLint size;
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
 
-    respecifyBuffer(aVBO, aData, size);
+    respecifyBuffer(aVBO, aData, size, aHint);
 }
 
 

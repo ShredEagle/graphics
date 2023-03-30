@@ -32,7 +32,8 @@ Texting::Texting(const filesystem::path & aFontPath,
                  Filtering aTextureFiltering) :
     mQuadVbo{
         loadUnattachedVertexBuffer<detail::VertexUnitQuad>(
-            detail::make_RectangleVertices({ {0.f, -1.f}, {1.f, 1.f} }))
+            detail::make_RectangleVertices({ {0.f, -1.f}, {1.f, 1.f} }),
+            BufferHint::StaticDraw)
     },
     mVaoPool{
         [this]()

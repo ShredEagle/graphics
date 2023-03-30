@@ -130,7 +130,8 @@ DrawContext staticEggman()
                     },
                     sizeof(Vertex),
                     sizeof(gVerticesEggman),
-                    gVerticesEggman
+                    gVerticesEggman,
+                    BufferHint::StaticDraw
                 ));
 
         //
@@ -179,7 +180,8 @@ DrawContext animatedRing(const arte::ImageRgba &aImage, const math::Size<2, int>
                     },
                     sizeof(Vertex),
                     sizeof(gVerticesRing),
-                    gVerticesRing
+                    gVerticesRing,
+                    BufferHint::StaticDraw
                 ));
 
         //

@@ -49,8 +49,8 @@ namespace
     VertexSpecification make_VertexSpecification()
     {
         VertexSpecification specification;
-        appendToVertexSpecification(specification, gVertexDescription,   std::span{gVertices});
-        appendToVertexSpecification<DrawLine::Line>(specification, gInstanceDescription, std::span<DrawLine::Line>{}, 1);
+        appendToVertexSpecification(specification, gVertexDescription,   std::span{gVertices}, BufferHint::StaticDraw);
+        appendToVertexSpecification<DrawLine::Line>(specification, gInstanceDescription, std::span<DrawLine::Line>{}, BufferHint::StreamDraw, 1);
         return specification;
     }
 
@@ -104,7 +104,8 @@ void DrawLine::render() const
 
     // The last vertex buffer added to the specification is the per instance data.
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    std::span<const Line>{mInstances});
+                    std::span<const Line>{mInstances},
+                    BufferHint::StreamDraw);
 
     //
     // Draw

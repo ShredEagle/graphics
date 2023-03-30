@@ -67,7 +67,8 @@ namespace {
         auto vertices = getCircleVertices<Shaping::Circle::gVerticesCount>(1.);
         return loadVertexBuffer(aVAO,
                                 Vertex::gAttributeDescription,
-                                std::span{vertices});
+                                std::span{vertices},
+                                BufferHint::StaticDraw);
     }
 
 } // anonymous namespace
@@ -85,7 +86,7 @@ ShapeSet::ShapeSet() :
 
 void ShapeSet::resetCircles(std::span<const Shaping::Circle> aCircles)
 {
-    respecifyBuffer(mCirclesInstanceData, aCircles);
+    respecifyBuffer(mCirclesInstanceData, aCircles, BufferHint::StreamDraw);
     mCirclesCount = (GLsizei)aCircles.size();
 }
 

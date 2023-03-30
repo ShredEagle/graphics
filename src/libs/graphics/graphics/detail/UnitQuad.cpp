@@ -41,7 +41,7 @@ VertexSpecification make_Rectangle(math::Rectangle<GLfloat> aVertices)
 {
     std::array<VertexUnitQuad, gQuadVerticeCount> gVerticesScreen = make_RectangleVertices(aVertices);
     VertexSpecification result;
-    appendToVertexSpecification(result, gVertexScreenDescription, std::span(gVerticesScreen));
+    appendToVertexSpecification(result, gVertexScreenDescription, std::span(gVerticesScreen), BufferHint::StaticDraw);
     return result;
 }
 

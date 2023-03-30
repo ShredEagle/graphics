@@ -98,7 +98,8 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
     std::vector<Vertex> quad = makeQuad(aCellSize);
     specification.mVertexBuffers.emplace_back(loadVertexBuffer(specification.mVertexArray,
                                                                gVertexDescription,
-                                                               std::span{quad}));
+                                                               std::span{quad},
+                                                               BufferHint::StaticDraw));
     // Could also be
     //makeLoadedVertexBuffer(gVertexDescription, range(quad)));
 
@@ -113,6 +114,7 @@ VertexSpecification makeVertexGrid(const Size2<int> aCellSize, const Size2<int> 
         loadVertexBuffer(specification.mVertexArray,
                          { {2, {2, 0, MappedGL<GLint>::enumerator}} },
                          std::span{positions},
+                         BufferHint::StreamDraw,
                          1));
 
     // The tile sprite (as a LoadedSprite, i.e. the rectangle cutout in the image)
@@ -155,11 +157,11 @@ void TileSet::resetTiling(Size2<int> aCellSize, Size2<int> aGridDefinition)
     bind(mVertexSpecification);
 
     std::vector<Vertex> quad = makeQuad(aCellSize);
-    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(0), std::span{quad});
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(0), std::span{quad}, BufferHint::StreamDraw);
 
     Vec2<int> cellOffset(aCellSize);
     std::vector<Position2<GLint>> positions = makePositions(cellOffset, aGridDefinition);
-    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(1), std::span{positions});
+    respecifyBuffer(mVertexSpecification.mVertexBuffers.at(1), std::span{positions}, BufferHint::StreamDraw);
 
     mTileSize = aCellSize;
     mGridDefinition = aGridDefinition;
@@ -175,7 +177,8 @@ void TileSet::updateInstances(std::span<const Instance> aInstances)
     // Stream vertex attributes
     //
     respecifyBuffer(mVertexSpecification.mVertexBuffers.back(),
-                    aInstances);
+                    aInstances,
+                    BufferHint::StreamDraw);
 }
 
 

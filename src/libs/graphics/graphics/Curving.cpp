@@ -61,7 +61,7 @@ namespace {
     VertexBufferObject makeCurveVertexBuffer(VertexArrayObject & aVAO, GLsizei aCurveSubdivisions)
     {
         auto vertices = generateVertices(aCurveSubdivisions);
-        return loadVertexBuffer(aVAO, gVertexDescription, std::span{vertices});
+        return loadVertexBuffer(aVAO, gVertexDescription, std::span{vertices}, BufferHint::StaticDraw);
     }
 
 } // unnamed namespace
@@ -91,7 +91,7 @@ void Curving::render(std::span<const Instance> aInstances) const
     activate(mVertexArray, mGpuProgram);
 
     // Stream instance attributes
-    respecifyBuffer(mInstanceBuffer, aInstances);
+    respecifyBuffer(mInstanceBuffer, aInstances, BufferHint::StreamDraw);
 
     glDrawArraysInstanced(GL_TRIANGLE_STRIP,
                           0,

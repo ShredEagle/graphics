@@ -47,7 +47,8 @@ VertexBufferObject loadVertexBuffer(
                             {desc},
                             sizeof(T_vertex),
                             aVertices.size_bytes(),
-                            aVertices.data());
+                            aVertices.data(),
+                            BufferHint::StaticDraw);
 }
 
 template <class T_object, class T_member>

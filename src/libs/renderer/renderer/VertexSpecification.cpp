@@ -98,11 +98,12 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     GLsizei aStride,
                                     size_t aSize,
                                     const GLvoid * aData,
+                                    BufferHint aHint,
                                     GLuint aAttributeDivisor)
 {
     VertexBufferObject vbo = initVertexBuffer(aVertexArray, aAttributes, aStride, aAttributeDivisor);
     // The vertex buffer is still bound from initialization
-    glBufferData(GL_ARRAY_BUFFER, aSize, aData, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, aSize, aData, getGLBufferHint(aHint));
     return vbo;
 }
 

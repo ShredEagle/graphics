@@ -31,7 +31,7 @@ namespace
     VertexSpecification make_VertexSpecification()
     {
         VertexSpecification specification;
-        appendToVertexSpecification(specification, gVertexDescription, std::span<PolygonPoint>{});
+        appendToVertexSpecification(specification, gVertexDescription, std::span<PolygonPoint>{}, BufferHint::StaticDraw);
         return specification;
     }
 
@@ -90,12 +90,15 @@ void TrivialPolygon::render() const
     // Stream vertex attributes
     //
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.front(),
-                    std::span{mVertexAttributes});
+                    std::span{mVertexAttributes},
+                    BufferHint::StreamDraw);
 
     //
     // Stream index buffer
     //
-    respecifyBuffer(mIbo, std::span{mIndices});
+    respecifyBuffer(mIbo,
+                    std::span{mIndices},
+                    BufferHint::StreamDraw);
 
     //
     // Draw

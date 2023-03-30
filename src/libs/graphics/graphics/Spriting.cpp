@@ -55,7 +55,8 @@ VertexSpecification makeQuad()
             },
             sizeof(Vertex),
             sizeof(gVerticesQuad),
-            gVerticesQuad
+            gVerticesQuad,
+            BufferHint::StaticDraw
         ));
         /// TODO For that to work, the array_utils have to work with math type derived from MatrixBase
         //using namespace vertex; // for vertex::attr()
@@ -142,7 +143,8 @@ void Spriting::updateInstances(std::span<const Instance> aInstances)
     // Stream vertex attributes
     //
     respecifyBuffer(mVertexSpecification.mVertexBuffers.back(),
-                    aInstances);
+                    aInstances,
+                    BufferHint::StreamDraw);
     mInstanceCount = static_cast<GLsizei>(aInstances.size());
 }
 

@@ -49,8 +49,8 @@ namespace
     VertexSpecification make_VertexSpecification()
     {
         VertexSpecification specification;
-        appendToVertexSpecification(specification, gVertexDescription, std::span{gVertices});
-        appendToVertexSpecification(specification, gInstanceDescription, std::span<TrivialShaping::Rectangle>{}, 1);
+        appendToVertexSpecification(specification, gVertexDescription, std::span{gVertices}, BufferHint::StaticDraw);
+        appendToVertexSpecification(specification, gInstanceDescription, std::span<TrivialShaping::Rectangle>{}, BufferHint::StreamDraw, 1);
         return specification;
     }
 
@@ -96,7 +96,8 @@ void TrivialShaping::updateInstances(std::span<const TrivialShaping::Rectangle> 
     //
     // The last vertex buffer added to the specification is the per instance data.
     respecifyBuffer(mDrawContext.mVertexSpecification.mVertexBuffers.back(),
-                    aInstances);
+                    aInstances,
+                    BufferHint::StreamDraw);
     mInstanceCount = (GLsizei)aInstances.size();
 }
 

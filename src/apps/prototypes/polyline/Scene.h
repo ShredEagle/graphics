@@ -75,7 +75,8 @@ inline Scene::Scene() :
 {
     appendToVertexSpecification(mVertexSpecification,
                                 gVertexDescription,
-                                std::span{gVertices});
+                                std::span{gVertices},
+                                BufferHint::StaticDraw);
 }
 
 
