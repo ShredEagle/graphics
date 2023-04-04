@@ -2,7 +2,7 @@
 
 
 #include "AppInterface.h"
-#include "detail/GlyphUtilities.h"
+#include "detail/GlyphUtilities_deprecated.h"
 
 #include <arte/Freetype.h>
 

@@ -28,7 +28,7 @@ set(${TARGET_NAME}_HEADERS
 
     detail/Logging.h
     detail/UnitQuad.h
-    detail/GlyphUtilities.h
+    detail/GlyphUtilities_deprecated.h
 
     effects/Fade.h
     effects/Fade-shaders.h
@@ -55,7 +55,7 @@ set(${TARGET_NAME}_SOURCES
 
     detail/Logging.cpp
     detail/UnitQuad.cpp
-    detail/GlyphUtilities.cpp
+    detail/GlyphUtilities_deprecated.cpp
 
     effects/Fade.cpp
     effects/GaussianBlur.cpp

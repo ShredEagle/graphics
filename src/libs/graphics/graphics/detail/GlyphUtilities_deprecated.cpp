@@ -1,4 +1,4 @@
-#include "GlyphUtilities.h"
+#include "GlyphUtilities_deprecated.h"
 
 #include "Logging.h"
 
