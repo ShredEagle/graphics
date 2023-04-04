@@ -91,5 +91,6 @@ bool ImguiUi::isCapturingMouse()
     return mIo.WantCaptureMouse;
 }
 
-} // namespace gltfviewer
+
+} // namespace imguiui
 } // namespace ad

@@ -9,6 +9,7 @@
 namespace ad {
 namespace imguiui {
 
+
 class ImguiUi
 {
 public:
@@ -27,10 +28,10 @@ public:
     std::mutex mFrameMutex;
 
 private:
-    // Could be pimpled
+    // Could be pimpled, but if we do not include imgui.h here, the client will need to to it.
     ImGuiIO & mIo;
 };
 
 
-} // namespace gltfviewer
+} // namespace imguiui
 } // namespace ad

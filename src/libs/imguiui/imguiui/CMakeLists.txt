@@ -2,10 +2,13 @@ set(TARGET_NAME imguiui)
 
 set(${TARGET_NAME}_HEADERS
     ImguiUi.h
+    Widgets.h
+    Widgets-impl.h
 )
 
 set(${TARGET_NAME}_SOURCES
     ImguiUi.cpp
+    Widgets.cpp
 )
 
 set(${TARGET_NAME}_IMGUI_BACKENDS
