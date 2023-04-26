@@ -8,6 +8,7 @@
 #include <math/Vector.h>
 
 #include <functional>
+#include <optional>
 
 // TODO move
 #include <utf8.h> // utfcpp lib
