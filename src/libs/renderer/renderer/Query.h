@@ -32,5 +32,13 @@ inline GLenum getEnum(GLenum aParameter)
 }
 
 
+inline GLint getInt(GLenum aParameter)
+{
+    GLint data;
+    glGetIntegerv(aParameter, &data);
+    return data;
+}
+
+
 } // namespace graphics
 } // namespace ad

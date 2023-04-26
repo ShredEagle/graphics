@@ -77,6 +77,22 @@ inline Guard scopeCullFace(GLenum aMode)
 }
 
 
+// Note: The separate control for FRONT and BACK faces has been deprecated (at least in 4.6)
+inline Guard scopePolygonMode(GLenum aMode)
+{
+    GLenum previousMode = getEnum(GL_POLYGON_MODE);
+
+    auto handler = [](GLenum mode)
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, mode);
+    };
+    handler(aMode);
+
+    return Guard{ std::bind(handler, previousMode) };
+}
+
+
+
 inline Guard scopeViewport(math::Rectangle<GLint> aViewport)
 {
     std::array<GLint, 4> previous;
