@@ -13,6 +13,7 @@ set(${TARGET_NAME}_HEADERS
     SpriteLoading.h
     Spriting.h
     Texting.h
+    TextUtilities.h
     Tiling.h
     Timer.h
     TrivialLineStrip.h
@@ -43,6 +44,7 @@ set(${TARGET_NAME}_SOURCES
     SpriteLoading.cpp
     Spriting.cpp
     Texting.cpp
+    TextUtilities.cpp
     Tiling.cpp
     TrivialLineStrip.cpp
     TrivialPolygon.cpp
