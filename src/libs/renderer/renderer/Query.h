@@ -26,9 +26,9 @@ inline bool isEnabled(GLenum aTestedFeature)
 
 inline GLenum getEnum(GLenum aParameter)
 {
-    GLint data;
-    glGetIntegerv(aParameter, &data);
-    return (GLenum)data;
+    GLint data[4];
+    glGetIntegerv(aParameter, data);
+    return (GLenum)data[0]; 
 }
 
 
