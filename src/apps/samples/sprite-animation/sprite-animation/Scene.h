@@ -51,7 +51,7 @@ public:
 
     void update(double aDelta)
     {
-        double parameterValue = mAnimationParameter->advance(aDelta);
+        double parameterValue = mAnimationParameter->at(mAnimationTimepoint += aDelta);
 
         std::vector<Spriting::Instance> instances{
             Spriting::Instance{
@@ -86,6 +86,7 @@ private:
     sprite::LoadedAtlas mAtlas;
     sprite::Animator mAnimator;
     std::optional<ParameterAnimation_t> mAnimationParameter;
+    double mAnimationTimepoint = 0.f;
 };
 
 
