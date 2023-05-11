@@ -367,10 +367,22 @@ namespace gltf {
     struct Scene
     {
         std::string name;
-        std::vector<Index<Node>> nodes;
+        std::vector<Index<Node>> nodes; // root nodes of the scene
     };
 
     std::ostream & operator<<(std::ostream & aOut, const Scene & aScene);
+
+
+    /// @brief Helper function, returning the pose of a Node as a transformation matrix.
+    Node::Matrix getTransformationAsMatrix(const Node & aNode);
+
+    /// @brief Helper function, returning the pose of a Node as a Translation/Rotation/Scale struct.
+    Node::TRS getTransformationAsTRS(const Node & aNode);
+
+    // TODO helpers to get parts of the pose (should decompose the matrix when needed)
+    //math::Vec<3, float> getTranslation(const Node & aNode);
+    //math::Quaternion<float> getRotation(const Node & aNode);
+    //math::Vec<3, float> getScale(const Node & aNode);
 
 } // namespace gltf
 
@@ -395,12 +407,20 @@ public:
 
     std::optional<Owned<gltf::Scene>> getDefaultScene();
     std::optional<Const_Owned<gltf::Scene>> getDefaultScene() const;
+    std::size_t countScenes() const;
 
     std::vector<Owned<gltf::Animation>> getAnimations();
     std::vector<Const_Owned<gltf::Animation>> getAnimations() const;
 
     std::vector<Owned<gltf::Mesh>> getMeshes();
     std::vector<Const_Owned<gltf::Mesh>> getMeshes() const;
+
+    std::vector<Owned<gltf::Node>> getNodes();
+    std::vector<Const_Owned<gltf::Node>> getNodes() const;
+    std::size_t countNodes() const;
+
+    std::vector<Owned<gltf::Skin>> getSkins();
+    std::vector<Const_Owned<gltf::Skin>> getSkins() const;
 
     Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex);
     Const_Owned<gltf::Accessor> get(gltf::Index<gltf::Accessor> aAccessorIndex) const;

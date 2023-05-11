@@ -5,7 +5,10 @@
 #include "../detail/Json.h"
 #include "../detail/GltfJson.h"
 
+#include <math/Transformations.h>
+
 #include <fstream>
+
 
 namespace ad {
 namespace arte {
@@ -703,6 +706,50 @@ namespace gltf {
             << " nodes: " << aScene.nodes;
     }
 
+
+    Node::Matrix getTransformationAsMatrix(const Node & aNode)
+    {
+        return std::visit(
+            [](auto && transformation) -> Node::Matrix
+            {
+                using T = std::decay_t<decltype(transformation)>;
+                if constexpr (std::is_same_v<T, Node::Matrix>)
+                {
+                    return transformation;
+                }
+                else if constexpr (std::is_same_v<T, Node::TRS>)
+                {
+                    const Node::TRS & trs = transformation;
+                    return
+                        math::trans3d::scale(trs.scale.as<math::Size>())
+                        * trs.rotation.toRotationMatrix()
+                        * math::trans3d::translate(trs.translation)
+                        ;
+                }
+            },
+            aNode.transformation);
+    }
+
+
+    Node::TRS getTransformationAsTRS(const Node & aNode)
+    {
+        return std::visit(
+            [](auto && transformation) -> Node::TRS
+            {
+                using T = std::decay_t<decltype(transformation)>;
+                if constexpr (std::is_same_v<T, Node::Matrix>)
+                {
+                    // TODO implement decomposition logic
+                    throw std::logic_error{"Decomposition from matrix to TRS not implemented."};
+                }
+                else if constexpr (std::is_same_v<T, Node::TRS>)
+                {
+                    return transformation;
+                }
+            },
+            aNode.transformation);
+    }
+
 } // namespace gltf
 
 //
@@ -754,6 +801,11 @@ std::optional<Const_Owned<gltf::Scene>> Gltf::getDefaultScene() const
     return std::nullopt;
 }
 
+std::size_t Gltf::countScenes() const
+{
+    return mScenes.size();
+}
+
 
 std::vector<Owned<gltf::Animation>> Gltf::getAnimations()
 {
@@ -792,6 +844,56 @@ std::vector<Const_Owned<gltf::Mesh>> Gltf::getMeshes() const
     for (std::size_t id = 0; id != mMeshes.size(); ++id)
     {
         result.emplace_back(*this, mMeshes[id], id);
+    }
+    return result;
+}
+
+
+std::vector<Owned<gltf::Node>> Gltf::getNodes()
+{
+    std::vector<Owned<gltf::Node>> result;
+    for (std::size_t id = 0; id != mNodes.size(); ++id)
+    {
+        result.emplace_back(*this, mNodes[id], id);
+    }
+    return result;
+}
+
+
+std::vector<Const_Owned<gltf::Node>> Gltf::getNodes() const
+{
+    std::vector<Const_Owned<gltf::Node>> result;
+    for (std::size_t id = 0; id != mNodes.size(); ++id)
+    {
+        result.emplace_back(*this, mNodes[id], id);
+    }
+    return result;
+}
+
+
+std::size_t Gltf::countNodes() const
+{
+    return mNodes.size();
+}
+
+
+std::vector<Owned<gltf::Skin>> Gltf::getSkins()
+{
+    std::vector<Owned<gltf::Skin>> result;
+    for (std::size_t id = 0; id != mSkins.size(); ++id)
+    {
+        result.emplace_back(*this, mSkins[id], id);
+    }
+    return result;
+}
+
+
+std::vector<Const_Owned<gltf::Skin>> Gltf::getSkins() const
+{
+    std::vector<Const_Owned<gltf::Skin>> result;
+    for (std::size_t id = 0; id != mSkins.size(); ++id)
+    {
+        result.emplace_back(*this, mSkins[id], id);
     }
     return result;
 }
