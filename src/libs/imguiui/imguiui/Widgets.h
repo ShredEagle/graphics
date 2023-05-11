@@ -16,6 +16,12 @@ namespace imguiui {
 void addCheckbox(const char * aLabel, std::atomic<bool> & aValue);
 
 
+template <class T_iterator, class F_stringify>
+void addCombo(const char *aLabel,
+              T_iterator & aValue,
+              T_iterator aFirst, T_iterator aLast,
+              F_stringify aToString);
+
 template <class T_enumeration, std::size_t N_spanExtent>
 void addCombo(const char *aLabel,
               T_enumeration & aValue,

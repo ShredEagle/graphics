@@ -10,6 +10,7 @@ namespace ad {
 namespace imguiui {
 
 
+// TODO this should implement RAII (in particular newFrame()/render())
 class ImguiUi
 {
 public:
