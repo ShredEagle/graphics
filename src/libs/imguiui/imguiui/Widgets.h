@@ -2,7 +2,7 @@
 #pragma once
 
 
-#include <handy/MovableAtomic.h>
+#include <handy/AtomicVariations.h>
 
 #include <atomic>
 #include <span>

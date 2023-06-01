@@ -39,7 +39,7 @@ class GraphicsConan(ConanFile):
         ("utfcpp/3.2.1"),
         ("imgui/1.88"),
 
-        ("handy/5fb4067c56@adnn/develop"),
+        ("handy/5c42e80ebf@adnn/develop"),
         ("math/a165ef4960@adnn/develop"),
     )
 
