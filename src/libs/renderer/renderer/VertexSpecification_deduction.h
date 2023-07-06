@@ -36,7 +36,7 @@ VertexBufferObject loadVertexBuffer(
     static_assert(std::is_array<T_vertex>::value || std::is_arithmetic<T_vertex>::value,
                   "Currently only supports spans of arrays or arithmetic types");
 
-    AttributeDescription desc{
+    AttributeFormat desc{
         aAttribute,
         combined_extents_v<T_vertex>,
         0,
@@ -85,7 +85,7 @@ VertexBufferObject makeLoadedVertexBuffer(
     }
 
     AttributeDescriptionList attributes = {
-        AttributeDescription {
+        AttributeFormat {
             vaAttributes,
             combined_extents<typename decltype(vaAttributes)::member_type>::value,
             offset_of(&aVertices.front(), vaAttributes.mMember),

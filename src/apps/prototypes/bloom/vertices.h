@@ -35,7 +35,7 @@ std::array<VertexScreenQuad, 4> gVerticesScreen = {
     },
 };
 
-constexpr std::initializer_list<AttributeDescription> gVertexScreenDescription = {
+constexpr std::initializer_list<AttributeFormat> gVertexScreenDescription = {
     { 0, 2, offsetof(VertexScreenQuad, mPosition), MappedGL<GLfloat>::enumerator},
     { 1, 2, offsetof(VertexScreenQuad, mUV),       MappedGL<GLfloat>::enumerator},
 };
@@ -65,7 +65,7 @@ std::array<VertexScene, 4> gVerticesScene = {
     },
 };
 
-constexpr std::initializer_list<AttributeDescription> gVertexSceneDescription = {
+constexpr std::initializer_list<AttributeFormat> gVertexSceneDescription = {
     { 0, 2, offsetof(VertexScene, mPosition), MappedGL<GLfloat>::enumerator},
     { 1, 2, offsetof(VertexScreenQuad, mUV),  MappedGL<GLfloat>::enumerator},
 };

@@ -20,7 +20,7 @@ struct VertexUnitQuad
 };
 
 
-constexpr std::initializer_list<AttributeDescription> gVertexScreenDescription = {
+constexpr std::initializer_list<AttributeFormat> gVertexScreenDescription = {
     { 0, {2, offsetof(VertexUnitQuad, mPosition), MappedGL<GLfloat>::enumerator}},
     { 1, {2, offsetof(VertexUnitQuad, mUV),       MappedGL<GLfloat>::enumerator}},
 };

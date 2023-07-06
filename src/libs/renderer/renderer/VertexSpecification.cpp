@@ -18,7 +18,7 @@ namespace {
 } // anonymous
 
 
-std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription)
+std::ostream & operator<<(std::ostream &aOut, const AttributeFormat & aDescription)
 {
     return aOut << "Index " << aDescription.mIndex << " | "
                 << "Dimension " << aDescription.mDimension << " | "
@@ -28,7 +28,7 @@ std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDesc
 }
 
 
-void attachBoundVertexBuffer(AttributeDescription aAttribute,
+void attachBoundVertexBuffer(AttributeFormat aAttribute,
                              GLsizei aStride,
                              GLuint aAttributeDivisor)
 {
@@ -84,7 +84,7 @@ void attachVertexBuffer(const VertexBufferObject & aVertexBuffer,
 }
 
 VertexBufferObject initVertexBuffer(const VertexArrayObject & aVertexArray,
-                                    std::initializer_list<AttributeDescription> aAttributes,
+                                    std::initializer_list<AttributeFormat> aAttributes,
                                     GLsizei aStride,
                                     GLuint aAttributeDivisor)
 {

@@ -131,12 +131,13 @@ struct ClientAttribute
 
 
 /// \brief The complete description of an attribute as expected by OpenGL.
-struct AttributeDescription : public ShaderParameter, ClientAttribute
+/// \note The OpenGL spec calls this the Vertex Format or Vertex Attribute Format
+struct AttributeFormat : public ShaderParameter, ClientAttribute
 {};
 
-std::ostream & operator<<(std::ostream &aOut, const AttributeDescription & aDescription);
+std::ostream & operator<<(std::ostream &aOut, const AttributeFormat & aDescription);
 
-typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
+typedef std::initializer_list<AttributeFormat> AttributeDescriptionList;
 
 
 /***
@@ -147,7 +148,7 @@ typedef std::initializer_list<AttributeDescription> AttributeDescriptionList;
 
 /// \brief Attach currently bound vertex buffer object to currently bound vertex array objet.
 /// \param aAttribute Describe the format of the buffer data and the associated parameter in shader program.
-void attachBoundVertexBuffer(AttributeDescription aAttribute,
+void attachBoundVertexBuffer(AttributeFormat aAttribute,
                              GLsizei aStride,
                              GLuint aAttributeDivisor = 0);
 
