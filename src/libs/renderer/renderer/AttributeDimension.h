@@ -45,7 +45,7 @@ struct AttributeDimension
             && mSecondDimension == aRhs.mSecondDimension;
     }
 
-    bool operator!=(AttributeDimension aRhs)
+    bool operator!=(AttributeDimension aRhs) const
     {
         return !(*this == aRhs);
     }
