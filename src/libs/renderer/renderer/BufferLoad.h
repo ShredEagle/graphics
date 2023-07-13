@@ -10,6 +10,18 @@ namespace ad {
 namespace graphics {
 
 
+/// @brief Initialize a data store of a size accomodationg `aInstanceCount` object of type `T_data`.
+template <class T_data, BufferType N_type>
+void initialize(const Buffer<N_type> & aBuffer, GLsizei aInstanceCount, BufferHint aUsageHint)
+{
+    ScopedBind bound{aBuffer};
+    glBufferData(static_cast<GLenum>(N_type),
+                 sizeof(T_data) * aInstanceCount,
+                 NULL,
+                 getGLBufferHint(aUsageHint));
+}
+
+
 template <class T_data, std::size_t N_extent, BufferType N_type>
 void load(const Buffer<N_type> & aBuffer, std::span<T_data, N_extent> aData, BufferHint aUsageHint)
 {
@@ -35,18 +47,6 @@ void replaceSubset(const Buffer<N_type> & aBuffer,
                     sizeof(T_data) * aInstanceCount,
                     aData.size_bytes(),
                     aData.data());
-}
-
-
-/// @brief Initialize a data store of a size accomodationg `aInstanceCount` object of type `T_data`.
-template <class T_data, BufferType N_type>
-void initialize(const Buffer<N_type> & aBuffer, GLsizei aInstanceCount, BufferHint aUsageHint)
-{
-    ScopedBind bound{aBuffer};
-    glBufferData(static_cast<GLenum>(N_type),
-                 sizeof(T_data) * aInstanceCount,
-                 NULL,
-                 getGLBufferHint(aUsageHint));
 }
 
 

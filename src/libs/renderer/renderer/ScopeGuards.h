@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "Query.h"
+#include "SynchronousQueries.h"
 
 #include <handy/Guard.h>
 

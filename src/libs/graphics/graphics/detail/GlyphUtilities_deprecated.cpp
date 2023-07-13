@@ -4,7 +4,7 @@
 
 #include <freetype/freetype.h>
 #include <freetype/ftimage.h>
-#include <renderer/Query.h>
+#include <renderer/SynchronousQueries.h>
 #include <utf8.h> // utfcpp lib
 
 namespace ad {

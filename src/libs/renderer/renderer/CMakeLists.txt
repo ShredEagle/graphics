@@ -12,10 +12,11 @@ set(${TARGET_NAME}_HEADERS
     gl_helpers.h
     GL_Loader.h
     MappedGL.h
-    Query.h
     ScopeGuards.h
     ShaderSource.h
+    ShaderVertexAttribute.h
     Shading.h
+    SynchronousQueries.h
     Texture.h
     UniformBuffer.h
     Uniforms.h
@@ -28,6 +29,7 @@ set(${TARGET_NAME}_HEADERS
 set(${TARGET_NAME}_SOURCES
     AttributeDimension.cpp
     ShaderSource.cpp
+    ShaderVertexAttribute.cpp
     Shading.cpp
     VertexSpecification.cpp
 
