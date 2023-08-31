@@ -104,13 +104,18 @@ inline math::Rectangle<GLfloat> getViewRectangle(math::Size<2, int> aRenderResol
 }
 
 
-inline math::Box<GLfloat> getViewVolumeRightHanded(math::Size<2, int> aRenderResolution,
+/// @brief Return the Box corresponding to the view volume of world height aBufferHeight.
+/// @param aRenderResolution Used to get the viewport ratio.
+/// @param aBufferHeight World height of the view volume.
+/// @param aNearPlaneZ Position of the near plane along the Z axis. This should be negative!
+/// @param aDepth Positive value, representing the distance between near plane and far plane.
+inline math::Box<GLfloat> getViewVolumeRightHanded(GLfloat aAspectRatio,
                                                    GLfloat aBufferHeight,   
                                                    GLfloat aNearPlaneZ,
                                                    GLfloat aDepth)
 {
     math::Size<3, GLfloat> size{
-        math::makeSizeFromHeight(aBufferHeight, math::getRatio<GLfloat>(aRenderResolution)),
+        math::makeSizeFromHeight(aBufferHeight, aAspectRatio),
         aDepth
     };
 
@@ -121,6 +126,16 @@ inline math::Box<GLfloat> getViewVolumeRightHanded(math::Size<2, int> aRenderRes
             aNearPlaneZ - aDepth},
         size,
     };
+}
+
+
+inline math::Box<GLfloat> getViewVolumeRightHanded(math::Size<2, int> aRenderResolution,
+                                                   GLfloat aBufferHeight,   
+                                                   GLfloat aNearPlaneZ,
+                                                   GLfloat aDepth)
+{
+    return getViewVolumeRightHanded(math::getRatio<GLfloat>(aRenderResolution),
+                                    aBufferHeight, aNearPlaneZ, aDepth);
 }
 
 
