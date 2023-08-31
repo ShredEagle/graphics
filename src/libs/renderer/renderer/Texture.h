@@ -241,6 +241,9 @@ inline void writeTo(const Texture & aTexture,
     // Cubemaps individual faces muste be accessed explicitly in glTexSubImage2D.
     assert(aTexture.mTarget != GL_TEXTURE_CUBE_MAP);
 
+    // TODO assert that texture target is of correct dimension.
+
+    // TODO replace with DSA
     ScopedBind bound(aTexture);
 
     // Handle alignment
@@ -249,6 +252,28 @@ inline void writeTo(const Texture & aTexture,
     glTexSubImage2D(aTexture.mTarget, aMipmapLevelId,
                     aTextureOffset.x(), aTextureOffset.y(),
                     aInput.resolution.width(), aInput.resolution.height(),
+                    aInput.format, aInput.type,
+                    aRawData);
+}
+
+
+inline void writeTo(const Texture & aTexture,
+                    const std::byte * aRawData,
+                    const InputImageParameters & aInput,
+                    math::Position<3, GLint> aTextureOffset,
+                    GLint aMipmapLevelId = 0)
+{
+    // TODO assert that texture target is of correct dimension.
+
+    // TODO replace with DSA
+    ScopedBind bound(aTexture);
+
+    // Handle alignment
+    Guard scopedAlignemnt = detail::scopeUnpackAlignment(aInput.alignment);
+
+    glTexSubImage3D(aTexture.mTarget, aMipmapLevelId,
+                    aTextureOffset.x(), aTextureOffset.y(), aTextureOffset.z(),
+                    aInput.resolution.width(), aInput.resolution.height(), 1,
                     aInput.format, aInput.type,
                     aRawData);
 }

@@ -70,7 +70,7 @@ inline TextureRibon make_TextureRibon(math::Size<2, GLint> aDimensions, GLenum a
 inline GLint TextureRibon::write(const std::byte * aData, InputImageParameters aInputParameters)
 {
     // Start writing after the left margin.
-    writeTo(texture, aData, aInputParameters, {margins.x() + nextXOffset, margins.y()});
+    writeTo(texture, aData, aInputParameters, math::Position<2, GLint>{margins.x() + nextXOffset, margins.y()});
     // The pointed-to bitmap includes the left margin (i.e. the offset does not get the margin added).
     // (which is consistent with controlBoxSize including the margin)
     GLint thisOffset = nextXOffset; 
