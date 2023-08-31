@@ -3,12 +3,14 @@ set(TARGET_NAME ${_lower_project_name}_tests)
 
 set(${TARGET_NAME}_HEADERS
     catch.hpp
+    FileSystemHelpers.h
 )
 
 set(${TARGET_NAME}_SOURCES
     main.cpp
 
     Image_tests.cpp
+    ImageConvolution_tests.cpp
     Scope_tests.cpp
     ShaderSource_tests.cpp
 )

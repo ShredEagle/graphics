@@ -1,8 +1,8 @@
 #include "catch.hpp"
 
-#include <arte/Image.h>
+#include "FilesystemHelpers.h"
 
-#include <test_commons/PathProvider.h>
+#include <arte/Image.h>
 
 #include <fstream>
 
@@ -15,21 +15,6 @@ const auto & Red   = math::sdr::gRed;
 const auto & Green = math::sdr::gGreen;
 const auto & Blue  = math::sdr::gBlue;
 
-
-filesystem::path ensureTemporaryImageFolder(filesystem::path aSubfolder)
-{
-    filesystem::path tmp =
-#if defined(__APPLE__)
-        "/tmp"; // not at all what is returned on macos by temp_directory_path()
-#else
-        filesystem::temp_directory_path();
-#endif
-
-    filesystem::path result =  tmp / aSubfolder;
-    create_directories(result);
-    return result;
-
-}
 
 template <class T_image>
 void requireImagesEquality(const T_image & aLhs, const T_image & aRhs)

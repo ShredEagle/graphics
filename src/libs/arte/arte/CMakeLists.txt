@@ -3,6 +3,7 @@ set(TARGET_NAME arte)
 set(${TARGET_NAME}_HEADERS
     Freetype.h
     Image.h
+    ImageConvolution.h
     Logging.h
     SpriteSheet.h
 
