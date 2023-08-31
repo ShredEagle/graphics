@@ -70,11 +70,21 @@ Image<T_pixelFormat> resampleSeparable2D(const Image<T_pixelFormat> & aInput,
             float x = x0 + j * delta.x();
             // For each pixel **center** that falls within the radius of the filter
             // (the filter being centered on x, i.e. the output pixel)
-            for (std::size_t k = (std::size_t)std::max<float>(std::ceil(x - r), 0);
-                 k <= std::min<std::size_t>((std::size_t)std::floor(x + r), aInput.width() - 1);
-                 ++k)
+
+            // The commented loop would sample black pixels on boundaries (dimming the edges)
+            // (GL_CLAMP_TO_BORDER with a black border)
+            //for (std::size_t k = (std::size_t)std::max<float>(std::ceil(x - r), 0);
+            //     k <= std::min<std::size_t>((std::size_t)std::floor(x + r), aInput.width() - 1);
+            //     ++k)
+            //{
+            //    intermediary[j][i] += aInput[k][i] * aFilter(x - k);
+            //}
+
+            // This Sample the edge color (GL_CLAMP_TO_EDGE)
+            for (int k = (int)std::ceil(x - r); k <= std::floor(x + r); ++k)
             {
-                intermediary[j][i] += aInput[k][i] * aFilter(x - k);
+                std::size_t column = std::clamp(k, 0, aInput.width() - 1);
+                intermediary[j][i] += aInput[column][i] * aFilter(x - k);
             }
         }
     }
@@ -88,11 +98,18 @@ Image<T_pixelFormat> resampleSeparable2D(const Image<T_pixelFormat> & aInput,
         {
             output[j][i] = T_pixelFormat{}; // assign zero
             float y = y0 + i * delta.y();
-            for (std::size_t k = (std::size_t)std::max<float>(std::ceil(y - r), 0);
-                 k <= std::min<std::size_t>((std::size_t)std::floor(y + r), intermediary.height() - 1);
-                 ++k)
+
+            //for (std::size_t k = (std::size_t)std::max<float>(std::ceil(y - r), 0);
+            //     k <= std::min<std::size_t>((std::size_t)std::floor(y + r), intermediary.height() - 1);
+            //     ++k)
+            //{
+            //    output[j][i] += intermediary[j][k] * aFilter(y - k);
+            //}
+
+            for (int k = (int)std::ceil(y - r); k <= std::floor(y + r); ++k)
             {
-                output[j][i] += intermediary[j][k] * aFilter(y - k);
+                std::size_t row = std::clamp(k, 0, intermediary.height() - 1);
+                output[j][i] += intermediary[j][row] * aFilter(y - k);
             }
         }
     }
