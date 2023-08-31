@@ -19,6 +19,7 @@ public:
 
     AppInterface(std::function<void()> aCloseAppCallback);
 
+    // TODO remove those, these are graphics API level
     static void clear();
     static void setClearColor(math::hdr::Rgb_f aClearColor);
 

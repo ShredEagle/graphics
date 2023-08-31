@@ -94,20 +94,21 @@ public:
         glfwSetWindowSizeCallback(mWindow, windowSize_callback);
         glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
 
+        // Set all callbacks to forward to AppInterface, in turn forwarding to user-specified callbacks.
+        glfwSetKeyCallback(mWindow, forward_key_callback);
+        glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
+        glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
+        glfwSetScrollCallback(mWindow, forward_scroll_callback);
+
+        // Register a default keyboard callback on the AppInterface, closing the window on Esc.
         using namespace std::placeholders;
         mAppInterface->registerKeyCallback(std::bind(&ApplicationGlfw::default_key_callback,
                                                      static_cast<GLFWwindow*>(this->mWindow),
                                                      _1, _2, _3, _4));
-        glfwSetKeyCallback(mWindow, forward_key_callback);
-
-        glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
-
-        glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
-
-        glfwSetScrollCallback(mWindow, forward_scroll_callback);
 
         glfwShowWindow(mWindow);
 
+        // TODO Ad 2023/08/10: Control V-sync via a flag
         // VSync
         glfwSwapInterval(1);
 
@@ -187,6 +188,11 @@ public:
         glfwGetCursorPos(mWindow, &xpos, &ypos);
         aXpos = xpos;
         aYpos = ypos;
+    }
+
+    void setWindowTitle(const std::string & aTitle) 
+    {
+        glfwSetWindowTitle(mWindow, aTitle.c_str());
     }
 
     /// \important This is breaking the encapsulation for cases where third parties such as dear-ImGui

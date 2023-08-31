@@ -23,13 +23,13 @@ public:
     void newFrame();
     void render();
 
-    bool isCapturingKeyboard();
-    bool isCapturingMouse();
+    bool isCapturingKeyboard() const;
+    bool isCapturingMouse() const;
 
     std::mutex mFrameMutex;
 
 private:
-    // Could be pimpled, but if we do not include imgui.h here, the client will need to to it.
+    // Could be pimpled, but if we do not include imgui.h here, the client will need to do it.
     ImGuiIO & mIo;
 };
 

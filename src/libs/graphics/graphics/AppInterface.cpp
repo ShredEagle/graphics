@@ -18,6 +18,9 @@ AppInterface::AppInterface(std::function<void()> aCloseAppCallback) :
     // General OpenGL setups
     //
 
+    // TODO I am not sure we want to set GL state here?
+    // or we should set a complete meaninful state (e.g. also enable depth test)
+
     // Enable alpha blending
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

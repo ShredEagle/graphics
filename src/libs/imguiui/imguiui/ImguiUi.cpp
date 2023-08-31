@@ -80,13 +80,13 @@ void ImguiUi::render()
 }
 
 
-bool ImguiUi::isCapturingKeyboard()
+bool ImguiUi::isCapturingKeyboard() const
 {
     return mIo.WantCaptureKeyboard;
 }
 
 
-bool ImguiUi::isCapturingMouse()
+bool ImguiUi::isCapturingMouse() const
 {
     return mIo.WantCaptureMouse;
 }
