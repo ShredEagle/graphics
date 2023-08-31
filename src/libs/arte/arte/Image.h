@@ -267,16 +267,27 @@ private:
 };
 
 
+// Convenience definition as a free function, for the implicit "Sequence" type trait
+template <class T_pixelFormat>
+math::Size<2, int> dimensions(const Image<T_pixelFormat> & aImage)
+{ return aImage.dimensions(); }
+
+
 Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource);
 
 
-template <class T_hdrChannel = float>
-Image<math::hdr::Rgb<T_hdrChannel>> to_hdr(const Image<math::sdr::Rgb> & aSource);
+template <class T_hdrChannel = float, template<class> class TT_colorFormat>
+requires math::is_color_v<TT_colorFormat<math::sdr::Value_t>>
+         && std::is_floating_point_v<T_hdrChannel>
+Image<TT_colorFormat<T_hdrChannel>> to_hdr(const Image<TT_colorFormat<math::sdr::Value_t>> & aSource);
 
-template <class T_hdrChannel>
-Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSource);
+template <class T_hdrChannel = float, template<class> class TT_colorFormat>
+requires math::is_color_v<TT_colorFormat<math::sdr::Value_t>>
+         && std::is_floating_point_v<T_hdrChannel>
+Image<TT_colorFormat<math::sdr::Value_t>> tonemap(const Image<TT_colorFormat<T_hdrChannel>> & aSource);
 
 template<class T_pixelFormat>
+requires math::is_color_v<T_pixelFormat>
 Image<T_pixelFormat> & decodeSRGBToLinear(Image<T_pixelFormat> & aImage);
 
 

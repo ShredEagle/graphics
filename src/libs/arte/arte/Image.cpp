@@ -289,25 +289,35 @@ Image<math::sdr::Grayscale> toGrayscale(const Image<math::sdr::Rgb> & aSource)
 }
 
 
-template <class T_hdrChannel>
-Image<math::hdr::Rgb<T_hdrChannel>> to_hdr(const Image<math::sdr::Rgb> & aSource)
+template <class T_hdrChannel, template<class> class TT_colorFormat>
+requires math::is_color_v<TT_colorFormat<math::sdr::Value_t>>
+         && std::is_floating_point_v<T_hdrChannel>
+Image<TT_colorFormat<T_hdrChannel>> to_hdr(const Image<TT_colorFormat<math::sdr::Value_t>> & aSource)
 {
-    auto result = Image<math::hdr::Rgb<T_hdrChannel>>::makeUninitialized(aSource.dimensions());
+    using SdrFormat = TT_colorFormat<math::sdr::Value_t>;
+    using HdrFormat = TT_colorFormat<T_hdrChannel>;
+
+    auto result = Image<HdrFormat>::makeUninitialized(aSource.dimensions());
     std::transform(aSource.begin(), aSource.end(), result.begin(),
-                   [](math::sdr::Rgb aSdrPixel) -> math::hdr::Rgb<T_hdrChannel>
+                   [](SdrFormat aSdrPixel) -> HdrFormat
                    {
-                        return to_hdr<float>(aSdrPixel);
+                        return to_hdr<T_hdrChannel>(aSdrPixel);
                    });
     return result;
 }
 
 
-template <class T_hdrChannel>
-Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSource)
+template <class T_hdrChannel, template<class> class TT_colorFormat>
+requires math::is_color_v<TT_colorFormat<math::sdr::Value_t>>
+         && std::is_floating_point_v<T_hdrChannel>
+Image<TT_colorFormat<math::sdr::Value_t>> tonemap(const Image<TT_colorFormat<T_hdrChannel>> & aSource)
 {
-    auto result = Image<math::sdr::Rgb>::makeUninitialized(aSource.dimensions());
+    using SdrFormat = TT_colorFormat<math::sdr::Value_t>;
+    using HdrFormat = TT_colorFormat<T_hdrChannel>;
+
+    auto result = Image<SdrFormat>::makeUninitialized(aSource.dimensions());
     std::transform(aSource.begin(), aSource.end(), result.begin(),
-                   [](math::hdr::Rgb<T_hdrChannel> aHdrPixel) -> math::sdr::Rgb
+                   [](HdrFormat aHdrPixel) -> SdrFormat
                    {
                         return to_sdr(aHdrPixel);
                    });
@@ -316,6 +326,7 @@ Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb<T_hdrChannel>> & aSourc
 
 
 template<class T_pixelFormat>
+requires math::is_color_v<T_pixelFormat>
 Image<T_pixelFormat> & decodeSRGBToLinear(Image<T_pixelFormat> & aImage)
 {
     std::transform(aImage.begin(), aImage.end(), aImage.begin(),
@@ -326,6 +337,7 @@ Image<T_pixelFormat> & decodeSRGBToLinear(Image<T_pixelFormat> & aImage)
     return aImage;
 }
 
+
 //
 // Explicit instantiations
 //
@@ -335,8 +347,15 @@ template class Image<math::sdr::Grayscale>;
 
 template class Image<math::hdr::Rgb_f>;
 
-template Image<math::hdr::Rgb_f> to_hdr(const Image<math::sdr::Rgb> &);
+template Image<math::hdr::Rgb_f> to_hdr<float>(const Image<math::sdr::Rgb> &);
+template Image<math::hdr::Rgb_d> to_hdr<double>(const Image<math::sdr::Rgb> &);
+template Image<math::hdr::Rgba_f> to_hdr<float>(const Image<math::sdr::Rgba> &);
+template Image<math::hdr::Rgba_d> to_hdr<double>(const Image<math::sdr::Rgba> &);
+
 template Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb_f> &);
+template Image<math::sdr::Rgb> tonemap(const Image<math::hdr::Rgb_d> &);
+template Image<math::sdr::Rgba> tonemap(const Image<math::hdr::Rgba_f> &);
+template Image<math::sdr::Rgba> tonemap(const Image<math::hdr::Rgba_d> &);
 
 template Image<math::sdr::Rgb> & decodeSRGBToLinear(Image<math::sdr::Rgb> & aImage);
 template Image<math::sdr::Rgba> & decodeSRGBToLinear(Image<math::sdr::Rgba> & aImage);
