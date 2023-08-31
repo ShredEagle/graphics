@@ -109,8 +109,8 @@ struct ShaderParameter
         mTypeInShader(aAccess)
     {}
 
-    GLuint mIndex; // index to match in vertex shader.
-    Access mTypeInShader{Access::Float}; // destination data type
+    GLuint mIndex; // vertex attribute index to match in vertex shader.
+    Access mTypeInShader{Access::Float}; // component data type in the shader
     bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };
 

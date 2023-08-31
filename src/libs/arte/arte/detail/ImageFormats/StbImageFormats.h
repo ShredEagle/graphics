@@ -4,6 +4,7 @@
 #include "../../Image.h"
 
 #include "../3rdparty/stb_image_include.h"
+#include "../3rdparty/stb_image_write_include.h"
 
 #include <cassert>
 
@@ -11,6 +12,9 @@
 namespace ad {
 namespace arte {
 namespace detail {
+
+
+constexpr int gJpegQuality = 90;
 
 
 template <class T_pixel>
@@ -70,10 +74,7 @@ struct StbImageFormats
     template <class T_pixel>
     static Image<T_pixel> Read(std::istream & aIn, ImageOrientation aOrientation)
     {
-        if (aOrientation == ImageOrientation::InvertVerticalAxis)
-        {
-            stbi_set_flip_vertically_on_load(true);
-        }
+        stbi_set_flip_vertically_on_load(aOrientation == ImageOrientation::InvertVerticalAxis);
 
         math::Size<2, int> dimension = math::Size<2, int>::Zero();
         int channelsInFile;
@@ -97,6 +98,50 @@ struct StbImageFormats
         // then treat the returned array as an array of T_pixel (math::hdr::Rgb_f).
         // overview of the issue: https://stackoverflow.com/a/70157161/1027706
         return Image<T_pixel>{dimension, std::unique_ptr<unsigned char []>{data}};
+    };
+    
+
+    static void WriteCallback(void * aContext, void * aData, int aSize)
+    {
+        std::ostream * aOut = reinterpret_cast<std::ostream *>(aContext);
+        if(!aOut->write(static_cast<char *>(aData), aSize))
+        {
+            throw std::runtime_error{"Could not write to output stream."};
+        }
+    }
+
+
+    template <class T_pixel>
+    static void Write(std::ostream & aOut,
+                      const Image<T_pixel> & aImage,
+                      ImageFormat aFormat,
+                      ImageOrientation aOrientation)
+    {
+        stbi_flip_vertically_on_write(aOrientation == ImageOrientation::InvertVerticalAxis);
+
+        switch(aFormat)
+        {
+        case ImageFormat::Bmp:
+            stbi_write_bmp_to_func(&WriteCallback, &aOut,
+                                   aImage.width(), aImage.height(),
+                                   stbi_traits<T_pixel>::channels,
+                                   aImage.data());
+        case ImageFormat::Jpg:
+            stbi_write_jpg_to_func(&WriteCallback, &aOut,
+                                   aImage.width(), aImage.height(),
+                                   stbi_traits<T_pixel>::channels,
+                                   aImage.data(),
+                                   gJpegQuality);
+        case ImageFormat::Png:
+            stbi_write_png_to_func(&WriteCallback, &aOut,
+                                   aImage.width(), aImage.height(),
+                                   stbi_traits<T_pixel>::channels,
+                                   aImage.data(),
+                                   (int)aImage.size_bytes_line());
+            break;
+        default:
+            throw std::runtime_error{"STB does not write format: " + to_string(aFormat)};
+        }
     };
 };
 

@@ -178,7 +178,8 @@ namespace detail {
         //
         // Write
         //
-        static void Write(std::ostream & aOut, const Image<pixel_type> & aImage,
+        static void Write(std::ostream & aOut,
+                          const Image<pixel_type> & aImage,
                           ImageOrientation aOrientation)
         {
             if(!aOut.good())

@@ -10,6 +10,8 @@ set(${TARGET_NAME}_HEADERS
     detail/Json.h
     detail/3rdparty/stb_image.h
     detail/3rdparty/stb_image_include.h
+    detail/3rdparty/stb_image_write.h
+    detail/3rdparty/stb_image_write_include.h
     detail/ImageFormats/Netpbm.h
     detail/ImageFormats/StbImageFormats.h
 
@@ -24,6 +26,7 @@ set(${TARGET_NAME}_SOURCES
     SpriteSheet.cpp
 
     detail/3rdparty/stb_image.cpp
+    detail/3rdparty/stb_image_write.cpp
 
     gltf/Gltf.cpp
 )

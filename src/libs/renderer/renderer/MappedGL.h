@@ -74,8 +74,8 @@ constexpr GLenum getByteSize(GLenum aTypeEnum)
 #undef TYPEENUMCASE
 
 
-#define GLENUMCASE(enumval)           \
-    case enumval:                       \
+#define GLENUMCASE(enumval)     \
+    case enumval:               \
         return #enumval;
 
 

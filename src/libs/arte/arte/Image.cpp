@@ -73,6 +73,11 @@ void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut,
     case ImageFormat::Ppm:
         detail::Netpbm<detail::NetpbmFormat::Ppm>::Write(aOut, *this, aOrientation);
         break;
+    case ImageFormat::Bmp:
+    case ImageFormat::Jpg:
+    case ImageFormat::Png:
+        detail::StbImageFormats::Write<pixel_format_t>(aOut, *this, aFormat, aOrientation);
+        break;
     default:
         throw std::runtime_error{"Unsupported write format for RGB image: "
                                  + to_string(aFormat)};
@@ -81,10 +86,21 @@ void Image<math::sdr::Rgb>::write(ImageFormat aFormat, std::ostream & aOut,
 
 
 template <>
-void Image<math::sdr::Rgba>::write(ImageFormat aFormat, std::ostream & aOut,
+void Image<math::sdr::Rgba>::write(ImageFormat aFormat,
+                                   std::ostream & aOut,
                                    ImageOrientation aOrientation) const
 {
-    throw std::runtime_error{"Writing RGBA image is not implemented."};
+    switch(aFormat)
+    {
+    case ImageFormat::Bmp:
+    case ImageFormat::Jpg:
+    case ImageFormat::Png:
+        detail::StbImageFormats::Write<pixel_format_t>(aOut, *this, aFormat, aOrientation);
+        break;
+    default:
+        throw std::runtime_error{"Unsupported write format for RGBA image: "
+                                 + to_string(aFormat)};
+    }
 }
 
 
@@ -122,9 +138,7 @@ Image<math::sdr::Rgb> Image<math::sdr::Rgb>::Read(ImageFormat aFormat,
     case ImageFormat::Ppm:
         return detail::Netpbm<detail::NetpbmFormat::Ppm>::Read(aIn, aOrientation);
     case ImageFormat::Bmp:
-        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     case ImageFormat::Jpg:
-        return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     case ImageFormat::Png:
         return detail::StbImageFormats::Read<math::sdr::Rgb>(aIn, aOrientation);
     default:
