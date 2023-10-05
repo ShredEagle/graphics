@@ -39,7 +39,7 @@ struct AttributeDimension
         return mFirstDimension * mSecondDimension;
     }
 
-    bool operator==(AttributeDimension aRhs)
+    bool operator==(AttributeDimension aRhs) const
     {
         return mFirstDimension == aRhs.mFirstDimension 
             && mSecondDimension == aRhs.mSecondDimension;
