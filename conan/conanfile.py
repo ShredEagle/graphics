@@ -37,10 +37,10 @@ class GraphicsConan(ConanFile):
         ("nlohmann_json/3.11.2"),
         ("spdlog/1.11.0"),
         ("utfcpp/3.2.1"),
-        ("imgui/1.88"),
+        ("imgui/1.89.8"),
 
-        ("handy/5c42e80ebf@adnn/develop"),
-        ("math/a165ef4960@adnn/develop"),
+        ("handy/3e495de542@adnn/develop"),
+        ("math/dd29e310ac@adnn/develop"),
     )
 
     build_policy = "missing"
