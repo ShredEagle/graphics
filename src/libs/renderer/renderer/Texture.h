@@ -35,12 +35,12 @@ inline Guard scopeUnpackAlignment(GLint aAlignment)
 // Note: alternatively to hosting the target in a data member (and specializing Name for Texture),
 //       we could do like for Buffers and have the target as a template non-type parameter.
 //       Yet, this would imply that all functions taking a texture have to be templated too.
-struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
+struct [[nodiscard]] Texture : public ResourceGuard<const GLuint>
 {
     /// \parameter aTarget for values see `target` parameter of
     /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     Texture(GLenum aTarget) :
-        ResourceGuard<GLuint>(reserve(glGenTextures),
+        ResourceGuard<const GLuint>(reserve(glGenTextures),
                               [](GLuint textureId){glDeleteTextures(1, &textureId);}),
         mTarget(aTarget)
     {}

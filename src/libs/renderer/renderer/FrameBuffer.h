@@ -10,10 +10,10 @@
 namespace ad {
 namespace graphics {
 
-struct [[nodiscard]] FrameBuffer : public ResourceGuard<GLuint>
+struct [[nodiscard]] FrameBuffer : public ResourceGuard<const GLuint>
 {
     FrameBuffer() :
-        ResourceGuard<GLuint>(reserve(glGenFramebuffers),
+        ResourceGuard<const GLuint>(reserve(glGenFramebuffers),
                               [](GLuint fbId){glDeleteFramebuffers(1, &fbId);})
     {}
 
@@ -26,7 +26,7 @@ struct [[nodiscard]] FrameBuffer : public ResourceGuard<GLuint>
 private:
     struct DefaultTag {};
     FrameBuffer(DefaultTag) :
-        ResourceGuard<GLuint>{0, [](GLuint){}}
+        ResourceGuard<const GLuint>{0, [](GLuint){}}
     {}
 };
 
