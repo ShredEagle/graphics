@@ -21,19 +21,19 @@ enum class BufferType
 
 
 template <BufferType N_type>
-struct [[nodiscard]] Buffer : public ResourceGuard<const GLuint>
+struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 {
     static constexpr GLenum GLTarget_v = static_cast<GLenum>(N_type);
 
     struct NullTag{};
 
     Buffer() :
-        ResourceGuard<const GLuint>{reserve(glGenBuffers),
+        ResourceGuard<GLuint>{reserve(glGenBuffers),
                               [](GLuint aIndex){glDeleteBuffers(1, &aIndex);}}
     {}
 
     Buffer(NullTag) :
-        ResourceGuard<const GLuint>{0,
+        ResourceGuard<GLuint>{0,
                               [](GLuint aIndex){}}
     {}
 };

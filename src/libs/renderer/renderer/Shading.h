@@ -51,10 +51,10 @@ struct ShaderSourceView
 };
 
 
-struct [[nodiscard]] Shader : public ResourceGuard<const GLuint>
+struct [[nodiscard]] Shader : public ResourceGuard<GLuint>
 {
     Shader(GLenum aStage) :
-        ResourceGuard<const GLuint>{glCreateShader(aStage), glDeleteShader},
+        ResourceGuard<GLuint>{glCreateShader(aStage), glDeleteShader},
         mStage(aStage)
     {}
 
@@ -64,10 +64,10 @@ struct [[nodiscard]] Shader : public ResourceGuard<const GLuint>
 };
 
 
-struct [[nodiscard]] Program : public ResourceGuard<const GLuint>
+struct [[nodiscard]] Program : public ResourceGuard<GLuint>
 {
     Program() :
-        ResourceGuard<const GLuint>{glCreateProgram(), glDeleteProgram}
+        ResourceGuard<GLuint>{glCreateProgram(), glDeleteProgram}
     {}
 };
 

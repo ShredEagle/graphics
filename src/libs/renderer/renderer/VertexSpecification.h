@@ -17,11 +17,11 @@ namespace ad {
 namespace graphics {
 
 
-struct [[nodiscard]] VertexArrayObject : public ResourceGuard<const GLuint>
+struct [[nodiscard]] VertexArrayObject : public ResourceGuard<GLuint>
 {
     /// \note Deleting a bound VAO reverts the binding to zero
     VertexArrayObject() :
-        ResourceGuard<const GLuint>{reserve(glGenVertexArrays),
+        ResourceGuard<GLuint>{reserve(glGenVertexArrays),
                               [](GLuint aIndex){glDeleteVertexArrays(1, &aIndex);}}
     {}
 };
