@@ -3,7 +3,7 @@ set(TARGET_NAME ${_lower_project_name}_tests)
 
 set(${TARGET_NAME}_HEADERS
     catch.hpp
-    FileSystemHelpers.h
+    FilesystemHelpers.h
 )
 
 set(${TARGET_NAME}_SOURCES
