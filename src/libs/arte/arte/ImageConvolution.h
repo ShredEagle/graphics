@@ -58,10 +58,10 @@ Image<T_pixelFormat> resampleSeparable2D(const Image<T_pixelFormat> & aInput,
     float y0 = -0.5f + delta.y()/2;
 
     // Resample all the rows of the source
-    for (std::size_t i = 0; i != aInput.height(); ++i)
+    for (std::size_t i = 0; i != (std::size_t)aInput.height(); ++i)
     {
         // For each pixel in the (intermediary) output row
-        for (std::size_t j = 0; j != aOutputResolution.width(); ++j)
+        for (std::size_t j = 0; j != (std::size_t)aOutputResolution.width(); ++j)
         {
             intermediary[j][i] = T_pixelFormat{}; // assign zero
             // x coordinate of the output pixel, expressed in the input grid
@@ -90,9 +90,9 @@ Image<T_pixelFormat> resampleSeparable2D(const Image<T_pixelFormat> & aInput,
     auto output = arte::Image<T_pixelFormat>::makeUninitialized(aOutputResolution);
 
     // Resample all the columns of the intermediary
-    for (std::size_t j = 0; j != aOutputResolution.width(); ++j)
+    for (std::size_t j = 0; j != (std::size_t)aOutputResolution.width(); ++j)
     {
-        for (std::size_t i = 0; i != aOutputResolution.height(); ++i)
+        for (std::size_t i = 0; i != (std::size_t)aOutputResolution.height(); ++i)
         {
             output[j][i] = T_pixelFormat{}; // assign zero
             float y = y0 + i * delta.y();
