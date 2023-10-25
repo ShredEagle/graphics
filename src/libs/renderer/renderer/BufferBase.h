@@ -17,6 +17,7 @@ enum class BufferType
     Array = GL_ARRAY_BUFFER,
     ElementArray = GL_ELEMENT_ARRAY_BUFFER,
     Uniform = GL_UNIFORM_BUFFER,
+    DrawIndirect = GL_DRAW_INDIRECT_BUFFER,
 };
 
 

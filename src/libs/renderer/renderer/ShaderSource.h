@@ -60,7 +60,7 @@ public:
     using Lookup = std::function<
         std::pair<std::unique_ptr<std::istream>, std::string/*identifier*/>(const std::string &)>;
     
-    using Defines = std::span<std::string>;
+    using Defines = std::span<const std::string>;
 
     static ShaderSource Preprocess(std::istream & aIn,
                                    const Defines & aMacros,

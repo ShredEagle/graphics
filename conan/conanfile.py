@@ -27,7 +27,9 @@ class GraphicsConan(ConanFile):
             "GL_ARB_texture_storage,"
             "GL_ARB_clear_texture,"
             "GL_ARB_program_interface_query,"
-            "GL_ARB_shader_storage_buffer_object,")
+            "GL_ARB_shader_storage_buffer_object,"
+            "GL_ARB_base_instance,"
+            "GL_ARB_multi_draw_indirect,")
     }
 
     requires = (
