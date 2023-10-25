@@ -43,8 +43,9 @@ void attachBoundVertexBuffer(AttributeFormat aAttribute,
                                       aAttribute.mComponentType,
                                       aAttribute.mNormalize,
                                       aStride,
-                                      reinterpret_cast<const void*>(aAttribute.mOffset 
-                                      + second * aAttribute.sizeBytesFirstDimension()));
+                                      reinterpret_cast<const void*>(
+                                        aAttribute.mOffset 
+                                        + second * aAttribute.sizeBytesFirstDimension()));
                 enableAndDivisor(aAttribute.mIndex + second, aAttributeDivisor);
             }
             break;
@@ -57,8 +58,9 @@ void attachBoundVertexBuffer(AttributeFormat aAttribute,
                                        aAttribute.mDimension[0],
                                        aAttribute.mComponentType,
                                        aStride,
-                                       reinterpret_cast<const void*>(aAttribute.mOffset
-                                       + second * aAttribute.sizeBytesFirstDimension()));
+                                       reinterpret_cast<const void*>(
+                                            aAttribute.mOffset 
+                                            + second * aAttribute.sizeBytesFirstDimension()));
                 enableAndDivisor(aAttribute.mIndex + second, aAttributeDivisor);
             }
             break;

@@ -38,7 +38,7 @@ void load(const BufferAny & aBuffer, std::span<T_data, N_extent> aData, BufferHi
 {
     // TODO replace with DSA
     // Note: Waiting for DSA, use a random target, the underlying buffer objects are all identical.
-    constexpr auto target = graphics::BufferType::Array;
+    constexpr auto target = BufferType::Array;
     ScopedBind bound{aBuffer, target};
     glBufferData(static_cast<GLenum>(target),
                  aData.size_bytes(),
@@ -85,7 +85,7 @@ void replaceSubset(const BufferAny & aBuffer,
 {
     // TODO replace with DSA
     // Note: Waiting for DSA, use a random target, the underlying buffer objects are all identical.
-    constexpr auto target = graphics::BufferType::Array;
+    constexpr auto target = BufferType::Array;
     ScopedBind bound{aBuffer, target};
     glBufferSubData(static_cast<GLenum>(target),
                     sizeof(T_data) * aInstanceCountOffset,

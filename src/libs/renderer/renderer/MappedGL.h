@@ -53,7 +53,7 @@ REVERSE_MAP(MappedGL, GLboolean, GL_BOOL);
         return sizeof(GLFromTypeEnum_t<enumval>);
 
 
-constexpr GLenum getByteSize(GLenum aTypeEnum) 
+constexpr GLuint getByteSize(GLenum aTypeEnum) 
 {
     switch(aTypeEnum)
     {
