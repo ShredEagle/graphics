@@ -47,8 +47,6 @@ Image<T_pixelFormat> resampleSeparable2D(const Image<T_pixelFormat> & aInput,
 {
     const float r = aFilter.mRadius;
 
-    const auto inputDimensions = dimensions(aInput);
-
     math::Vec<2, float> delta = 
         math::Vec<2, float>{dimensions(aInput)}.cwDiv(static_cast<math::Vec<2, float>>(aOutputResolution));
 
