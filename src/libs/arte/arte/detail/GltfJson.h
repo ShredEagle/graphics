@@ -3,6 +3,20 @@
 #include "Json.h"
 
 
+namespace ad::arte::gltf {
+
+    template <class> struct Index;
+
+} // namespace ad::arte::gltf
+
+
+namespace ad::math {
+
+    template <class> class Quaternion;
+
+} // namespace ad::math
+
+
 namespace nlohmann {
 
     template <class T_indexed>
@@ -17,45 +31,45 @@ namespace nlohmann {
     //
     // Gltf json to math types
     //
-    template <>
-    struct adl_serializer<ad::math::Vec<3, float>> 
+    template <class T_number>
+    struct adl_serializer<ad::math::Vec<3, T_number>> 
     {
-        static ad::math::Vec<3, float> from_json(const Json & aJson)
+        static ad::math::Vec<3, T_number> from_json(const Json & aJson)
         {
-            return ad::math::Vec<3, float>{
-                aJson.at(0).get<float>(),
-                aJson.at(1).get<float>(),
-                aJson.at(2).get<float>(),
+            return ad::math::Vec<3, T_number>{
+                aJson.at(0).get<T_number>(),
+                aJson.at(1).get<T_number>(),
+                aJson.at(2).get<T_number>(),
             };
         }
     };
 
 
-    template <>
-    struct adl_serializer<ad::math::hdr::Rgba<float>> 
+    template <class T_number>
+    struct adl_serializer<ad::math::hdr::Rgba<T_number>> 
     {
-        static ad::math::hdr::Rgba<float> from_json(const Json & aJson)
+        static ad::math::hdr::Rgba<T_number> from_json(const Json & aJson)
         {
-            return ad::math::hdr::Rgba<float>{
-                aJson.at(0).get<float>(),
-                aJson.at(1).get<float>(),
-                aJson.at(2).get<float>(),
-                aJson.at(3).get<float>(),
+            return ad::math::hdr::Rgba<T_number>{
+                aJson.at(0).get<T_number>(),
+                aJson.at(1).get<T_number>(),
+                aJson.at(2).get<T_number>(),
+                aJson.at(3).get<T_number>(),
             };
         }
     };
 
 
-    template <>
-    struct adl_serializer<ad::math::Quaternion<float>> 
+    template <class T_number>
+    struct adl_serializer<ad::math::Quaternion<T_number>> 
     {
-        static ad::math::Quaternion<float> from_json(const Json & aJson)
+        static ad::math::Quaternion<T_number> from_json(const Json & aJson)
         {
-            return ad::math::Quaternion<float>{
-                aJson.at(0).get<float>(),
-                aJson.at(1).get<float>(),
-                aJson.at(2).get<float>(),
-                aJson.at(3).get<float>(),
+            return ad::math::Quaternion<T_number>{
+                aJson.at(0).get<T_number>(),
+                aJson.at(1).get<T_number>(),
+                aJson.at(2).get<T_number>(),
+                aJson.at(3).get<T_number>(),
             };
         }
     };
