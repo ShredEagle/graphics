@@ -37,11 +37,19 @@ inline Guard scopeUnpackAlignment(GLint aAlignment)
 //       Yet, this would imply that all functions taking a texture have to be templated too.
 struct [[nodiscard]] Texture : public ResourceGuard<GLuint>
 {
+    struct NullTag{};
+
     /// \parameter aTarget for values see `target` parameter of
     /// https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBindTexture.xhtml
     Texture(GLenum aTarget) :
-        ResourceGuard<GLuint>(reserve(glGenTextures),
-                              [](GLuint textureId){glDeleteTextures(1, &textureId);}),
+        ResourceGuard<GLuint>{reserve(glGenTextures),
+                              [](GLuint textureId){glDeleteTextures(1, &textureId);}},
+        mTarget(aTarget)
+    {}
+
+    Texture(GLenum aTarget, NullTag) :
+        ResourceGuard<GLuint>{0,
+                              [](GLuint textureId){}},
         mTarget(aTarget)
     {}
 
