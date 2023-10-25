@@ -162,6 +162,55 @@ constexpr GLenum MappedSizedPixel_v = MappedSizedPixel<T_pixel>::enumerator;
 MAP(MappedSizedPixel, math::sdr::Rgb, GL_RGB8);
 MAP(MappedSizedPixel, math::sdr::Rgba, GL_RGBA8);
 
+constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat) 
+{
+    switch(aSizedInternalFormat)
+    {
+        default:
+            // TODO Ad 2023/10/24: Complete implementation, see list in
+            // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexStorage3D.xhtml
+            throw std::domain_error{"Value not handled yet."};
+        case GL_R8:
+        case GL_R8_SNORM:
+            return 8;
+        case GL_RG8:
+        case GL_RG8_SNORM:
+            return 16;
+        case GL_RGB8:
+        case GL_RGB8_SNORM:
+        case GL_SRGB8:
+            return 24;
+        case GL_RGBA8:
+        case GL_RGBA8_SNORM:
+        case GL_SRGB8_ALPHA8:
+            return 32;
+    }
+}
+
+
+constexpr GLuint getComponentsCount(GLenum aPixelFormat)
+{
+    switch(aPixelFormat)
+    {
+        default:
+            // TODO Ad 2023/10/24: Complete implementation for packed pixel types, see list in:
+            // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexSubImage3D.xhtml
+            throw std::domain_error{"Invalid GL enumerator."};
+        case GL_RED:
+        case GL_DEPTH_COMPONENT: 
+        case GL_STENCIL_INDEX:
+            return 1;
+        case GL_RG:
+            return 2;
+        case GL_RGB:
+        case GL_BGR:
+            return 3;
+        case GL_RGBA: 
+            return 4;
+    }
+}
+
+
 #undef MAP_AND_REVERSE
 #undef MAP
 
