@@ -1,3 +1,4 @@
+@find_package@(Graphics CONFIG @REQUIRED@ COMPONENTS arte)
 @find_package@(Handy CONFIG @REQUIRED@ COMPONENTS handy)
 @find_package@(Math CONFIG @REQUIRED@ COMPONENTS math)
 
