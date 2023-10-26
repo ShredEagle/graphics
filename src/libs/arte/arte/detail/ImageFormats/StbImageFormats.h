@@ -46,6 +46,15 @@ struct stbi_traits<math::hdr::Rgb<T_number>>
 };
 
 
+template <class T_number>
+struct stbi_traits<math::hdr::Rgba<T_number>>
+{
+    static constexpr int channels = STBI_rgb_alpha;
+    // IMPORTANT: load**f**
+    static constexpr auto loadFromCallbacks = &stbi_loadf_from_callbacks;
+};
+
+
 struct StbImageFormats
 {
     inline static const stbi_io_callbacks streamCallbacks{

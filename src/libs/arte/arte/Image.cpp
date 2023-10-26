@@ -113,6 +113,14 @@ void Image<math::hdr::Rgb_f>::write(ImageFormat aFormat, std::ostream & aOut,
 
 
 template <>
+void Image<math::hdr::Rgba_f>::write(ImageFormat aFormat, std::ostream & aOut,
+                                     ImageOrientation aOrientation) const
+{
+    throw std::runtime_error{"Writing HDR image is not implemented."};
+}
+
+
+template <>
 void Image<math::sdr::Grayscale>::write(ImageFormat aFormat, std::ostream & aOut,
                                         ImageOrientation aOrientation) const
 {
@@ -194,6 +202,22 @@ Image<math::hdr::Rgb_f> Image<math::hdr::Rgb_f>::Read(ImageFormat aFormat,
     {
     case ImageFormat::Hdr:
         return detail::StbImageFormats::Read<math::hdr::Rgb_f>(aIn, aOrientation);
+    default:
+        throw std::runtime_error{"Unsupported read format to produce an HDR image: "
+                                 + to_string(aFormat)};
+    }
+}
+
+
+template <>
+Image<math::hdr::Rgba_f> Image<math::hdr::Rgba_f>::Read(ImageFormat aFormat,
+                                                        std::istream & aIn,
+                                                        ImageOrientation aOrientation)
+{
+    switch(aFormat)
+    {
+    case ImageFormat::Hdr:
+        return detail::StbImageFormats::Read<math::hdr::Rgba_f>(aIn, aOrientation);
     default:
         throw std::runtime_error{"Unsupported read format to produce an HDR image: "
                                  + to_string(aFormat)};
@@ -346,6 +370,7 @@ template class Image<math::sdr::Rgba>;
 template class Image<math::sdr::Grayscale>;
 
 template class Image<math::hdr::Rgb_f>;
+template class Image<math::hdr::Rgba_f>;
 
 template Image<math::hdr::Rgb_f> to_hdr<float>(const Image<math::sdr::Rgb> &);
 template Image<math::hdr::Rgb_d> to_hdr<double>(const Image<math::sdr::Rgb> &);
