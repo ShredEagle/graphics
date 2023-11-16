@@ -29,6 +29,7 @@ set(${TARGET_NAME}_HEADERS
 
 set(${TARGET_NAME}_SOURCES
     AttributeDimension.cpp
+    MappedGL.cpp
     ShaderSource.cpp
     ShaderVertexAttribute.cpp
     Shading.cpp

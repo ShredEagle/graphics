@@ -74,71 +74,9 @@ constexpr GLuint getByteSize(GLenum aTypeEnum)
 #undef TYPEENUMCASE
 
 
-#define GLENUMCASE(enumval)     \
-    case enumval:               \
-        return #enumval;
+/// @brief Return a the string associated to a GL enumerator (the plain enumerator name).
+std::string to_string(GLenum aGLEnumerator);
 
-
-inline std::string to_string(GLenum aGLEnumerator) 
-{
-    switch(aGLEnumerator)
-    {
-        //
-        // Types
-        //
-        GLENUMCASE(GL_FLOAT);
-        GLENUMCASE(GL_DOUBLE);
-        GLENUMCASE(GL_BYTE);
-        GLENUMCASE(GL_UNSIGNED_BYTE);
-        GLENUMCASE(GL_SHORT);
-        GLENUMCASE(GL_UNSIGNED_SHORT);
-        GLENUMCASE(GL_INT);
-        GLENUMCASE(GL_UNSIGNED_INT);
-        GLENUMCASE(GL_BOOL);
-
-        //
-        // Targets
-        //
-        GLENUMCASE(GL_ARRAY_BUFFER);
-        GLENUMCASE(GL_ATOMIC_COUNTER_BUFFER);
-        GLENUMCASE(GL_COPY_READ_BUFFER);
-        GLENUMCASE(GL_COPY_WRITE_BUFFER);
-        //TYPEENUMCASE(GL_DISPATCH_INDIRECT_BUFFER);
-        GLENUMCASE(GL_DRAW_INDIRECT_BUFFER);
-        GLENUMCASE(GL_ELEMENT_ARRAY_BUFFER);
-        GLENUMCASE(GL_PIXEL_PACK_BUFFER);
-        GLENUMCASE(GL_PIXEL_UNPACK_BUFFER);
-        //TYPEENUMCASE(GL_QUERY_BUFFER);
-        GLENUMCASE(GL_SHADER_STORAGE_BUFFER);
-        GLENUMCASE(GL_TEXTURE_BUFFER);
-        GLENUMCASE(GL_TRANSFORM_FEEDBACK_BUFFER);
-        GLENUMCASE(GL_UNIFORM_BUFFER);
-
-        //
-        // Fitering
-        //
-        GLENUMCASE(GL_NEAREST);
-        GLENUMCASE(GL_LINEAR);
-        GLENUMCASE(GL_NEAREST_MIPMAP_NEAREST);
-        GLENUMCASE(GL_LINEAR_MIPMAP_NEAREST);
-        GLENUMCASE(GL_NEAREST_MIPMAP_LINEAR);
-        GLENUMCASE(GL_LINEAR_MIPMAP_LINEAR);
-
-        //
-        // Culling
-        //
-        GLENUMCASE(GL_CW);
-        GLENUMCASE(GL_CCW);
-        GLENUMCASE(GL_FRONT);
-        GLENUMCASE(GL_FRONT_AND_BACK);
-        GLENUMCASE(GL_BACK);
-
-    default:
-        throw std::domain_error{"Invalid GL enumerator."};
-    }
-}
-
-#undef GLENUMCASE
 
 //
 // Pixel formats
