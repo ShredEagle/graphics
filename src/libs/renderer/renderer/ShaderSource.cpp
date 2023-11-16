@@ -72,6 +72,16 @@ ShaderSource ShaderSource::Preprocess(std::filesystem::path aFile,
 }
 
 
+ShaderSource ShaderSource::Preprocess(const std::string & aString,
+                                      const std::string & aIdentifier,
+                                      const Defines & aMacros)
+{
+    Lookup noLookup = [](const std::string &) -> std::pair<std::unique_ptr<std::istream>, std::string>
+        { throw std::logic_error{"Cannot include from string shader sources."}; };
+    return ShaderSource::Preprocess(std::stringstream{aString}, aMacros, aIdentifier, noLookup);
+}
+
+
 ShaderSource ShaderSource::Preprocess(std::istream & aIn,
                                       const Defines & aMacros,
                                       const std::string & aIdentifier,

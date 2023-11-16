@@ -26,8 +26,6 @@ struct SourceMap
 /// \brief Host the shader code string, and provide preprocessing for #include
 class ShaderSource
 {
-    friend struct ShaderSourceView;
-
     class InclusionSourceMap : public SourceMap
     {
     public:
@@ -86,6 +84,13 @@ public:
 
     static ShaderSource Preprocess(std::filesystem::path aFile,
                                    const Defines & aMacros = {});
+
+    static ShaderSource Preprocess(const std::string & aString,
+                                   const std::string & aIdentifier,
+                                   const Defines & aMacros = {});
+    
+    const std::string & getSource() const
+    { return mSource; }
 
     const InclusionSourceMap & getSourceMap() const
     { return mMap; }

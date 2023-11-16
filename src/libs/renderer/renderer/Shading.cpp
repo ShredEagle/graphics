@@ -12,7 +12,7 @@ namespace graphics {
 
 
 ShaderSourceView::ShaderSourceView(const ShaderSource & aShaderSource) :
-    mSource{aShaderSource.mSource},
+    mSource{aShaderSource.getSource()},
     mMap{&aShaderSource.getSourceMap()}
 {}
 
