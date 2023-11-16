@@ -1,4 +1,3 @@
-
 #pragma once
 
 
@@ -13,7 +12,13 @@ namespace ad {
 namespace imguiui {
 
 
-void addCheckbox(const char * aLabel, std::atomic<bool> & aValue);
+/// @brief Add a checkbox on state aValue.
+/// @return True if the checkbox is checked, false otherwise
+bool addCheckbox(const char * aLabel, bool & aValue);
+
+/// @brief Add a checkbox on state aValue.
+/// @return True if the checkbox is checked, false otherwise.
+bool addCheckbox(const char * aLabel, std::atomic<bool> & aValue);
 
 
 template <class T_iterator, class F_stringify>

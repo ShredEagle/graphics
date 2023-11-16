@@ -7,11 +7,19 @@ namespace ad {
 namespace imguiui {
 
 
-void addCheckbox(const char * aLabel, std::atomic<bool> & aValue)
+bool addCheckbox(const char * aLabel, bool & aValue)
+{
+    ImGui::Checkbox(aLabel, &aValue);
+    return aValue;
+}
+
+
+bool addCheckbox(const char * aLabel, std::atomic<bool> & aValue)
 {
     bool value = aValue;
-    ImGui::Checkbox(aLabel, &value);
+    addCheckbox(aLabel, value);
     aValue = value;
+    return value;
 }
 
 
