@@ -9,6 +9,8 @@
 #include <math/Matrix.h>
 #include <math/Vector.h>
 
+#include <span>
+
 
 namespace ad {
 namespace graphics {
