@@ -7,6 +7,8 @@
 #include <math/Transformations.h>
 #include <math/VectorUtilities.h>
 
+#include <cassert>
+
 
 namespace ad {
 namespace graphics {
@@ -14,6 +16,7 @@ namespace graphics {
 
 /// \brief Setup the 2D engine `aEngine` camera to view world coordinates in `aViewedRectangle`.
 /// \note The projection transformation part maps to OpenGL NDC [-1, 1]^2
+/// \deprecated Should not be coupled to the notion of engine
 template <class T_engine2D>
 void setViewedRectangle(T_engine2D & aEngine, math::Rectangle<GLfloat> aViewedRectangle)
 {
@@ -61,6 +64,7 @@ void setViewedSize(T_engine2D & aEngine,
 
 /// \param aCameraPosition_w is the camera position in world frame.
 /// \param aViewVolume_c is the view volume in the camera frame. see `getViewVolume()`.
+/// \deprecated Should not be coupled to the notion of engine
 template <class T_engine3D>
 void setOrthographicView(T_engine3D & aEngine,
                          math::Position<3, GLfloat> aCameraPosition_w,
@@ -71,6 +75,7 @@ void setOrthographicView(T_engine3D & aEngine,
 }
 
 
+/// @brief Get a transformation from parent space to camera space, right-handed.
 template <class T_number>
 inline constexpr math::AffineMatrix<4, T_number> getCameraTransform(
     math::Position<3, T_number> aCameraPosition,
@@ -136,6 +141,57 @@ inline math::Box<GLfloat> getViewVolumeRightHanded(math::Size<2, int> aRenderRes
 {
     return getViewVolumeRightHanded(math::getRatio<GLfloat>(aRenderResolution),
                                     aBufferHeight, aNearPlaneZ, aDepth);
+}
+
+
+struct OrthographicParameters
+{
+    float mAspectRatio;
+    float mViewHeight;
+    float mNearZ; // usually negative: Z coordinate of the near plane in the right handed coordinate system.
+    float mFarZ;  // usually negative: Z coordinate of the far plane in the right handed coordinate system.
+};
+
+
+struct PerspectiveParameters
+{
+    float mAspectRatio;
+    math::Radian<float> mVerticalFov;
+    float mNearZ; // usually negative: Z coordinate of the near plane in the right handed coordinate system.
+    float mFarZ;  // usually negative: Z coordinate of the far plane in the right handed coordinate system.
+};
+
+
+inline math::AffineMatrix<4, float> makeProjection(OrthographicParameters aParams)
+{
+    assert(aParams.mNearZ > aParams.mFarZ);
+
+    math::Box<GLfloat> viewVolume = 
+        getViewVolumeRightHanded(aParams.mAspectRatio,
+                                           aParams.mViewHeight,
+                                           aParams.mNearZ,
+                                           aParams.mNearZ - aParams.mFarZ /* both should be negative,
+                                                                             resulting in a positive */
+                                          );
+
+    return
+        math::trans3d::orthographicProjection(viewVolume)
+        * math::trans3d::scale(1.f, 1.f, -1.f) // camera space is right handed, but gl clip space is left handed.
+    ;
+}
+
+
+inline math::Matrix<4, 4, float> makeProjection(PerspectiveParameters aParams)
+{
+    return 
+        math::trans3d::perspective(aParams.mNearZ, aParams.mFarZ)
+        * makeProjection(OrthographicParameters{
+                .mAspectRatio = aParams.mAspectRatio,
+                .mViewHeight = 2 * tan(aParams.mVerticalFov / 2.f) * std::abs(aParams.mNearZ),
+                .mNearZ = aParams.mNearZ,
+                .mFarZ = aParams.mFarZ,
+            })
+    ;
 }
 
 
