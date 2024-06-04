@@ -40,6 +40,7 @@ set(${TARGET_NAME}_HEADERS
 set(${TARGET_NAME}_SOURCES
     Curving.cpp
     AppInterface.cpp
+    ApplicationGlfw.cpp
     SpriteAnimator.cpp
     SpriteLoading.cpp
     Spriting.cpp

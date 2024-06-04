@@ -92,6 +92,10 @@ private:
 };
 
 
+//
+// Implementations
+//
+
 inline const Size2<int> & AppInterface::getWindowSize() const
 {
     return mWindowSize;

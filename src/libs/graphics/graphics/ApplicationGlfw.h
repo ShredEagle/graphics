@@ -344,5 +344,93 @@ private:
     std::shared_ptr<AppInterface> mAppInterface;
 };
 
+
+enum class EscKeyBehaviour
+{
+    Ignore,
+    Close,
+};
+
+
+struct NullInhibiter
+{
+    NullInhibiter() = default;
+
+    bool isCapturingKeyboard() const
+    { return false; }
+
+    bool isCapturingMouse() const
+    { return false; }
+
+    // Cannot be inline, I suppose because the type declaration is not complete at this point.
+    static const NullInhibiter gInstance;
+};
+
+
+// TODO Ad 2024/05/28:
+// only register the subset actually provided by T_callbackProvider (so it does not need to implement them all)
+/// \brief Register all callbacks at once, that should be available as member functions of `aProvider`.
+template <class T_callbackProvider, class T_inhibiter>
+void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
+                           T_callbackProvider & aProvider,
+                           EscKeyBehaviour aEscBehaviour,
+                           const T_inhibiter * aInhibiter = &NullInhibiter::gInstance)
+{
+    using namespace std::placeholders;
+
+    aAppInterface.registerMouseButtonCallback(
+        [aInhibiter, &aProvider](int button, int action, int mods, double xpos, double ypos)
+        {
+            if(!aInhibiter->isCapturingMouse())
+            {
+                aProvider.callbackMouseButton(button, action, mods, xpos, ypos);
+            }
+        });
+    aAppInterface.registerCursorPositionCallback(
+        [aInhibiter, &aProvider](double xpos, double ypos)
+        {
+            if(!aInhibiter->isCapturingMouse())
+            {
+                aProvider.callbackCursorPosition(xpos, ypos);
+            }
+        });
+    aAppInterface.registerScrollCallback(
+        [aInhibiter, &aProvider](double xoffset, double yoffset)
+        {
+            if(!aInhibiter->isCapturingMouse())
+            {
+                aProvider.callbackScroll(xoffset, yoffset);
+            }
+        });
+
+    switch(aEscBehaviour)
+    {
+        case EscKeyBehaviour::Ignore:
+            aAppInterface.registerKeyCallback([aInhibiter, &aProvider](int key, int scancode, int action, int mods)
+            {
+                if(!aInhibiter->isCapturingKeyboard())
+                {
+                    aProvider.callbackKeyboard(key, scancode, action, mods);
+                }
+            });
+            break;
+        case EscKeyBehaviour::Close:
+            aAppInterface.registerKeyCallback(
+                [&aAppInterface, &aProvider, aInhibiter](int key, int scancode, int action, int mods)
+                {
+                    if(!aInhibiter->isCapturingKeyboard())
+                    {
+                        // TODO would be cleaner to factorize that and the ApplicationGlfw::default_key_callback
+                        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+                        {
+                            aAppInterface.requestCloseApplication();
+                        }
+                        aProvider.callbackKeyboard(key, scancode, action, mods);
+                    }
+                });
+            break;
+    }
+}
+
 } // namespace graphics
 } // namespace ad
