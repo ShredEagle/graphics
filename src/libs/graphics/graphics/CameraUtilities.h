@@ -162,17 +162,57 @@ struct PerspectiveParameters
 };
 
 
+inline OrthographicParameters toOrthographic(const PerspectiveParameters & aPerspective,
+                                             float aViewHeight)
+{
+    return OrthographicParameters{
+        .mAspectRatio = aPerspective.mAspectRatio,
+        .mViewHeight = aViewHeight,
+        .mNearZ = aPerspective.mNearZ,
+        .mFarZ = aPerspective.mFarZ,
+    };
+}
+
+
+inline PerspectiveParameters toPerspective(const OrthographicParameters & aOrthographic,
+                                           math::Radian<float> aVerticalFov)
+{
+    return PerspectiveParameters{
+        .mAspectRatio = aOrthographic.mAspectRatio,
+        .mVerticalFov = aVerticalFov,
+        .mNearZ = aOrthographic.mNearZ,
+        .mFarZ = aOrthographic.mFarZ,
+    };
+}
+
+
+/// \brief Compute the vertical FOV equivalent to a plane with height `aPlaneHeight`
+/// placed at `aPlaneDistance`.
+inline math::Radian<float> computeVerticalFov(float aPlaneDistance, float aPlaneHeight)
+{
+    return math::Radian<float>{2 * std::atan2(aPlaneHeight/2.f, aPlaneDistance)};
+}
+
+
+/// \brief Compute the height of a plane placed `aPlaneDistance` away
+/// viewed with a vertical FOV `aVerticalFov`.
+inline float computePlaneHeight(float aPlaneDistance, math::Radian<float> aVerticalFov)
+{
+    return 2 * tan(aVerticalFov / 2) * std::abs(aPlaneDistance);
+}
+
+
 inline math::AffineMatrix<4, float> makeProjection(OrthographicParameters aParams)
 {
     assert(aParams.mNearZ > aParams.mFarZ);
 
     math::Box<GLfloat> viewVolume = 
         getViewVolumeRightHanded(aParams.mAspectRatio,
-                                           aParams.mViewHeight,
-                                           aParams.mNearZ,
-                                           aParams.mNearZ - aParams.mFarZ /* both should be negative,
-                                                                             resulting in a positive */
-                                          );
+                                 aParams.mViewHeight,
+                                 aParams.mNearZ,
+                                 aParams.mNearZ - aParams.mFarZ /* both should be negative,
+                                                                   resulting in a positive */
+                                );
 
     return
         math::trans3d::orthographicProjection(viewVolume)
@@ -184,7 +224,7 @@ inline math::AffineMatrix<4, float> makeProjection(OrthographicParameters aParam
 inline math::Matrix<4, 4, float> makeProjection(PerspectiveParameters aParams)
 {
     return 
-        math::trans3d::perspective(aParams.mNearZ, aParams.mFarZ)
+        math::trans3d::perspectiveNegated(aParams.mNearZ, aParams.mFarZ)
         * makeProjection(OrthographicParameters{
                 .mAspectRatio = aParams.mAspectRatio,
                 .mViewHeight = 2 * tan(aParams.mVerticalFov / 2.f) * std::abs(aParams.mNearZ),
