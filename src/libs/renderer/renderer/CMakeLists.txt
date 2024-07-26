@@ -13,6 +13,7 @@ set(${TARGET_NAME}_HEADERS
     GL_Loader.h
     MappedGL.h
     Query.h
+    Renderbuffer.h
     ScopeGuards.h
     ShaderSource.h
     ShaderVertexAttribute.h
