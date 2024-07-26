@@ -21,7 +21,8 @@ class GraphicsConan(ConanFile):
     default_options = {
         "shared": False,
         "build_tests": False,
-        "glad:gl_version": "4.1",
+        "glad:gl_version": "4.6", # 4.2 is required for glBindImageTexture()
+                                  # 4.6 notably for FRAGMENT_SHADER_INVOCATIONS query
         # Note: macos only provides GL_ARB_texture_storage and GL_ARB_internalformat_query
         "glad:extensions": ("GL_KHR_debug,"
             "GL_ARB_texture_storage,"
@@ -29,7 +30,9 @@ class GraphicsConan(ConanFile):
             "GL_ARB_program_interface_query,"
             "GL_ARB_shader_storage_buffer_object,"
             "GL_ARB_base_instance,"
-            "GL_ARB_multi_draw_indirect,")
+            "GL_ARB_multi_draw_indirect,"
+            "GL_ARB_texture_filter_anisotropic," # anisotropic texture filtering
+        )
     }
 
     requires = (
@@ -42,7 +45,7 @@ class GraphicsConan(ConanFile):
         ("imgui/1.89.8"),
 
         ("handy/15a1bb8eaa@adnn/develop"),
-        ("math/d200cdb8ba@adnn/develop"),
+        ("math/4173650c1e@adnn/develop"),
     )
 
     build_policy = "missing"
