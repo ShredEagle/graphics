@@ -104,7 +104,9 @@ void handleCompilationError(GLuint aObjectId, ShaderSourceView aSource)
                      }
                 }();
 
-                diagnostic << mapping.mIdentifier << " " << column  << "(line: " << mapping.mLine << ") : "
+                // Using a format allowing VSCode to follow the link, 3rd format in this:
+                // https://github.com/microsoft/vscode/issues/140780#issuecomment-1015630638
+                diagnostic << mapping.mIdentifier << " on line " << mapping.mLine << ", column "  << column << " : "
                     << sourceLines[line - 1] << "\n"
                     << "- " << errorMessage << "\n";
             }
