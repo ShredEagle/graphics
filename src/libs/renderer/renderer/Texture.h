@@ -17,17 +17,25 @@
 namespace ad {
 namespace graphics {
 
+// TODO: take out of detail namespace, this is useful to clients
 namespace detail {
+
 
 /// \brief Set the alignment of subsequent texture unpack (write) operation to `aAlignment`,
 /// then restore the previous alignment on returned guard destruction.
+inline Guard scopePixelStorageMode(GLenum aParameter, GLint aValue)
+{
+    GLint previousValue;
+    glGetIntegerv(aParameter, &previousValue);
+    glPixelStorei(aParameter, aValue);
+    return Guard{ [aParameter, previousValue](){glPixelStorei(aParameter, previousValue);} };
+}
+
 inline Guard scopeUnpackAlignment(GLint aAlignment)
 {
-    GLint previousAlignment;
-    glGetIntegerv(GL_UNPACK_ALIGNMENT, &previousAlignment);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, aAlignment);
-    return Guard{ [previousAlignment](){glPixelStorei(GL_UNPACK_ALIGNMENT, previousAlignment);} };
+    return scopePixelStorageMode(GL_UNPACK_ALIGNMENT, aAlignment);
 }
+
 
 } // namespace detail
 
@@ -182,7 +190,6 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
 
     if (GL_ARB_texture_storage)
     {
-        // TODO allow to specify the number of mipmap levels.
         glTexStorage2D(aTexture.mTarget, aMipmapLevelsCount, aInternalFormat, aWidth, aHeight);
         { // scoping isSuccess
             GLint isSuccess;
@@ -233,7 +240,7 @@ InputImageParameters InputImageParameters::From(const arte::Image<T_pixel> & aIm
     return {
         aImage.dimensions(),
         MappedPixel_v<T_pixel>,
-        GL_UNSIGNED_BYTE, // TODO that will not hold true for HDR images
+        MappedPixelComponentType_v<T_pixel>,
         (GLint)aImage.rowAlignment()
     };
 }

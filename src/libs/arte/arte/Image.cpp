@@ -108,7 +108,15 @@ template <>
 void Image<math::hdr::Rgb_f>::write(ImageFormat aFormat, std::ostream & aOut,
                                     ImageOrientation aOrientation) const
 {
-    throw std::runtime_error{"Writing HDR image is not implemented."};
+    switch(aFormat)
+    {
+    case ImageFormat::Hdr:
+        detail::StbImageFormats::WriteHdr(aOut, *this, aOrientation);
+        break;
+    default:
+        throw std::runtime_error{"Unsupported write format for HDR RGB image: "
+                                 + to_string(aFormat)};
+    }
 }
 
 
@@ -116,7 +124,7 @@ template <>
 void Image<math::hdr::Rgba_f>::write(ImageFormat aFormat, std::ostream & aOut,
                                      ImageOrientation aOrientation) const
 {
-    throw std::runtime_error{"Writing HDR image is not implemented."};
+    throw std::runtime_error{"Writing HDR image with alpha is not implemented."};
 }
 
 

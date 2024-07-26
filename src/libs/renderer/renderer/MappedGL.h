@@ -97,8 +97,29 @@ struct MappedSizedPixel;
 template <class T_pixel>
 constexpr GLenum MappedSizedPixel_v = MappedSizedPixel<T_pixel>::enumerator;
 
-MAP(MappedSizedPixel, math::sdr::Rgb, GL_RGB8);
-MAP(MappedSizedPixel, math::sdr::Rgba, GL_RGBA8);
+template <GLuint N_typeEnum>
+struct MappedSizedPixel_r;
+
+template <GLuint N_typeEnum>
+using PixelFromInternalFormat_t = typename MappedSizedPixel_r<N_typeEnum>::type;
+
+MAP_AND_REVERSE(MappedSizedPixel, math::sdr::Rgb, GL_RGB8);
+MAP_AND_REVERSE(MappedSizedPixel, math::sdr::Rgba, GL_RGBA8);
+// Note: It seems the RGBE (.hdr) image format, often used to load Image<Rgb_f>
+// has a dynamic range exceeding half-float (RGB16F)
+// see: https://en.wikipedia.org/wiki/RGBE_image_format#description
+// TODO: we should find a way to use a Float 16 for hdr images
+MAP_AND_REVERSE(MappedSizedPixel, math::hdr::Rgb_f, GL_RGB32F);
+
+template <class T_pixel>
+struct MappedPixelComponentType;
+
+template <class T_pixel>
+constexpr GLenum MappedPixelComponentType_v = MappedPixelComponentType<T_pixel>::enumerator;
+
+MAP(MappedPixelComponentType, math::sdr::Rgb,   GL_UNSIGNED_BYTE);
+MAP(MappedPixelComponentType, math::sdr::Rgba,  GL_UNSIGNED_BYTE);
+MAP(MappedPixelComponentType, math::hdr::Rgb_f, GL_FLOAT);
 
 constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat) 
 {
@@ -122,6 +143,8 @@ constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat)
         case GL_RGBA8_SNORM:
         case GL_SRGB8_ALPHA8:
             return 32;
+        case GL_RGB32F:
+            return 3 * 32;
     }
 }
 

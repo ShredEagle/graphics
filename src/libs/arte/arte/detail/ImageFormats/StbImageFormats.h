@@ -152,6 +152,18 @@ struct StbImageFormats
             throw std::runtime_error{"STB does not write format: " + to_string(aFormat)};
         }
     };
+
+    static void WriteHdr(std::ostream & aOut,
+                         const Image<math::hdr::Rgb_f> & aImage,
+                         ImageOrientation aOrientation)
+    {
+        stbi_flip_vertically_on_write(aOrientation == ImageOrientation::InvertVerticalAxis);
+
+        stbi_write_hdr_to_func(&WriteCallback, &aOut,
+                                aImage.width(), aImage.height(),
+                                stbi_traits<math::hdr::Rgb_f>::channels,
+                                aImage.data()->data());
+    }
 };
 
 
