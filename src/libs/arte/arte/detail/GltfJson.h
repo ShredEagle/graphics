@@ -45,6 +45,18 @@ namespace nlohmann {
     };
 
 
+    template <class T_representation, class T_unitTag>
+    struct adl_serializer<ad::math::Angle<T_representation, T_unitTag>> 
+    {
+        static ad::math::Angle<T_representation, T_unitTag> from_json(const Json & aJson)
+        {
+            return ad::math::Angle<T_representation, T_unitTag>{
+                aJson.get<T_representation>()
+            };
+        }
+    };
+
+
     template <class T_number>
     struct adl_serializer<ad::math::hdr::Rgba<T_number>> 
     {
