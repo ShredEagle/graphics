@@ -145,6 +145,19 @@ constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat)
             return 32;
         case GL_RGB32F:
             return 3 * 32;
+        // Compressed formats
+        // BC5
+        case GL_COMPRESSED_RG_RGTC2:
+        case GL_COMPRESSED_SIGNED_RG_RGTC2:
+            return 8;
+        // BC6
+        case GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT:
+        case GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT:
+            return 8;
+        // BC7
+        case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
+        case GL_COMPRESSED_RGBA_BPTC_UNORM:
+            return 8;
     }
 }
 

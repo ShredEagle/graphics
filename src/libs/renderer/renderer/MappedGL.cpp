@@ -84,6 +84,23 @@ std::string to_string(GLenum aGLEnumerator)
         GLENUMCASE(GL_GEOMETRY_SHADER);
         GLENUMCASE(GL_FRAGMENT_SHADER);
 
+        //
+        // Polygon modes
+        //
+        GLENUMCASE(GL_POINT);
+        GLENUMCASE(GL_LINE);
+        GLENUMCASE(GL_FILL);
+
+        //
+        // Texture internal formats
+        // 
+        GLENUMCASE(GL_COMPRESSED_RG_RGTC2);
+        GLENUMCASE(GL_COMPRESSED_SIGNED_RG_RGTC2);
+        GLENUMCASE(GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT);
+        GLENUMCASE(GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT);
+        GLENUMCASE(GL_COMPRESSED_RGBA_BPTC_UNORM);
+        GLENUMCASE(GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM);
+
     default:
         throw std::domain_error{"Invalid GL enumerator."};
     }
