@@ -171,7 +171,7 @@ private:
                     ApplicationFlag aFlags,
                     int aGLVersionMajor, int aGLVersionMinor,
                     WindowHints aCustomWindowHints) :
-        mGlfwInitialization{initializeGlfw()},
+        mGlfwInitialization{},
         mWindow{initializeWindow(aName, 
                                  aFlags,
                                  aWidth, aHeight, 
@@ -291,7 +291,7 @@ private:
         appInterface->callbackFramebufferSize(width, height);
     }
 
-    Guard initializeGlfw()
+    static Guard InitializeGlfw()
     {
         glfwSetErrorCallback(error_callback);
         if (!glfwInit())
@@ -380,7 +380,16 @@ private:
         }
     }
 
-    Guard mGlfwInitialization;
+    // This structure initializes a static variable while initializing Glfw, and terminate Glfw on variable destruction.
+    // This initialize Glfw only once (not a requirement), and more importantly destruct it only once after main() returns.
+    // At this point no more GLFWwindow should still exist.
+    struct InitGlfw
+    {
+        InitGlfw()
+        { 
+            static Guard mGuardedInit{InitializeGlfw()};
+        }
+    } mGlfwInitialization;
     ResourceGuard<GLFWwindow*> mWindow;
     std::shared_ptr<AppInterface> mAppInterface;
 };
