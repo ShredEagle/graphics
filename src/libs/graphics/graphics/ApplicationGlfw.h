@@ -445,7 +445,9 @@ struct NullInhibiter
 
 // TODO Ad 2024/05/28:
 // only register the subset actually provided by T_callbackProvider (so it does not need to implement them all)
-/// \brief Register all callbacks at once, that should be available as member functions of `aProvider`.
+/// \brief Register all the callbacks at once. Callbacks have to be available as member functions of `aProvider`.
+/// \param aInhibiter A class that will be given the opportunity to capture input, thus inhibiting the registered provider.
+///  Can be `nullptr`, to disable.
 template <class T_callbackProvider, class T_inhibiter>
 void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                            T_callbackProvider & aProvider,
@@ -453,6 +455,11 @@ void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                            const T_inhibiter * aInhibiter = &NullInhibiter::gInstance)
 {
     using namespace std::placeholders;
+
+    if(aInhibiter == nullptr)
+    {
+        return registerGlfwCallbacks(aAppInterface, aProvider, aEscBehaviour, &NullInhibiter::gInstance);
+    }
 
     aAppInterface.registerMouseButtonCallback(
         [aInhibiter, &aProvider](int button, int action, int mods, double xpos, double ypos)
