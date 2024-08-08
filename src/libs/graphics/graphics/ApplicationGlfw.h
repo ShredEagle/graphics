@@ -34,95 +34,62 @@ struct is_bitmask<graphics::ApplicationFlag> : public std::true_type
 {};
 
 
+namespace imguiui {
+    class ImguiUi;
+} // namespace ImguiUi
+
+
 namespace graphics {
 
 class ApplicationGlfw
 {
+    inline static constexpr int gGLVersionMajor = 4;
+    inline static constexpr int gGLVersionMinor= 1;
+
+    friend class imguiui::ImguiUi;
+
 public:
     using WindowHints = std::initializer_list<std::pair</*GLFW int*/int, /*value*/int>>;
 
     ApplicationGlfw(const std::string & aName,
+                    int aWidth, int aHeight,
+                    ApplicationFlag aFlags = ApplicationFlag::None,
+                    int aGLVersionMajor=gGLVersionMajor, int aGLVersionMinor=gGLVersionMinor,
+                    WindowHints aCustomWindowHints = {}) :
+        ApplicationGlfw{NULL/* no context sharing*/,
+                        aName, 
+                        aWidth, aHeight,
+                        aFlags,
+                        aGLVersionMajor, aGLVersionMinor,
+                        aCustomWindowHints}
+    {}
+
+    /// @brief Overload taking a math::Size instead of distinct parameters.
+    ApplicationGlfw(const std::string & aName,
                     math::Size<2, int> aSize,
                     ApplicationFlag aFlags = ApplicationFlag::None,
-                    int aGLVersionMajor=4, int aGLVersionMinor=1,
+                    int aGLVersionMajor=gGLVersionMajor, int aGLVersionMinor=gGLVersionMinor,
                     WindowHints aCustomWindowHints = {}) :
         ApplicationGlfw{aName, aSize.width(), aSize.height(), aFlags, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints}
     {}
 
-    ApplicationGlfw(const std::string & aName,
+    
+    /// @brief Shares the OpenGL context from `aSharedContext`.
+    /// Will specify the same OpenGL version than `aSharedContext`.
+    ApplicationGlfw(ApplicationGlfw & aSharedContext,
+                    const std::string & aName,
                     int aWidth, int aHeight,
                     ApplicationFlag aFlags = ApplicationFlag::None,
-                    int aGLVersionMajor=4, int aGLVersionMinor=1,
                     WindowHints aCustomWindowHints = {}) :
-        mGlfwInitialization(initializeGlfw()),
-        mWindow(initializeWindow(aName, 
-                                 test(aFlags, ApplicationFlag::Fullscreen),
-                                 aWidth, aHeight, 
-                                 aGLVersionMajor, aGLVersionMinor,
-                                 aCustomWindowHints))
-    {
-        if ((aFlags & ApplicationFlag::Window_Keep_Ratio) != ApplicationFlag::None)
-        {
-            glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
-        }
+        ApplicationGlfw{aSharedContext.mWindow, /* Share the context with another window */
+                        aName, 
+                        aWidth, aHeight,
+                        aFlags,
+                        glfwGetWindowAttrib(aSharedContext.mWindow, GLFW_CONTEXT_VERSION_MAJOR),
+                        glfwGetWindowAttrib(aSharedContext.mWindow, GLFW_CONTEXT_VERSION_MINOR),
+                        aCustomWindowHints}
+    {}
 
-        if (test(aFlags, ApplicationFlag::HideCursor))
-        {
-            glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-        }
-
-        glfwMakeContextCurrent(mWindow);
-        gladLoadGL();
-
-        mAppInterface = std::make_shared<AppInterface>(
-            [this](){glfwSetWindowShouldClose(mWindow, GLFW_TRUE);});
-            
-        glfwSetWindowUserPointer(mWindow, mAppInterface.get());
-        // Explicitly call size callbacks, they are used to complete the appInterface setup
-        {
-            // Get the size, because the hints might not be satisfied
-            // (yet not invoking the size callback)
-            int width, height;
-            glfwGetWindowSize(mWindow, &width, &height);
-            windowSize_callback(mWindow, width, height);
-
-            glfwGetFramebufferSize(mWindow, &width, &height);
-            framebufferSize_callback(mWindow, width, height);
-        }
-
-        glfwSetWindowIconifyCallback(mWindow, windowMinimize_callback);
-        glfwSetWindowSizeCallback(mWindow, windowSize_callback);
-        glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
-
-        // Set all callbacks to forward to AppInterface, in turn forwarding to user-specified callbacks.
-        glfwSetKeyCallback(mWindow, forward_key_callback);
-        glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
-        glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
-        glfwSetScrollCallback(mWindow, forward_scroll_callback);
-
-        // Register a default keyboard callback on the AppInterface, closing the window on Esc.
-        using namespace std::placeholders;
-        mAppInterface->registerKeyCallback(std::bind(&ApplicationGlfw::default_key_callback,
-                                                     static_cast<GLFWwindow*>(this->mWindow),
-                                                     _1, _2, _3, _4));
-
-        glfwShowWindow(mWindow);
-
-        // TODO Ad 2023/08/10: Control V-sync via a flag
-        // VSync
-        glfwSwapInterval(1);
-
-        if (!GLAD_GL_KHR_debug)
-        {
-            std::cerr << "Debug output is not available."
-                      << " Please run on a decent platform for debugging."
-                      << std::endl;
-        }
-        else
-        {
-            enableDebugOutput(&AppInterface::OpenGLMessageLogging);
-        }
-    }
 
     /// \brief Must be called from the context-active thread before making context current on another thread.
     void removeCurrentContext()
@@ -138,10 +105,32 @@ public:
         glfwMakeContextCurrent(mWindow);
     }
 
+    void show()
+    { 
+        glfwShowWindow(mWindow);
+        getAppInterface()->callbackWindowVisibility(true);
+    }
+
+    void hide()
+    { 
+        glfwHideWindow(mWindow);
+        getAppInterface()->callbackWindowVisibility(false);
+    }
+
+    bool isVisible() const
+    {
+        return glfwGetWindowAttrib(mWindow, GLFW_VISIBLE);
+    }
+
+    bool shouldClose() const
+    {
+        return glfwWindowShouldClose(mWindow);
+    }
+
     bool handleEvents()
     {
         glfwPollEvents();
-        return ! glfwWindowShouldClose(mWindow);
+        return !shouldClose();
     }
 
     void swapBuffers()
@@ -156,20 +145,20 @@ public:
         return handleEvents();
     }
 
-    // TODO should return a plain reference, the app interface will not be valide anyway if this is destroyed.
+    // TODO should return a plain reference to the AppInterface, the app interface will not be valid anyway if this is destroyed.
     std::shared_ptr<AppInterface> getAppInterface()
     {
-        return mAppInterface;
+        return accessAppInterface();
     }
 
     std::shared_ptr<const AppInterface> getAppInterface() const
     {
-        return mAppInterface;
+        return mUserData->mAppInterface;
     }
 
-    void markWindowShouldClose() const
+    void markWindowShouldClose(int aValue = GLFW_TRUE) const
     {
-        glfwSetWindowShouldClose(mWindow, GLFW_TRUE);
+        glfwSetWindowShouldClose(mWindow, aValue);
     }
 
     void setInputMode(int mode, int value) const
@@ -202,7 +191,93 @@ public:
     GLFWwindow * getGlfwWindow() const
     { return mWindow; }
 
+
 private:
+
+    ApplicationGlfw(GLFWwindow * aSharedContext,
+                    const std::string & aName,
+                    int aWidth, int aHeight,
+                    ApplicationFlag aFlags,
+                    int aGLVersionMajor, int aGLVersionMinor,
+                    WindowHints aCustomWindowHints) :
+        mGlfwInitialization{},
+        mWindow{initializeWindow(aName, 
+                                 aFlags,
+                                 aWidth, aHeight, 
+                                 aGLVersionMajor, aGLVersionMinor,
+                                 aCustomWindowHints,
+                                 aSharedContext)},
+        mUserData{std::make_unique<WindowUserData>()}
+    {
+        glfwMakeContextCurrent(mWindow);
+        gladLoadGL();
+
+        accessAppInterface() = std::make_shared<AppInterface>(AppInterface::WindowCallbacks{
+            .mClose = [this](){markWindowShouldClose(GLFW_TRUE);},
+            .mShow = [this](){show();},
+            .mHide = [this](){hide();},
+        });
+            
+        glfwSetWindowUserPointer(mWindow, mUserData.get());
+        // Explicitly call size callbacks, they are used to complete the appInterface setup
+        {
+            // Get the size, because the hints might not be satisfied
+            // (yet not invoking the size callback)
+            int width, height;
+            glfwGetWindowSize(mWindow, &width, &height);
+            windowSize_callback(mWindow, width, height);
+
+            glfwGetFramebufferSize(mWindow, &width, &height);
+            framebufferSize_callback(mWindow, width, height);
+        }
+
+        glfwSetWindowIconifyCallback(mWindow, windowMinimize_callback);
+        glfwSetWindowSizeCallback(mWindow, windowSize_callback);
+        glfwSetFramebufferSizeCallback(mWindow, framebufferSize_callback);
+
+        // Set all callbacks to forward to AppInterface, in turn forwarding to user-specified callbacks.
+        glfwSetKeyCallback(mWindow, forward_key_callback);
+        glfwSetMouseButtonCallback(mWindow, forward_mousebutton_callback);
+        glfwSetCursorPosCallback(mWindow, forward_cursorposition_callback);
+        glfwSetScrollCallback(mWindow, forward_scroll_callback);
+
+        // Register a default keyboard callback on the AppInterface, closing the window on Esc.
+        using namespace std::placeholders;
+        getAppInterface()->registerKeyCallback(std::bind(&ApplicationGlfw::default_key_callback,
+                                                         static_cast<GLFWwindow*>(this->mWindow),
+                                                         _1, _2, _3, _4));
+
+        show();
+
+        // TODO Ad 2023/08/10: Control V-sync via a flag
+        // VSync
+        glfwSwapInterval(1);
+
+        if (!GLAD_GL_KHR_debug)
+        {
+            std::cerr << "Debug output is not available."
+                      << " Please run on a decent platform for debugging."
+                      << std::endl;
+        }
+        else
+        {
+            enableDebugOutput(&AppInterface::OpenGLMessageLogging);
+        }
+    }
+
+
+    std::shared_ptr<AppInterface> & accessAppInterface()
+    {
+        return mUserData->mAppInterface;
+    }
+
+
+    static AppInterface * recoverAppInterface(GLFWwindow * window)
+    {
+        WindowUserData * userData = static_cast<WindowUserData *>(glfwGetWindowUserPointer(window));
+        return userData->mAppInterface.get();
+    }
+
     static void error_callback(int error, const char* description)
     {
         std::cerr << "Application encountered GLFW error (code " << error << "): "
@@ -220,14 +295,13 @@ private:
 
     static void forward_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackKeyboard(key, scancode, action, mods);
     }
 
     static void forward_mousebutton_callback(GLFWwindow* window, int button, int action, int mods)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
-
+        AppInterface * appInterface = recoverAppInterface(window);
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         appInterface->callbackMouseButton(button, action, mods, xpos, ypos);
@@ -235,35 +309,35 @@ private:
 
     static void forward_cursorposition_callback(GLFWwindow* window, double xpos, double ypos)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackCursorPosition(xpos, ypos);
     }
     
     static void forward_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackScroll(xoffset, yoffset);
     }
 
     static void windowMinimize_callback(GLFWwindow * window, int iconified)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackWindowMinimize(iconified);
     }
 
     static void windowSize_callback(GLFWwindow * window, int width, int height)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackWindowSize(width, height);
     }
 
     static void framebufferSize_callback(GLFWwindow * window, int width, int height)
     {
-        AppInterface * appInterface = static_cast<AppInterface *>(glfwGetWindowUserPointer(window));
+        AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackFramebufferSize(width, height);
     }
 
-    Guard initializeGlfw()
+    static Guard InitializeGlfw()
     {
         glfwSetErrorCallback(error_callback);
         if (!glfwInit())
@@ -276,10 +350,11 @@ private:
     /// \important Fullscreen will use the primary monitor at its current resolution,
     /// ignoring `aWidth` and `aHeight`.
     ResourceGuard<GLFWwindow*> initializeWindow(const std::string & aName,
-                                                bool aFullscreen,
+                                                ApplicationFlag aFlags,
                                                 int aWidth, int aHeight,
                                                 int aGLVersionMajor, int aGLVersionMinor,
-                                                WindowHints aCustomWindowHints)
+                                                WindowHints aCustomWindowHints,
+                                                GLFWwindow * aShare)
     {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, aGLVersionMajor);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, aGLVersionMinor);
@@ -288,18 +363,19 @@ private:
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        // Only show the window after its size callback is set
-        // so we cannot miss notifications
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
         for (auto hint : aCustomWindowHints)
         {
             glfwWindowHint(hint.first, hint.second);
         }
 
+        // Only show the window after its size callback is set
+        // so we cannot miss notifications
+        // Done after custom hints, so they cannot override it.
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
         auto window = [&]()
         {
-            if (aFullscreen)
+            if (test(aFlags, ApplicationFlag::Fullscreen))
             {
                 GLFWmonitor * monitor = glfwGetPrimaryMonitor();
                 const GLFWvidmode * mode = glfwGetVideoMode(monitor);
@@ -317,7 +393,7 @@ private:
                                               mode->height,
                                               aName.c_str(),
                                               monitor,
-                                              NULL),
+                                              aShare),
                              glfwDestroyWindow);
             }
             else
@@ -326,7 +402,7 @@ private:
                                               aHeight,
                                               aName.c_str(),
                                               NULL,
-                                              NULL),
+                                              aShare),
                              glfwDestroyWindow);
             }
         }();
@@ -335,13 +411,44 @@ private:
         {
             throw std::runtime_error("Unable to initialize window or context");
         }
+        else
+        {
+            if (test(aFlags, ApplicationFlag::Window_Keep_Ratio))
+            {
+                glfwSetWindowAspectRatio(mWindow, aWidth, aHeight);
+            }
 
-        return window;
+            if (test(aFlags, ApplicationFlag::HideCursor))
+            {
+                glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            }
+
+            return window;
+        }
     }
 
-    Guard mGlfwInitialization;
+    // This structure initializes a static variable while initializing Glfw, and terminate Glfw on variable destruction.
+    // This initialize Glfw only once (not a requirement), and more importantly destruct it only once after main() returns.
+    // At this point no more GLFWwindow should still exist.
+    struct InitGlfw
+    {
+        InitGlfw()
+        { 
+            static Guard mGuardedInit{InitializeGlfw()};
+        }
+    } mGlfwInitialization;
     ResourceGuard<GLFWwindow*> mWindow;
-    std::shared_ptr<AppInterface> mAppInterface;
+
+    // Initially, the AppInterface pointer was a direct member of ApplicationGlfw, registered as the window user data.
+    // It is now wrapped inside this WindowUserData struct also held as a pointer, thus adding one level of indirection.
+    // It allows to derive from this class and register the specialization as the new window user data:
+    // this way, clients can add more members, while the pointer can still be casted to a WindowUserData.
+    // (See ImguiUi::WindowUserData for a concrete example)
+    struct WindowUserData
+    {
+        std::shared_ptr<AppInterface> mAppInterface;
+    };
+    std::unique_ptr<WindowUserData> mUserData;
 };
 
 
@@ -369,7 +476,9 @@ struct NullInhibiter
 
 // TODO Ad 2024/05/28:
 // only register the subset actually provided by T_callbackProvider (so it does not need to implement them all)
-/// \brief Register all callbacks at once, that should be available as member functions of `aProvider`.
+/// \brief Register all the callbacks at once. Callbacks have to be available as member functions of `aProvider`.
+/// \param aInhibiter A class that will be given the opportunity to capture input, thus inhibiting the registered provider.
+///  Can be `nullptr`, to disable.
 template <class T_callbackProvider, class T_inhibiter>
 void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                            T_callbackProvider & aProvider,
@@ -377,6 +486,11 @@ void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                            const T_inhibiter * aInhibiter = &NullInhibiter::gInstance)
 {
     using namespace std::placeholders;
+
+    if(aInhibiter == nullptr)
+    {
+        return registerGlfwCallbacks(aAppInterface, aProvider, aEscBehaviour, &NullInhibiter::gInstance);
+    }
 
     aAppInterface.registerMouseButtonCallback(
         [aInhibiter, &aProvider](int button, int action, int mods, double xpos, double ypos)
@@ -423,7 +537,7 @@ void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                         // TODO would be cleaner to factorize that and the ApplicationGlfw::default_key_callback
                         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
                         {
-                            aAppInterface.requestCloseApplication();
+                            aAppInterface.requestCloseWindow();
                         }
                         aProvider.callbackKeyboard(key, scancode, action, mods);
                     }

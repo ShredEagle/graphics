@@ -72,7 +72,7 @@ int main(void)
     glfwMakeContextCurrent(window);
     gladLoadGL();
 
-    ad::graphics::AppInterface appInterface{ [&window](){glfwSetWindowShouldClose(window, GLFW_TRUE);} };
+    ad::graphics::AppInterface appInterface{ {.mClose = [&window](){glfwSetWindowShouldClose(window, GLFW_TRUE);}} };
     glfwSetWindowUserPointer(window, &appInterface);
     // Explicitly call it, because it is used to complete the appInterface setup
     {

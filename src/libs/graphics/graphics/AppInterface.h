@@ -15,9 +15,16 @@ namespace graphics {
 class AppInterface
 {
 public:
+    struct WindowCallbacks
+    {
+        std::function<void()> mClose;
+        std::function<void()> mShow;
+        std::function<void()> mHide;
+    };
+
     using SizeListener = std::function<void(Size2<int>)>;
 
-    AppInterface(std::function<void()> aCloseAppCallback);
+    AppInterface(WindowCallbacks aWindowCallbacks);
 
     // TODO remove those, these are graphics API level
     static void clear();
@@ -26,11 +33,20 @@ public:
     const Size2<int> & getWindowSize() const;
     const Size2<int> & getFramebufferSize() const;
 
+    bool isWindowHidden() const;
+
+    /// @brief Return wether the window content appears on screen, or not (hidden, minimized)
+    bool isWindowOnDisplay() const;
+
     [[nodiscard]] std::shared_ptr<SizeListener> listenWindowResize(SizeListener aListener);
 
     [[nodiscard]] std::shared_ptr<SizeListener> listenFramebufferResize(SizeListener aListener);
 
-    void requestCloseApplication(); 
+    void requestCloseWindow(); 
+
+    void showWindow();
+
+    void hideWindow();
 
     /// \note Takes a callback by value, keep it until replaced or AppInterface instance is destructed
     template <class T_keyCallback>
@@ -47,6 +63,12 @@ public:
 
     template <class T_scrollCallback>
     void registerScrollCallback(T_scrollCallback && mCallback);
+
+    /// \brief To be called by the application on changes to the window visibility (hidden vs. shown).
+    /// \note This callback does not exist in GLFW, we handle it explicitly in ApplicationGlfw.
+    /// \param aShown `true` when the window is shown, `false` when the window is hidden.
+    /// \warning Might be called even when the client code calls a visibility function that does not result in a change.
+    void callbackWindowVisibility(bool aShown);
 
     /// \brief To be called by the application when the Window is minimized (iconified).
     void callbackWindowMinimize(bool aMinimized);
@@ -79,12 +101,13 @@ public:
                                                 const void* userParam);
 
 private:
+    bool mWindowIsHidden{true};
     bool mWindowIsMinimized{false};
     Size2<int> mWindowSize;
     Size2<int> mFramebufferSize;
     Subject<SizeListener> mWindowSizeSubject;
     Subject<SizeListener> mFramebufferSizeSubject;
-    std::function<void()> mCloseAppCallback;
+    WindowCallbacks mWindowCallbacks;
     std::function<void(int, int, int, int)> mKeyboardCallback;
     std::function<void(int, int, int, double, double)> mMouseButtonCallback = [](int, int, int, double, double){};
     std::function<void(double, double)> mCursorPositionCallback = [](double, double){};
@@ -105,6 +128,18 @@ inline const Size2<int> & AppInterface::getWindowSize() const
 inline const Size2<int> & AppInterface::getFramebufferSize() const
 {
     return mFramebufferSize;
+}
+
+
+inline bool AppInterface::isWindowHidden() const
+{
+    return mWindowIsHidden;
+}
+
+
+inline bool AppInterface::isWindowOnDisplay() const
+{
+    return !mWindowIsHidden && !mWindowIsMinimized;
 }
 
 
