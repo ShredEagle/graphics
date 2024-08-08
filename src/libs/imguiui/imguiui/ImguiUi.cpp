@@ -68,7 +68,7 @@ namespace {
     {
         auto userData = retrieveUserData(window);
         // Keeping track of previous context should not be necessary,
-        // but let's be good little soldiers
+        // but let's be good citizens.
         auto previousContext = ImGui::GetCurrentContext();
 
         ImGui::SetCurrentContext(userData->mContext);
@@ -114,7 +114,7 @@ void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplicati
     GLFWwindow * window = aApplication.getGlfwWindow();
     graphics::ApplicationGlfw::WindowUserData * previousData =
         static_cast<graphics::ApplicationGlfw::WindowUserData *>(glfwGetWindowUserPointer(window));
-    mUserData = std::make_unique<WindowUserData>(*previousData);
+    mUserData = std::make_unique<WindowUserData>(WindowUserData{*previousData});
     mUserData->mContext = mContext;
     glfwSetWindowUserPointer(window, mUserData.get());
 
