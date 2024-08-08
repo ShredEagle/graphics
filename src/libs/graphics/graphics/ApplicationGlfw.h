@@ -98,10 +98,32 @@ public:
         glfwMakeContextCurrent(mWindow);
     }
 
+    void show()
+    { 
+        glfwShowWindow(mWindow);
+        getAppInterface()->callbackWindowVisibility(true);
+    }
+
+    void hide()
+    { 
+        glfwHideWindow(mWindow);
+        getAppInterface()->callbackWindowVisibility(false);
+    }
+
+    bool isVisible() const
+    {
+        return glfwGetWindowAttrib(mWindow, GLFW_VISIBLE);
+    }
+
+    bool shouldClose() const
+    {
+        return glfwWindowShouldClose(mWindow);
+    }
+
     bool handleEvents()
     {
         glfwPollEvents();
-        return ! glfwWindowShouldClose(mWindow);
+        return !shouldClose();
     }
 
     void swapBuffers()
@@ -127,9 +149,9 @@ public:
         return mAppInterface;
     }
 
-    void markWindowShouldClose() const
+    void markWindowShouldClose(int aValue = GLFW_TRUE) const
     {
-        glfwSetWindowShouldClose(mWindow, GLFW_TRUE);
+        glfwSetWindowShouldClose(mWindow, aValue);
     }
 
     void setInputMode(int mode, int value) const
@@ -182,8 +204,11 @@ private:
         glfwMakeContextCurrent(mWindow);
         gladLoadGL();
 
-        mAppInterface = std::make_shared<AppInterface>(
-            [this](){glfwSetWindowShouldClose(mWindow, GLFW_TRUE);});
+        mAppInterface = std::make_shared<AppInterface>(AppInterface::WindowCallbacks{
+            .mClose = [this](){markWindowShouldClose(GLFW_TRUE);},
+            .mShow = [this](){show();},
+            .mHide = [this](){hide();},
+        });
             
         glfwSetWindowUserPointer(mWindow, mAppInterface.get());
         // Explicitly call size callbacks, they are used to complete the appInterface setup
@@ -214,7 +239,7 @@ private:
                                                      static_cast<GLFWwindow*>(this->mWindow),
                                                      _1, _2, _3, _4));
 
-        glfwShowWindow(mWindow);
+        show();
 
         // TODO Ad 2023/08/10: Control V-sync via a flag
         // VSync
@@ -317,14 +342,15 @@ private:
         glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        // Only show the window after its size callback is set
-        // so we cannot miss notifications
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-
         for (auto hint : aCustomWindowHints)
         {
             glfwWindowHint(hint.first, hint.second);
         }
+
+        // Only show the window after its size callback is set
+        // so we cannot miss notifications
+        // Done after custom hints, so they cannot override it.
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         auto window = [&]()
         {
@@ -473,7 +499,7 @@ void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                         // TODO would be cleaner to factorize that and the ApplicationGlfw::default_key_callback
                         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
                         {
-                            aAppInterface.requestCloseApplication();
+                            aAppInterface.requestCloseWindow();
                         }
                         aProvider.callbackKeyboard(key, scancode, action, mods);
                     }

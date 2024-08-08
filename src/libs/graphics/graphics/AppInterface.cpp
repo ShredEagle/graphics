@@ -9,10 +9,10 @@ namespace ad {
 namespace graphics {
 
 
-AppInterface::AppInterface(std::function<void()> aCloseAppCallback) :
+AppInterface::AppInterface(WindowCallbacks aWindowCallbacks) :
     mWindowSize{0, 0},
     mFramebufferSize{0, 0},
-    mCloseAppCallback{std::move(aCloseAppCallback)}
+    mWindowCallbacks{std::move(aWindowCallbacks)}
 {
     //
     // General OpenGL setups
@@ -33,9 +33,35 @@ AppInterface::AppInterface(std::function<void()> aCloseAppCallback) :
 }
 
 
-void AppInterface::requestCloseApplication()
+void AppInterface::requestCloseWindow()
 {
-    mCloseAppCallback();
+    mWindowCallbacks.mClose();
+}
+
+
+void AppInterface::showWindow()
+{
+    mWindowCallbacks.mShow();
+}
+
+
+void AppInterface::hideWindow()
+{
+    mWindowCallbacks.mHide();
+}
+
+
+void AppInterface::callbackWindowVisibility(bool aShown)
+{
+    if (aShown)
+    {
+        ADLOG(gMainLogger, info)("The window is shown.");
+    }
+    else
+    {
+        ADLOG(gMainLogger, info)("The window is hidden.");
+    }
+    mWindowIsHidden = !aShown; 
 }
 
 
@@ -43,11 +69,11 @@ void AppInterface::callbackWindowMinimize(bool aMinimized)
 {
     if (aMinimized)
     {
-        ADLOG(gMainLogger, info)("The window has be minimized.");
+        ADLOG(gMainLogger, info)("The window has been minimized.");
     }
     else
     {
-        ADLOG(gMainLogger, info)("The window has be restored.");
+        ADLOG(gMainLogger, info)("The window has been restored.");
     }
     mWindowIsMinimized = aMinimized;
 }

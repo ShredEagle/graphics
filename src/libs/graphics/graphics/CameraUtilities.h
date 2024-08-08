@@ -75,7 +75,7 @@ void setOrthographicView(T_engine3D & aEngine,
 }
 
 
-/// @brief Get a transformation from parent space to camera space, right-handed.
+/// @brief Get a transformation from parent space to camera space, right-handed. Look-at camera.
 template <class T_number>
 inline constexpr math::AffineMatrix<4, T_number> getCameraTransform(
     math::Position<3, T_number> aCameraPosition,
