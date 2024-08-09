@@ -18,10 +18,7 @@ public:
     /// @brief Capture the ImGuiContext associated to the GLFWWindow.
     /// @note Derives from the "base" user data installed by ApplicationGlfw:
     /// this way, it is still correct to cast to the base type in pre-existing callbacks.
-    struct WindowUserData : public graphics::ApplicationGlfw::WindowUserData
-    {
-        ImGuiContext * mContext; 
-    };
+    struct WindowUserData;
 
     ImguiUi(const graphics::ApplicationGlfw & aApplication);
 
