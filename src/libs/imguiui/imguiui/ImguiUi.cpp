@@ -34,24 +34,6 @@ struct ImguiUi::WindowUserData : public graphics::ApplicationGlfw::WindowUserDat
 };
 
 
-#ifdef  _WIN32
-// This window procedure will restore the context (from user data) before forwarding to previous WndProc.
-static LRESULT CALLBACK contextAwareWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    ImguiUi::WindowUserData * userdata = 
-        (ImguiUi::WindowUserData *)::GetWindowLongPtrW(hWnd, GWLP_USERDATA);
-
-    //std::cerr << "Calling WndProc for window " << hWnd 
-    //        << " with user data " << userdata
-    //        << " on thread " << std::this_thread::get_id()
-    //        << "\n";
-
-    ImGui::SetCurrentContext(userdata->mContext);
-    return ::CallWindowProc(userdata->mPreviousWndProc, hWnd, msg, wParam, lParam);
-}
-#endif // _WIN32
-
-
 namespace {
 
     ImGuiContext * initializeContext()
@@ -116,6 +98,36 @@ namespace {
         ImGui::SetCurrentContext(previousContext);
     }
 
+    Guard scopeContext(ImGuiContext * aContext)
+    {
+        Guard guard{[previous = ImGui::GetCurrentContext()]
+        {
+            ImGui::SetCurrentContext(previous);
+        }};
+        ImGui::SetCurrentContext(aContext);
+        return guard;
+    }
+
+
+#ifdef  _WIN32
+    // This window procedure will restore the context (from user data) before forwarding to previous WndProc.
+    static LRESULT CALLBACK contextAwareWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        ImguiUi::WindowUserData * userdata = 
+            (ImguiUi::WindowUserData *)::GetWindowLongPtrW(hWnd, GWLP_USERDATA);
+
+        //std::cerr << "Calling WndProc for window " << hWnd 
+        //        << " with user data " << userdata
+        //        << " on thread " << std::this_thread::get_id()
+        //        << "\n";
+
+        auto scopedContext = scopeContext(userdata->mContext);
+
+        return ::CallWindowProc(userdata->mPreviousWndProc, hWnd, msg, wParam, lParam);
+    }
+#endif // _WIN32
+
+
 } // anonymous namespace
 
 
@@ -140,6 +152,18 @@ ImguiUi::~ImguiUi()
 }
 
 
+Guard ImguiUi::scopeImguiContext() const
+{
+    if(mUserData != nullptr)
+    {
+        return scopeContext(mContext);
+    }
+    else
+    {
+        return Guard{[](){}};
+    }
+}
+
 void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplication)
 {
     // see https://github.com/ocornut/imgui/issues/7155#issuecomment-1864823995 
@@ -150,8 +174,6 @@ void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplicati
     // This way, ImGui still captures the previous callback and call them in addition to its logic
     // (i.e. those installed by ApplicationGlfw that forward to AppInterface)
 
-    ImGui::SetCurrentContext(mContext);
-
     // Instantiate the augumented WindowUserData: copy the existing user data
     // and add the ImGuiContext pointer.
     GLFWwindow * window = aApplication.getGlfwWindow();
@@ -161,6 +183,11 @@ void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplicati
     mUserData = std::make_unique<WindowUserData>(WindowUserData{*previousData});
     mUserData->mContext = mContext;
     glfwSetWindowUserPointer(window, mUserData.get());
+
+    // Once an UI decide it handles the context itself, we assume it will always restore its context when needed
+    ImGui::SetCurrentContext(nullptr);
+    // For the rest of this function, activate this context (null context will be restored when leaving the function)
+    auto scopedContext = scopeImguiContext();
 
     // Register our custom function for the 7 required glfw callbacks.
     glfwSetWindowFocusCallback(window,  implCallback<ImGui_ImplGlfw_WindowFocusCallback, int>);
@@ -217,6 +244,7 @@ void ImguiUi::renderBackend()
 
 void ImguiUi::newFrame()
 {
+    // Cannot scope the context here: it needs to remain active until renderBackend() is done.
     ImGui::SetCurrentContext(mContext);
 
     // Start the Dear ImGui frame

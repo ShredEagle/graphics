@@ -44,6 +44,11 @@ private:
     ImGuiContext * mContext;
     ImGuiIO & mIo;
 
+    // If this instance had userdata, it is assumed to means it called registerGlfwCallbacks
+    // In this case, this function will restore the mContext for the duration of the Guard
+    // and restore the previous context when the Guard goes out of scope.
+    Guard scopeImguiContext() const;
+
     // The user data associated to the GLFWWindow corresponding to this.
     std::unique_ptr<WindowUserData> mUserData = nullptr;
 };
