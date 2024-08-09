@@ -123,7 +123,7 @@ namespace {
 
         auto scopedContext = scopeContext(userdata->mContext);
 
-        return ::CallWindowProc(userdata->mPreviousWndProc, hWnd, msg, wParam, lParam);
+        return ::CallWindowProcW(userdata->mPreviousWndProc, hWnd, msg, wParam, lParam);
     }
 #endif // _WIN32
 
