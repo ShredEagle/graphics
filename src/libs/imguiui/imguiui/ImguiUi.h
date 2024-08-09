@@ -50,7 +50,7 @@ private:
     Guard scopeImguiContext() const;
 
     // The user data associated to the GLFWWindow corresponding to this.
-    std::unique_ptr<WindowUserData> mUserData = nullptr;
+    std::unique_ptr<WindowUserData> mUserData;
 };
 
 
