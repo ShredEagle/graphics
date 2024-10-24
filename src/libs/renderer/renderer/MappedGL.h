@@ -128,7 +128,7 @@ constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat)
         default:
             // TODO Ad 2023/10/24: Complete implementation, see list in
             // https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexStorage3D.xhtml
-            throw std::domain_error{"Value not handled yet."};
+            throw std::domain_error{__func__ + std::string{": value not handled yet."}};
         case GL_R8:
         case GL_R8_SNORM:
             return 8;
@@ -145,6 +145,7 @@ constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat)
             return 32;
         case GL_RGB32F:
             return 3 * 32;
+
         // Compressed formats
         // BC5
         case GL_COMPRESSED_RG_RGTC2:
@@ -158,6 +159,26 @@ constexpr GLuint getPixelFormatBitSize(GLenum aSizedInternalFormat)
         case GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM:
         case GL_COMPRESSED_RGBA_BPTC_UNORM:
             return 8;
+
+        // Depth / Stencil
+        case GL_DEPTH_COMPONENT32F:
+            return 32;
+        case GL_DEPTH_COMPONENT24:
+            return 24;
+        case GL_DEPTH_COMPONENT16:
+            return 16;
+        case GL_DEPTH32F_STENCIL8: 
+            return 32 + 8;
+        case GL_DEPTH24_STENCIL8:
+            return 24 + 8;
+        case GL_STENCIL_INDEX1:
+            return 1;
+        case GL_STENCIL_INDEX4:
+            return 4;
+        case GL_STENCIL_INDEX8:
+            return 8;
+        case GL_STENCIL_INDEX16:
+            return 16;
     }
 }
 

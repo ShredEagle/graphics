@@ -181,6 +181,15 @@ inline constexpr math::Size<2, GLsizei> getMipmapSize(math::Size<2, int> aFullRe
 }
 
 
+/// @brief Returns true if the texture was successfully allocated with an immutable format.
+inline bool isImmutableFormat(const Texture & aBoundTexture)
+{
+    GLint isSuccess;
+    glGetTexParameteriv(aBoundTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
+    return isSuccess == GL_TRUE;
+}
+
+
 /// \brief Allocate texture storage.
 inline void allocateStorage(const Texture & aTexture, const GLenum aInternalFormat,
                             const GLsizei aWidth, const GLsizei aHeight,
@@ -191,15 +200,11 @@ inline void allocateStorage(const Texture & aTexture, const GLenum aInternalForm
     if (GL_ARB_texture_storage)
     {
         glTexStorage2D(aTexture.mTarget, aMipmapLevelsCount, aInternalFormat, aWidth, aHeight);
-        { // scoping isSuccess
-            GLint isSuccess;
-            glGetTexParameteriv(aTexture.mTarget, GL_TEXTURE_IMMUTABLE_FORMAT, &isSuccess);
-            if ( isSuccess != GL_TRUE)
-            {
-                const std::string message{"Error calling 'glTexStorage2D'"};
-                std::cerr << message << std::endl;
-                throw std::runtime_error(message);
-            }
+        if(!isImmutableFormat(aTexture))
+        {
+            const std::string message{"Error calling 'glTexStorage2D'"};
+            std::cerr << message << std::endl;
+            throw std::runtime_error(message);
         }
     }
     else

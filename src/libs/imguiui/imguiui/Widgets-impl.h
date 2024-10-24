@@ -3,6 +3,8 @@
 
 #include "Widgets.h"
 
+#include <renderer/MappedGL.h>
+
 #include <imgui.h>
 
 
@@ -49,6 +51,8 @@ void addCombo(const char * aLabel,
               T_enumeration & aValue,
               const std::span<const T_enumeration, N_spanExtent> & aAvailableValues)
 {
+    // Note: this is intended to make the to_string(GLenum) visible
+    // but is smelly. Can we address that another way?
     using graphics::to_string;
 
     static const ImGuiComboFlags flags = 0;
