@@ -202,6 +202,17 @@ inline float computePlaneHeight(float aPlaneDistance, math::Radian<float> aVerti
 }
 
 
+/// @brief Construct orthgraphic projection matrix from a right-handed view-space
+/// to a left-handed clip space (which is conventional in OpenGL).
+inline math::AffineMatrix<4, float> makeOrthographicProjection(math::Box<GLfloat> aViewVolume)
+{
+    return
+        math::trans3d::orthographicProjection(aViewVolume)
+        * math::trans3d::scale(1.f, 1.f, -1.f) // camera space is right handed, but gl clip space is left handed.
+        ;
+}
+
+
 inline math::AffineMatrix<4, float> makeProjection(OrthographicParameters aParams)
 {
     assert(aParams.mNearZ > aParams.mFarZ);
@@ -214,10 +225,7 @@ inline math::AffineMatrix<4, float> makeProjection(OrthographicParameters aParam
                                                                    resulting in a positive */
                                 );
 
-    return
-        math::trans3d::orthographicProjection(viewVolume)
-        * math::trans3d::scale(1.f, 1.f, -1.f) // camera space is right handed, but gl clip space is left handed.
-    ;
+    return makeOrthographicProjection(viewVolume);
 }
 
 
