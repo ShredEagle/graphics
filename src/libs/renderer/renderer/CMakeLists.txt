@@ -14,6 +14,7 @@ set(${TARGET_NAME}_HEADERS
     MappedGL.h
     Query.h
     Renderbuffer.h
+    Sampler.h
     ScopeGuards.h
     ShaderSource.h
     ShaderVertexAttribute.h
