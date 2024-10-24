@@ -53,7 +53,7 @@ public:
         spriteInstances.emplace_back(
             mPosition, 
             mSprites.at(static_cast<std::size_t>(aTimeSeconds*rotationsPerSec*frameCount) % frameCount),
-            std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
+            (GLfloat)std::abs(std::cos(aTimeSeconds * opacityCyclesPerSec * twoPi))
         );
         mSpriting.updateInstances(spriteInstances);
     }
