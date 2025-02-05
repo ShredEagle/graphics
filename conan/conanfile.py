@@ -1,8 +1,10 @@
-from conans import ConanFile, tools
-from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
-from conan.tools.files import copy
+from conan import ConanFile
+from conan.tools.build import can_run, check_min_cppstd
+from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.files import copy, update_conandata
+from conan.tools.scm import Git
 
-from os import path
+import os
 
 
 class GraphicsConan(ConanFile):
@@ -12,19 +14,19 @@ class GraphicsConan(ConanFile):
     url = "https://github.com/Adnn/graphics"
     description = "Graphics rendering generic library, both software and with OpenGL"
     topics = ("opengl", "graphics", "2D", "3D")
+
     settings = "os", "compiler", "build_type", "arch"
-    short_paths = True
     options = {
         "shared": [True, False],
-        "build_tests": [True, False],
+        "fPIC": [True, False],
     }
     default_options = {
         "shared": False,
-        "build_tests": False,
-        "glad:gl_version": "4.6", # 4.2 is required for glBindImageTexture()
+        "fPIC": True,
+        "glad/*:gl_version": "4.6", # 4.2 is required for glBindImageTexture()
                                   # 4.6 notably for FRAGMENT_SHADER_INVOCATIONS query
         # Note: macos only provides GL_ARB_texture_storage and GL_ARB_internalformat_query
-        "glad:extensions": ("GL_KHR_debug,"
+        "glad/*:extensions": ("GL_KHR_debug,"
             "GL_ARB_texture_storage,"
             "GL_ARB_clear_texture,"
             "GL_ARB_program_interface_query,"
@@ -35,6 +37,9 @@ class GraphicsConan(ConanFile):
         )
     }
 
+    generators = "CMakeDeps", "CMakeToolchain"
+    revision_mode = "scm"
+
     requires = (
         ("freetype/2.12.1"),
         ("glad/0.1.36"),
@@ -44,24 +49,109 @@ class GraphicsConan(ConanFile):
         ("utfcpp/4.0.1"),
         ("imgui/1.89.8"),
 
-        ("handy/e2b164a804@adnn/develop"),
-        ("math/8c49b882e7@adnn/develop"),
+        ("handy/cb47135273@adnn/develop"),
+        ("math/cf1d07a75e@adnn/develop"),
     )
 
-    build_policy = "missing"
-    generators = "CMakeDeps", "CMakeToolchain"
-    keep_imports = True
+    # There exist automatic alternatives.
+    # see: https://docs.conan.io/2.0/reference/conanfile/methods/config_options.html?highlight=auto_shared_fpic
+    def config_options(self):
+        if self.settings.get_safe("os") == "Windows":
+            self.options.rm_safe("fPIC")
 
 
-    python_requires="shred_conan_base/0.0.5@adnn/stable"
-    python_requires_extend="shred_conan_base.ShredBaseConanFile"
+    # see: https://github.com/conan-io/conan/issues/7530#issuecomment-1420634751
+    def configure(self):
+        if self.options.get_safe("shared"):
+            self.options.rm_safe("fPIC")
 
 
-    def imports(self):
-        # see: https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html
-        # the imgui package is designed this way: consumer has to import desired backends.
-        self.copy("imgui_impl_glfw.cpp",         src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-        self.copy("imgui_impl_opengl3.cpp",      src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-        self.copy("imgui_impl_glfw.h",           src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-        self.copy("imgui_impl_opengl3.h",        src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-        self.copy("imgui_impl_opengl3_loader.h", src="./res/bindings", dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+    def validate(self):
+        if self.settings.compiler.get_safe("cppstd"):
+            check_min_cppstd(self, "20")
+
+
+    # Handled at the profile level for the moment
+    #def tool_requires(self):
+    #    self.tool_requires("cmake/[>=3.31]")
+
+
+    def layout(self):
+        # The root of the project is one level above
+        self.folders.root = ".."
+        cmake_layout(self)
+
+
+    def export(self):
+        git = Git(self, self.recipe_folder)
+        # Save the url and commit in conandata.yml
+        # Unsafe atm since it is missing the repository argument,
+        # so we save the coordinates manually
+        #git.coordinates_to_conandata()
+        url, commit = git.get_url_and_commit(repository=True)
+        update_conandata(self, {"scm": {"url": url, "commit": commit}})
+
+
+    def source(self):
+        # we recover the saved url and commit from conandata.yml and use them to get sources
+        git = Git(self)
+        git.checkout_from_conandata_coordinates()
+        git.run("submodule update --init")
+
+
+    def build(self):
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
+        if can_run(self):
+            cmake.test()
+
+
+    def package(self):
+        cmake = CMake(self)
+        cmake.install()
+        copy(self, "LICENSE", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
+
+
+    def package_info(self):
+        # Let's bite the bullet and repeate ourselve with a complete cpp_info,
+        # waiting for sufficent Common Package Specification support in Conan an CMake.
+        ## Disable the config package that would otherwise be generated by CMakeDeps
+        #self.cpp_info.set_property("cmake_find_mode", "none")
+        ## Find CMake-generated package config when consuming the (installed) conan package
+        #self.cpp_info.builddirs = [os.path.join("lib", "cmake")]
+
+        self.cpp_info.set_property("cmake_find_mode", "config")
+
+        self.cpp_info.components["arte"].set_property("cmake_target_name", "ad::arte")
+        self.cpp_info.components["arte"].includedirs = ["include/arte"]
+        self.cpp_info.components["arte"].libs = ["arte"]
+
+        self.cpp_info.components["graphics"].set_property("cmake_target_name", "ad::graphics")
+        self.cpp_info.components["graphics"].includedirs = ["include/graphics"]
+        self.cpp_info.components["graphics"].libs = ["graphics"]
+
+        self.cpp_info.components["imguiui"].set_property("cmake_target_name", "ad::imguiui")
+        self.cpp_info.components["imguiui"].includedirs = ["include/imguiui"]
+        self.cpp_info.components["imguiui"].libs = ["imguiui"]
+
+        self.cpp_info.components["renderer"].set_property("cmake_target_name", "ad::renderer")
+        self.cpp_info.components["renderer"].includedirs = ["include/renderer"]
+        self.cpp_info.components["renderer"].libs = ["renderer"]
+
+    #keep_imports = True
+
+
+    #def imports(self):
+    #    # see: https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html
+    #    # the imgui package is designed this way: consumer has to import desired backends.
+    #    files.copy(self, "imgui_impl_glfw.cpp",         src="./res/bindings",
+    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+    #    files.copy(self, "imgui_impl_opengl3.cpp",      src="./res/bindings",
+    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+    #    files.copy(self, "imgui_impl_glfw.h",           src="./res/bindings",
+    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+    #    files.copy(self, "imgui_impl_opengl3.h",        src="./res/bindings",
+    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
+    #    files.copy(self, "imgui_impl_opengl3_loader.h", src="./res/bindings",
+    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))

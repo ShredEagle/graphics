@@ -36,4 +36,6 @@ set_target_properties(${TARGET_NAME} PROPERTIES
                       VERSION "${${PROJECT_NAME}_VERSION}"
 )
 
+add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME})
+
 install(TARGETS ${TARGET_NAME})
