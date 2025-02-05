@@ -42,16 +42,19 @@ class GraphicsConan(ConanFile):
 
     requires = (
         ("freetype/2.12.1"),
-        ("glad/0.1.36"),
-        ("glfw/3.4"),
-        ("nlohmann_json/3.11.2"),
         ("spdlog/1.13.0"),
         ("utfcpp/4.0.1"),
         ("imgui/1.89.8"),
-
-        ("handy/cb47135273@adnn/develop"),
-        ("math/cf1d07a75e@adnn/develop"),
     )
+
+    def requirements(self):
+        self.requires("glfw/3.4", transitive_headers=True)
+        self.requires("nlohmann_json/3.11.2", transitive_headers=True)
+
+        self.requires("handy/cb47135273@adnn/develop", transitive_headers=True),
+        self.requires("math/cf1d07a75e@adnn/develop", transitive_headers=True),
+        self.requires("glad/0.1.36", transitive_headers=True),
+
 
     # There exist automatic alternatives.
     # see: https://docs.conan.io/2.0/reference/conanfile/methods/config_options.html?highlight=auto_shared_fpic
@@ -140,15 +143,43 @@ class GraphicsConan(ConanFile):
         self.cpp_info.components["arte"].set_property("cmake_target_name", "ad::arte")
         self.cpp_info.components["arte"].includedirs = ["include/arte"]
         self.cpp_info.components["arte"].libs = ["arte"]
+        self.cpp_info.components["arte"].requires = [
+            "handy::handy",
+            "handy::platform",
+            "math::math",
+            "freetype::freetype",
+            "nlohmann_json::nlohmann_json",
+            "spdlog::spdlog",
+        ]
+        #self.cpp_info.components["arte"].set_property("cmake_build_modules", ["lib/cmake/Graphics/arte/arteFindUpstream.cmake"])
+        # Does not work on components, major limitation for us
+        #self.cpp_info.set_property("cmake_build_modules", ["lib/cmake/Graphics/arte/arteFindUpstream.cmake"])
 
         self.cpp_info.components["graphics"].set_property("cmake_target_name", "ad::graphics")
         self.cpp_info.components["graphics"].includedirs = ["include/graphics"]
         self.cpp_info.components["graphics"].libs = ["graphics"]
+        self.cpp_info.components["graphics"].requires = [
+            "handy::handy",
+            "handy::resource",
+            "math::math",
+            "glad::glad",
+            "glfw::glfw",
+            "spdlog::spdlog",
+            "utfcpp::utfcpp",
+        ]
 
         self.cpp_info.components["imguiui"].set_property("cmake_target_name", "ad::imguiui")
         self.cpp_info.components["imguiui"].includedirs = ["include/imguiui"]
         self.cpp_info.components["imguiui"].libs = ["imguiui"]
+        self.cpp_info.components["imguiui"].requires = [
+            "imgui::imgui",
+        ]
 
         self.cpp_info.components["renderer"].set_property("cmake_target_name", "ad::renderer")
         self.cpp_info.components["renderer"].includedirs = ["include/renderer"]
         self.cpp_info.components["renderer"].libs = ["renderer"]
+        self.cpp_info.components["renderer"].requires = [
+            "handy::handy",
+            "math::math",
+            "glad::glad",
+        ]
