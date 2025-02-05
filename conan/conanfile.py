@@ -43,7 +43,7 @@ class GraphicsConan(ConanFile):
     requires = (
         ("freetype/2.12.1"),
         ("glad/0.1.36"),
-        ("glfw/3.3.8@adnn/patch"),
+        ("glfw/3.4"),
         ("nlohmann_json/3.11.2"),
         ("spdlog/1.13.0"),
         ("utfcpp/4.0.1"),
