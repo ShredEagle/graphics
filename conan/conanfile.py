@@ -99,6 +99,20 @@ class GraphicsConan(ConanFile):
         git.run("submodule update --init")
 
 
+    def generate(self):
+        # the imgui package is designed this way: consumer has to import desired backends.
+        # see: https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html
+        # imports() has been removed from Conan 2 (and the blog post above is updated accordingly)
+        # see: https://docs.conan.io/en/1.66/migrating_to_2.0/recipes.html#removed-imports-method
+        imgui_package = os.path.join(self.dependencies["imgui"].package_folder, "res", "bindings")
+        destination = os.path.join(self.build_folder, "conan_imports", "imgui_bindings")
+        copy(self, "imgui_impl_glfw.h",           src=imgui_package, dst=destination)
+        copy(self, "imgui_impl_glfw.cpp",         src=imgui_package, dst=destination)
+        copy(self, "imgui_impl_opengl3.h",        src=imgui_package, dst=destination)
+        copy(self, "imgui_impl_opengl3.cpp",      src=imgui_package, dst=destination)
+        copy(self, "imgui_impl_opengl3_loader.h", src=imgui_package, dst=destination)
+
+
     def build(self):
         cmake = CMake(self)
         cmake.configure()
@@ -138,20 +152,3 @@ class GraphicsConan(ConanFile):
         self.cpp_info.components["renderer"].set_property("cmake_target_name", "ad::renderer")
         self.cpp_info.components["renderer"].includedirs = ["include/renderer"]
         self.cpp_info.components["renderer"].libs = ["renderer"]
-
-    #keep_imports = True
-
-
-    #def imports(self):
-    #    # see: https://blog.conan.io/2019/06/26/An-introduction-to-the-Dear-ImGui-library.html
-    #    # the imgui package is designed this way: consumer has to import desired backends.
-    #    files.copy(self, "imgui_impl_glfw.cpp",         src="./res/bindings",
-    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-    #    files.copy(self, "imgui_impl_opengl3.cpp",      src="./res/bindings",
-    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-    #    files.copy(self, "imgui_impl_glfw.h",           src="./res/bindings",
-    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-    #    files.copy(self, "imgui_impl_opengl3.h",        src="./res/bindings",
-    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))
-    #    files.copy(self, "imgui_impl_opengl3_loader.h", src="./res/bindings",
-    #               dst=path.join(self.folders.build, "conan_imports/imgui_backends"))

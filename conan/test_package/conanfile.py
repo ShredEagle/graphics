@@ -30,9 +30,3 @@ class GraphicsTestConan(ConanFile):
         if can_run(self):
             cmd = os.path.join(self.cpp.build.bindir, "example")
             self.run(cmd, env="conanrun")
-
-
-    #def imports(self):
-    #    self.copy("*.dll", dst="bin", src="bin")
-    #    self.copy("*.dylib*", dst="bin", src="lib")
-    #    self.copy('*.so*', dst='bin', src='lib')
