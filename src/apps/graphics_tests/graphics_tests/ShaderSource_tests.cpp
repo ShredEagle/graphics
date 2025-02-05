@@ -14,7 +14,7 @@ using namespace ad;
 using namespace ad::graphics;
 
 
-const std::string gShaderA = 
+const std::string gShaderA =
 R"(#version 310
 
 //#include "ShaderC"
@@ -27,14 +27,14 @@ void main(void)
 })";
 
 
-const std::string gShaderB = 
+const std::string gShaderB =
 R"(int b;//startb
 int foo()
 {}
 // endb)";
 
 
-const std::string gShaderC = 
+const std::string gShaderC =
 R"(int c;)";
 
 
@@ -43,12 +43,14 @@ R"(#version 310
 int b;
 int foo()
 {}
- 
+)"
++ std::string{" "} // We need a space on the newline for the exact match
++ std::string {R"(
 int a; int c;
 void main(void)
 {
 }
-)";
+)"};
 
 
 std::pair<std::unique_ptr<std::istringstream>, std::string>
@@ -67,6 +69,18 @@ lookupStringTable(const std::string aStringName)
 }
 
 
+// Helper to dump the hexadecimal values of bytes in a string
+auto dumpHex = [](std::string_view a) -> std::string
+{
+    std::ostringstream oss;
+    oss.fill('0');
+    for(size_t i = 0; i < a.length(); i++)
+    {
+        oss << std::hex << std::setw(2) << (int)a[i] << " ";
+    }
+    return oss.str();
+};
+
 SCENARIO("Shader code (std::string) include preprocessing.")
 {
     GIVEN("A shader source with #include statements")
@@ -83,6 +97,8 @@ SCENARIO("Shader code (std::string) include preprocessing.")
             THEN("The resulting amalgamation includes the other strings.")
             {
                 ShaderSourceView view{source};
+                INFO("Shader source hex dump:\n" << dumpHex(view.mSource)
+                     << "\nExpected amalgamation hex dump:\n" << dumpHex(gExpectedAmalgamation))
                 REQUIRE(view.mSource == gExpectedAmalgamation);
             }
         }
@@ -148,7 +164,7 @@ SCENARIO("Shader files include preprocessing.")
 SCENARIO("Shader compilation errors mapping.")
 {
     std::unique_ptr<graphics::ApplicationGlfw> glApp;
-    try 
+    try
     {
         glApp = std::make_unique<graphics::ApplicationGlfw>("dummy", math::Size<2, int>{1, 1});
     }
@@ -170,8 +186,8 @@ SCENARIO("Shader compilation errors mapping.")
             {
                 using Catch::Matchers::Contains;
                 CHECK_THROWS_WITH(compileShader(shader, source),
-                                    Contains("helpers.glsl 0(line: 3)")
-                                        && Contains("vert.glsl 0(line: 7)"));
+                                    Contains("helpers.glsl on line 3, column 0")
+                                        && Contains("vert.glsl on line 7, column 0"));
             }
         }
     }
