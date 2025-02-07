@@ -159,6 +159,9 @@ class GraphicsConan(ConanFile):
         self.cpp_info.components["graphics"].includedirs = ["include/graphics"]
         self.cpp_info.components["graphics"].libs = ["graphics"]
         self.cpp_info.components["graphics"].requires = [
+            "arte",
+            "renderer",
+
             "handy::handy",
             "handy::resource",
             "math::math",
@@ -172,6 +175,8 @@ class GraphicsConan(ConanFile):
         self.cpp_info.components["imguiui"].includedirs = ["include/imguiui"]
         self.cpp_info.components["imguiui"].libs = ["imguiui"]
         self.cpp_info.components["imguiui"].requires = [
+            "graphics",
+
             "imgui::imgui",
         ]
 
@@ -179,6 +184,8 @@ class GraphicsConan(ConanFile):
         self.cpp_info.components["renderer"].includedirs = ["include/renderer"]
         self.cpp_info.components["renderer"].libs = ["renderer"]
         self.cpp_info.components["renderer"].requires = [
+            "arte",
+
             "handy::handy",
             "math::math",
             "glad::glad",
