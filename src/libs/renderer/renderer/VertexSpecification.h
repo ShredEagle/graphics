@@ -208,7 +208,7 @@ VertexBufferObject loadVertexBuffer(const VertexArrayObject & aVertexArray,
                                     GLuint aAttributeDivisor = 0);
 
 
-// TODO Ideally, client-code could invoke the functions expecting std::span 
+// TODO Ideally, client-code could invoke the functions expecting std::span
 // without explicitly constructing the std::span{} on call.
 /// \brief This overload deduces the stride and size from T_vertex,
 /// which could itself be deduced from the provided span.
@@ -295,9 +295,9 @@ inline IndexBufferObject initIndexBuffer(const VertexArrayObject & aVertexArray)
 /// \brief Initialize, attach and load data into an IndexBufferObject.
 ///
 /// This is an extension of `initIndexBuffer()`, which loads data into the initialized vertex buffer.
-template <class T_index>
+template <class T_index, std::size_t N_spanExtent>
 IndexBufferObject loadIndexBuffer(const VertexArrayObject & aVertexArray,
-                                  const std::span<T_index> aIndices,
+                                  const std::span<T_index, N_spanExtent> aIndices,
                                   BufferHint aHint)
 {
     IndexBufferObject ibo = initIndexBuffer(aVertexArray);
