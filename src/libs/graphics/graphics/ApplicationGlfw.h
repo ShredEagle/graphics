@@ -57,7 +57,7 @@ public:
                     int aGLVersionMajor=gGLVersionMajor, int aGLVersionMinor=gGLVersionMinor,
                     WindowHints aCustomWindowHints = {}) :
         ApplicationGlfw{NULL/* no context sharing*/,
-                        aName, 
+                        aName,
                         aWidth, aHeight,
                         aFlags,
                         aGLVersionMajor, aGLVersionMinor,
@@ -73,7 +73,7 @@ public:
         ApplicationGlfw{aName, aSize.width(), aSize.height(), aFlags, aGLVersionMajor, aGLVersionMinor, aCustomWindowHints}
     {}
 
-    
+
     /// @brief Shares the OpenGL context from `aSharedContext`.
     /// Will specify the same OpenGL version than `aSharedContext`.
     ApplicationGlfw(ApplicationGlfw & aSharedContext,
@@ -82,7 +82,7 @@ public:
                     ApplicationFlag aFlags = ApplicationFlag::None,
                     WindowHints aCustomWindowHints = {}) :
         ApplicationGlfw{aSharedContext.mWindow, /* Share the context with another window */
-                        aName, 
+                        aName,
                         aWidth, aHeight,
                         aFlags,
                         glfwGetWindowAttrib(aSharedContext.mWindow, GLFW_CONTEXT_VERSION_MAJOR),
@@ -106,13 +106,13 @@ public:
     }
 
     void show()
-    { 
+    {
         glfwShowWindow(mWindow);
         getAppInterface()->callbackWindowVisibility(true);
     }
 
     void hide()
-    { 
+    {
         glfwHideWindow(mWindow);
         getAppInterface()->callbackWindowVisibility(false);
     }
@@ -179,14 +179,14 @@ public:
         aYpos = ypos;
     }
 
-    void setWindowTitle(const std::string & aTitle) 
+    void setWindowTitle(const std::string & aTitle)
     {
         glfwSetWindowTitle(mWindow, aTitle.c_str());
     }
 
     /// \important This is breaking the encapsulation for cases where third parties such as dear-ImGui
     /// need access.
-    /// Please do not use it for "normal" application management, which should be properly wrapped once 
+    /// Please do not use it for "normal" application management, which should be properly wrapped once
     /// the need arises.
     GLFWwindow * getGlfwWindow() const
     { return mWindow; }
@@ -201,9 +201,9 @@ private:
                     int aGLVersionMajor, int aGLVersionMinor,
                     WindowHints aCustomWindowHints) :
         mGlfwInitialization{},
-        mWindow{initializeWindow(aName, 
+        mWindow{initializeWindow(aName,
                                  aFlags,
-                                 aWidth, aHeight, 
+                                 aWidth, aHeight,
                                  aGLVersionMajor, aGLVersionMinor,
                                  aCustomWindowHints,
                                  aSharedContext)},
@@ -217,7 +217,7 @@ private:
             .mShow = [this](){show();},
             .mHide = [this](){hide();},
         });
-            
+
         glfwSetWindowUserPointer(mWindow, mUserData.get());
         // Explicitly call size callbacks, they are used to complete the appInterface setup
         {
@@ -312,7 +312,7 @@ private:
         AppInterface * appInterface = recoverAppInterface(window);
         appInterface->callbackCursorPosition(xpos, ypos);
     }
-    
+
     static void forward_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
     {
         AppInterface * appInterface = recoverAppInterface(window);
@@ -433,7 +433,7 @@ private:
     struct InitGlfw
     {
         InitGlfw()
-        { 
+        {
             static Guard mGuardedInit{InitializeGlfw()};
         }
     } mGlfwInitialization;
@@ -479,7 +479,7 @@ struct NullInhibiter
 /// \brief Register all the callbacks at once. Callbacks have to be available as member functions of `aProvider`.
 /// \param aInhibiter A class that will be given the opportunity to capture input, thus inhibiting the registered provider.
 ///  Can be `nullptr`, to disable.
-template <class T_callbackProvider, class T_inhibiter>
+template <class T_callbackProvider, class T_inhibiter = NullInhibiter>
 void registerGlfwCallbacks(graphics::AppInterface & aAppInterface,
                            T_callbackProvider & aProvider,
                            EscKeyBehaviour aEscBehaviour,
