@@ -44,16 +44,16 @@ class GraphicsConan(ConanFile):
         ("freetype/2.12.1"),
         ("spdlog/1.13.0"),
         ("utfcpp/4.0.1"),
-        ("imgui/1.89.8"),
     )
 
     def requirements(self):
-        self.requires("glfw/3.4", transitive_headers=True)
-        self.requires("nlohmann_json/3.11.2", transitive_headers=True)
-
         self.requires("handy/cb47135273@adnn/develop", transitive_headers=True),
         self.requires("math/cf1d07a75e@adnn/develop", transitive_headers=True),
+
         self.requires("glad/0.1.36", transitive_headers=True),
+        self.requires("glfw/3.4", transitive_headers=True)
+        self.requires("imgui/1.91.5-docking", transitive_headers=True)
+        self.requires("nlohmann_json/3.11.2", transitive_headers=True)
 
 
     # There exist automatic alternatives.
