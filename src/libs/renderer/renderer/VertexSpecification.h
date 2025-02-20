@@ -110,6 +110,7 @@ struct ShaderParameter
     {}
 
     GLuint mIndex; // vertex attribute index to match in vertex shader.
+    // TODO: remove this default, always be explicit. It caused me some pain.
     Access mTypeInShader{Access::Float}; // component data type in the shader
     bool mNormalize{false}; // if destination is float and source is integral, should it be normalized (value/type_max_value)
 };

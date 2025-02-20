@@ -177,7 +177,7 @@ void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplicati
     // This way, ImGui still captures the previous callback and call them in addition to its logic
     // (i.e. those installed by ApplicationGlfw that forward to AppInterface)
 
-    // Instantiate the augumented WindowUserData: copy the existing user data
+    // Instantiate the augmented WindowUserData: copy the existing user data
     // and add the ImGuiContext pointer.
     GLFWwindow * window = aApplication.getGlfwWindow();
 

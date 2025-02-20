@@ -9,7 +9,7 @@ namespace ad::graphics {
         return #enumval;
 
 
-std::string to_string(GLenum aGLEnumerator) 
+std::string to_string(GLenum aGLEnumerator)
 {
     switch(aGLEnumerator)
     {
@@ -39,6 +39,38 @@ std::string to_string(GLenum aGLEnumerator)
         GLENUMCASE(GL_INT);
         GLENUMCASE(GL_UNSIGNED_INT);
         GLENUMCASE(GL_BOOL);
+
+        GLENUMCASE(GL_FLOAT_VEC2);
+        GLENUMCASE(GL_FLOAT_VEC3);
+        GLENUMCASE(GL_FLOAT_VEC4);
+        GLENUMCASE(GL_DOUBLE_VEC2);
+        GLENUMCASE(GL_DOUBLE_VEC3);
+        GLENUMCASE(GL_DOUBLE_VEC4);
+        GLENUMCASE(GL_INT_VEC2);
+        GLENUMCASE(GL_INT_VEC3);
+        GLENUMCASE(GL_INT_VEC4);
+        GLENUMCASE(GL_UNSIGNED_INT_VEC2);
+        GLENUMCASE(GL_UNSIGNED_INT_VEC3);
+        GLENUMCASE(GL_UNSIGNED_INT_VEC4);
+
+        GLENUMCASE(GL_FLOAT_MAT2);
+        GLENUMCASE(GL_FLOAT_MAT3);
+        GLENUMCASE(GL_FLOAT_MAT4);
+        GLENUMCASE(GL_FLOAT_MAT2x3);
+        GLENUMCASE(GL_FLOAT_MAT2x4);
+        GLENUMCASE(GL_FLOAT_MAT3x2);
+        GLENUMCASE(GL_FLOAT_MAT3x4);
+        GLENUMCASE(GL_FLOAT_MAT4x2);
+        GLENUMCASE(GL_FLOAT_MAT4x3);
+        GLENUMCASE(GL_DOUBLE_MAT2);
+        GLENUMCASE(GL_DOUBLE_MAT3);
+        GLENUMCASE(GL_DOUBLE_MAT4);
+        GLENUMCASE(GL_DOUBLE_MAT2x3);
+        GLENUMCASE(GL_DOUBLE_MAT2x4);
+        GLENUMCASE(GL_DOUBLE_MAT3x2);
+        GLENUMCASE(GL_DOUBLE_MAT3x4);
+        GLENUMCASE(GL_DOUBLE_MAT4x2);
+        GLENUMCASE(GL_DOUBLE_MAT4x3);
 
         //
         // Targets
@@ -93,7 +125,7 @@ std::string to_string(GLenum aGLEnumerator)
 
         //
         // Texture internal formats
-        // 
+        //
         GLENUMCASE(GL_COMPRESSED_RG_RGTC2);
         GLENUMCASE(GL_COMPRESSED_SIGNED_RG_RGTC2);
         GLENUMCASE(GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT);
