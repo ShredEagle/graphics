@@ -6,6 +6,7 @@ set(${TARGET_NAME}_HEADERS
     BufferIndexedBinding.h
     BufferLoad.h
     commons.h
+    DdsGL.h
     Drawing.h
     Error.h
     FrameBuffer.h
@@ -32,6 +33,7 @@ set(${TARGET_NAME}_HEADERS
 
 set(${TARGET_NAME}_SOURCES
     AttributeDimension.cpp
+    DdsGL.cpp
     MappedGL.cpp
     ShaderSource.cpp
     ShaderVertexAttribute.cpp

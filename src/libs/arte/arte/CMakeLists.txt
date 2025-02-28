@@ -7,6 +7,9 @@ set(${TARGET_NAME}_HEADERS
     Logging.h
     SpriteSheet.h
 
+    dds/Dds.h
+    dds/DdsEnums.h
+
     detail/GltfJson.h
     detail/Json.h
     detail/3rdparty/stb_image.h
@@ -25,6 +28,8 @@ set(${TARGET_NAME}_SOURCES
     Image.cpp
     Logging.cpp
     SpriteSheet.cpp
+
+    dds/Dds.cpp
 
     detail/3rdparty/stb_image.cpp
     detail/3rdparty/stb_image_write.cpp
