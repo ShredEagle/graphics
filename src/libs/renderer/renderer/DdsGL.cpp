@@ -67,10 +67,17 @@ GLenum getTextureTarget(const dds::Header & aHeader)
             throw std::invalid_argument{"Partial cube-maps are not supported."};
         }
     }
+    else if((aHeader.h.dwCaps2 & DDSCAPS2_VOLUME) == DDSCAPS2_VOLUME)
+    {
+        assert((aHeader.h.dwFlags & DDSD_DEPTH) == DDSD_DEPTH);
+        return GL_TEXTURE_3D;
+    }
     else if(aHeader.h_dxt10)
     {
         switch(aHeader.h_dxt10->resourceDimension)
         {
+            default:
+                throw std::logic_error{"Unknown resource dimension in DXT10 header."};
             case DDS_DIMENSION_TEXTURE1D:
                 return GL_TEXTURE_1D;
             case DDS_DIMENSION_TEXTURE2D:
@@ -79,9 +86,15 @@ GLenum getTextureTarget(const dds::Header & aHeader)
                 return GL_TEXTURE_3D;
         }
     }
-
-    // TODO complete when this exception is thrown
-    throw std::domain_error{"Could not derive a target from the DDS header."};
+    else
+    {
+        // Sanity check: there is no depth provided
+        // (if so, it should have been marked as volume texture in CAPS2)
+        assert((aHeader.h.dwFlags & DDSD_DEPTH) != DDSD_DEPTH);
+        // I am not sure if this is how non-DXT10 1D texture are detected, so assert until it happens
+        assert(aHeader.h.dwHeight > 1);
+        return GL_TEXTURE_2D;
+    }
 }
 
 
