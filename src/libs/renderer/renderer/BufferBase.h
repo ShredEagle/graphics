@@ -42,8 +42,8 @@ struct [[nodiscard]] Buffer : public ResourceGuard<GLuint>
 
 /// @brief RAII wrapper around GL buffers, without coupling to any specific target.
 /// @note Buffers can actually be bound to different targets during their lifetime.
-/// glspec4.6 6.1: 
-/// > Buffer objects created by binding a name returned by GenBuffers to any 
+/// glspec4.6 6.1:
+/// > Buffer objects created by binding a name returned by GenBuffers to any
 /// > of the valid targets are formally equivalent.
 struct [[nodiscard]] BufferAny : public ResourceGuard<GLuint>
 {
@@ -84,6 +84,15 @@ Name<Buffer<N_type>> getBound(const Buffer<N_type> &)
 }
 
 
+template <BufferType N_type>
+Name<Buffer<N_type>> getBound(Name<Buffer<N_type>>)
+{
+    GLint current;
+    glGetIntegerv(getGLMappedBufferBinding(static_cast<GLenum>(N_type)), &current);
+    return Name<Buffer<N_type>>{(GLuint)current, typename Name<Buffer<N_type>>::UnsafeTag{}};
+}
+
+
 inline void bind(const BufferAny & aBuffer, BufferType aTarget)
 {
     glBindBuffer(static_cast<GLenum>(aTarget), aBuffer);
@@ -97,6 +106,14 @@ inline void bind(Name<BufferAny> aBufferView, BufferType aTarget)
 
 
 inline Name<BufferAny> getBound(const BufferAny &, BufferType aTarget)
+{
+    GLint current;
+    glGetIntegerv(getGLMappedBufferBinding(static_cast<GLenum>(aTarget)), &current);
+    return Name<BufferAny>{(GLuint)current, typename Name<BufferAny>::UnsafeTag{}};
+}
+
+
+inline Name<BufferAny> getBound(Name<BufferAny>, BufferType aTarget)
 {
     GLint current;
     glGetIntegerv(getGLMappedBufferBinding(static_cast<GLenum>(aTarget)), &current);
