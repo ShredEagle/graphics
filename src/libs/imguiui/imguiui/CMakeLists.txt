@@ -12,11 +12,11 @@ set(${TARGET_NAME}_SOURCES
 )
 
 set(${TARGET_NAME}_IMGUI_BACKENDS
-    ${PROJECT_BINARY_DIR}/conan_imports/imgui_backends/imgui_impl_glfw.cpp
-    ${PROJECT_BINARY_DIR}/conan_imports/imgui_backends/imgui_impl_opengl3.cpp
-    ${PROJECT_BINARY_DIR}/conan_imports/imgui_backends/imgui_impl_glfw.h
-    ${PROJECT_BINARY_DIR}/conan_imports/imgui_backends/imgui_impl_opengl3.h
-    ${PROJECT_BINARY_DIR}/conan_imports/imgui_backends/imgui_impl_opengl3_loader.h
+    ${PROJECT_BINARY_DIR}/conan_imports/imgui_bindings/imgui_impl_glfw.cpp
+    ${PROJECT_BINARY_DIR}/conan_imports/imgui_bindings/imgui_impl_opengl3.cpp
+    ${PROJECT_BINARY_DIR}/conan_imports/imgui_bindings/imgui_impl_glfw.h
+    ${PROJECT_BINARY_DIR}/conan_imports/imgui_bindings/imgui_impl_opengl3.h
+    ${PROJECT_BINARY_DIR}/conan_imports/imgui_bindings/imgui_impl_opengl3_loader.h
 )
 
 source_group(TREE ${CMAKE_CURRENT_LIST_DIR}

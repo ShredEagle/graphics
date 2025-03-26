@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(PackageTest CXX)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<1:${CMAKE_CURRENT_BINARY_DIR}>)
-find_package(Graphics REQUIRED COMPONENTS graphics renderer)
+find_package(Graphics REQUIRED COMPONENTS arte graphics renderer)
 
 add_executable(example example.cpp)
-target_link_libraries(example PRIVATE ad::graphics ad::renderer)
+target_link_libraries(example PRIVATE ad::arte ad::graphics ad::renderer)

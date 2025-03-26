@@ -2,12 +2,15 @@
 
 #include <GLFW/glfw3.h>
 
-#include <cassert>
-#include <imgui_backends/imgui_impl_glfw.h>
-#include <imgui_backends/imgui_impl_opengl3.h>
+#include <imgui_bindings/imgui_impl_glfw.h>
+#include <imgui_bindings/imgui_impl_opengl3.h>
+
 #include <mutex>
 
-// see: 
+#include <cassert>
+
+
+// see:
 // https://github.com/ocornut/imgui/blob/6f7b5d0ee2fe9948ab871a530888a6dc5c960700/backends/imgui_impl_glfw.cpp#L86C1-L92C7
 #ifdef _WIN32
 #undef APIENTRY
@@ -27,7 +30,7 @@ namespace imguiui {
 /// this way, it is still correct to cast to the base type in pre-existing callbacks.
 struct ImguiUi::WindowUserData : public graphics::ApplicationGlfw::WindowUserData
 {
-    ImGuiContext * mContext; 
+    ImGuiContext * mContext;
 #ifdef  _WIN32
     WNDPROC mPreviousWndProc; // The wndproc that was installed by ImGui
 #endif
@@ -55,8 +58,8 @@ namespace {
         // Setup Platform/Renderer backends
         ImGui_ImplGlfw_InitForOpenGL(aWindow, true);
         ImGui_ImplOpenGL3_Init();
-        
-        // on first call NewFrame create all the shader 
+
+        // on first call NewFrame create all the shader
         // and font texture so it NEEDS to be called
         // once before the first backend render
         // Since we want to avoid all call in the render thread
@@ -113,10 +116,10 @@ namespace {
     // This window procedure will restore the context (from user data) before forwarding to previous WndProc.
     static LRESULT CALLBACK contextAwareWndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
-        ImguiUi::WindowUserData * userdata = 
+        ImguiUi::WindowUserData * userdata =
             (ImguiUi::WindowUserData *)::GetWindowLongPtrW(hWnd, GWLP_USERDATA);
 
-        //std::cerr << "Calling WndProc for window " << hWnd 
+        //std::cerr << "Calling WndProc for window " << hWnd
         //        << " with user data " << userdata
         //        << " on thread " << std::this_thread::get_id()
         //        << "\n";
@@ -166,7 +169,7 @@ Guard ImguiUi::scopeImguiContext() const
 
 void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplication)
 {
-    // see https://github.com/ocornut/imgui/issues/7155#issuecomment-1864823995 
+    // see https://github.com/ocornut/imgui/issues/7155#issuecomment-1864823995
     // We associate the ImGui context with each window, this way we can restore the
     // correct context before calling the ImGui callbacks.
     //
@@ -217,7 +220,7 @@ void ImguiUi::registerGlfwCallbacks(const graphics::ApplicationGlfw & aApplicati
         mUserData->mPreviousWndProc = (WNDPROC)::GetWindowLongPtrW(hWnd, GWLP_WNDPROC);
         assert(mUserData->mPreviousWndProc != 0); // would like to assert that it is the function ImGui_ImplGlfw_WndProc
                                                   // But we do not see the symbol, only declared in a cpp file.
-                    
+
         LONG_PTR userdata = ::GetWindowLongPtrW(hWnd, GWLP_USERDATA);
         // We set user data to associate the ImGui context to the window procedure
         // the fact that the userdata was not used already simplifies things.

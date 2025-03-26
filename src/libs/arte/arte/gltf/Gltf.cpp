@@ -133,7 +133,7 @@ const std::map<std::string, Accessor::ElementType> gStringToElementType{
 };
 
 
-const std::array<std::string, 4> gTargetPathToString{
+[[maybe_unused]] const std::array<std::string, 4> gTargetPathToString{
     "translation",
     "rotation",
     "scale",
@@ -169,7 +169,7 @@ const std::map<std::string, animation::Sampler::Interpolation> gStringToSamplerI
 };
 
 
-const std::array<std::string, 2> gMimeTypeToString{
+[[maybe_unused]] const std::array<std::string, 2> gMimeTypeToString{
     "image/jpeg",
     "image/png",
 };
@@ -291,7 +291,7 @@ Scene load(const Json & aJson)
         .nodes = makeIndicesVector<Index<Node>>(getOptionalArray(aJson, gTagNodes)),
     };
 }
- 
+
 
 template <>
 Node load(const Json & aNodeObject)
@@ -539,7 +539,7 @@ template <>
 material::PbrMetallicRoughness load(const Json & aJson)
 {
     return {
-        .baseColorFactor = 
+        .baseColorFactor =
             aJson.value<math::hdr::Rgba<float>>(gTagBaseColorFactor,
                                                 material::gDefaultPbr.baseColorFactor),
         .baseColorTexture = loadOptional<TextureInfo>(aJson, gTagBaseColorTexture),
@@ -555,7 +555,7 @@ Material load(const Json & aJson)
 {
     Material result{
         .name = aJson.value(gTagName, ""),
-        .pbrMetallicRoughness = 
+        .pbrMetallicRoughness =
             loadOptional<material::PbrMetallicRoughness>(aJson, gTagPbrMetallicRoughness),
         .normalTexture = loadOptional<NormalTextureInfo>(aJson, gTagNormalTexture),
         .occlusionTexture = loadOptional<OcclusionTextureInfo>(aJson, gTagOcclusionTexture),
@@ -569,7 +569,7 @@ Material load(const Json & aJson)
     }
 
     return result;
-}   
+}
 
 
 template <>
@@ -580,7 +580,7 @@ Texture load(const Json & aJson)
         .source = getOptional<Index<Image>>(aJson, gTagSource),
         .sampler = getOptional<Index<texture::Sampler>>(aJson, gTagSampler),
     };
-}   
+}
 
 
 template <>
@@ -597,7 +597,7 @@ Image load(const Json & aJson)
             return aJson.at(gTagBufferView).get<Index<BufferView>>();
         }
     };
-    
+
     Image image{
         .name = aJson.value(gTagName, ""),
         .dataSource = handleDataSource(aJson),
@@ -609,7 +609,7 @@ Image load(const Json & aJson)
     }
 
     return image;
-}   
+}
 
 
 template <>
@@ -622,7 +622,7 @@ texture::Sampler load(const Json & aJson)
         .wrapS = aJson.value(gTagWrapS, texture::gDefaultSampler.wrapS),
         .wrapT = aJson.value(gTagWrapT, texture::gDefaultSampler.wrapT),
     };
-}   
+}
 
 
 template <>
@@ -681,9 +681,9 @@ Camera load(const Json & aJson)
     return result;
 }
 
-// 
+//
 // Output operators
-// 
+//
 std::string prependNotEmpty(std::string_view aString, std::string aPrefix = " ")
 {
     if (!aString.empty())
@@ -701,8 +701,8 @@ namespace gltf {
 
     std::ostream & operator<<(std::ostream & aOut, const Scene & aScene)
     {
-        return aOut 
-            << "<Scene>" << prependNotEmpty(aScene.name) 
+        return aOut
+            << "<Scene>" << prependNotEmpty(aScene.name)
             << " nodes: " << aScene.nodes;
     }
 

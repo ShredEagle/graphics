@@ -4,8 +4,7 @@ add_subdirectory(libs/renderer/renderer)
 add_subdirectory(libs/graphics/graphics)
 add_subdirectory(libs/imguiui/imguiui)
 
-option(BUILD_tests "Build the demo applications" ON)
-if(BUILD_tests)
+if(BUILD_TESTING)
     add_subdirectory(apps/test_commons/test_commons)
     add_subdirectory(apps/graphics_tests/graphics_tests)
 
