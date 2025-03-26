@@ -1,17 +1,33 @@
 # Graphics
 
-Graphics library with C++ and OpenGL
+Graphics library for programming with C++ and OpenGL.
 
-## Development
+One goal is to simplify the implementation of higher level rendering engines and graphical applications.
+It provides an non-invasive, generic and modular foundation layer:
+* `libs/renderer`: abstractions, RAII wrappers and utilities for OpenGL API.
+* `libs/arte`: file formats manipulations for *images* and *gltf models*.
+* `libs/imgui`: utilities and RAII wrappers for DearImgui library.
 
-Build environment setup:
+The project initially served as a development sandbox,
+with early experiments and prototypes available in `apps` and `libs/graphics`.
 
-    git clone --recurse-submodules ...
+## Build (with Conan 2)
+
+* Ensure [the pre-requisites](https://github.com/ShredEagle/public_build_info?tab=readme-ov-file#requirements) are met.
+* Clone:
+    ```bash
+    git clone --recurse-submodule https://github.com/ShredEagle/graphics.git
     cd graphics
-    mkdir build && cd build
-    # glfw 3.3 must be built because of a bug in INTERFACE_INCLUDE_DIR (absolute path instead of config relative)
-    # glfw 3.4 should already fix that
-    conan install ../conan --build=missing --build=glfw
-    cmake ../
-    # Actual build command
-    cmake --build ./
+    ```
+* Build:
+    ```bash
+    conan build ./conan/
+    ```
+
+## Build System and Dependencies
+
+The project uses CMake for its build scripts, which is sufficient for building the project.
+However, CMake does not manage upstream dependencies.
+
+To address this, a Conan recipe is provided on top of the CMake scripts.
+It handles dependency management and facilitates the integration inside a dependency graph.
