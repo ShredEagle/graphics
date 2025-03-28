@@ -21,7 +21,9 @@ with early experiments and prototypes available in `apps` and `libs/graphics`.
     ```
 * Build:
     ```bash
-    conan build ./conan/
+    conan build ./conan/ --build missing \
+      -c tools.system.package_manager:mode=install \
+      -c tools.system.package_manager:sudo=True
     ```
 
 ## Build System and Dependencies
