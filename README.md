@@ -2,11 +2,11 @@
 
 Graphics library for programming with C++ and OpenGL.
 
-One goal is to simplify the implementation of higher level rendering engines and graphical applications.
-It provides an non-invasive, generic and modular foundation layer:
-* `libs/renderer`: abstractions, RAII wrappers and utilities for OpenGL API.
-* `libs/arte`: file formats manipulations for *images* and *gltf models*.
-* `libs/imgui`: utilities and RAII wrappers for DearImgui library.
+This library aims to simplify the development of higher-level rendering engines and graphical applications.
+It provides a non-invasive, generic, and modular foundation layer, consisting of the following components:
+* `libs/renderer`: Abstractions, RAII wrappers, and utilities for the OpenGL API.
+* `libs/arte`: File format handling for images and GLTF models.
+* `libs/imgui`: RAII wrappers and utilities for integrating the Dear ImGui library.
 
 The project initially served as a development sandbox,
 with early experiments and prototypes available in `apps` and `libs/graphics`.
