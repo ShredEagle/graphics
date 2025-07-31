@@ -76,6 +76,15 @@ inline ImageFormat from_extension(filesystem::path aExtension)
 }
 
 
+struct ImageInfo
+{
+    math::Size<2, int> mDimensions;
+    int mChannelCount;
+};
+
+
+ImageInfo readImageInfo(const filesystem::path & aImageFile);
+
 
 template <class T_pixelFormat>
 class Image

@@ -15,6 +15,17 @@ namespace ad {
 namespace arte {
 
 
+ImageInfo readImageInfo(const filesystem::path & aImageFile)
+{
+    ImageInfo result;
+    stbi_info(aImageFile.string().c_str(),
+              &result.mDimensions.width(),
+              &result.mDimensions.height(),
+              &result.mChannelCount);
+    return result;
+}
+
+
 template <class T_pixelFormat>
 Image<T_pixelFormat>::Image(math::Size<2, int> aDimensions, std::unique_ptr<unsigned char[]> aRaster) :
     mDimensions{aDimensions},
