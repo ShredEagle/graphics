@@ -18,6 +18,10 @@ enum class BufferType
     ElementArray = GL_ELEMENT_ARRAY_BUFFER,
     Uniform = GL_UNIFORM_BUFFER,
     DrawIndirect = GL_DRAW_INDIRECT_BUFFER,
+    PixelPack = GL_PIXEL_PACK_BUFFER, // download from server to client memory
+    PixelUnpack = GL_PIXEL_UNPACK_BUFFER, // upload from client to server memory
+    UniformBuffer = GL_UNIFORM_BUFFER,
+    ShaderStorage = GL_SHADER_STORAGE_BUFFER,
 };
 
 
