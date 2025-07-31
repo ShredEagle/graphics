@@ -50,7 +50,7 @@ class GraphicsConan(ConanFile):
 
     def requirements(self):
         self.requires("handy/97edf2bb4f@adnn", transitive_headers=True),
-        self.requires("math/ee8b6fb1ed@adnn", transitive_headers=True),
+        self.requires("math/56d3b88bbf@adnn", transitive_headers=True),
 
         self.requires("glad/0.1.36", transitive_headers=True),
         self.requires("glfw/3.4", transitive_headers=True)
