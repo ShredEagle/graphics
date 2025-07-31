@@ -34,6 +34,8 @@ class GraphicsConan(ConanFile):
             "GL_ARB_base_instance,"
             "GL_ARB_multi_draw_indirect,"
             "GL_ARB_texture_filter_anisotropic," # anisotropic texture filtering
+            "GL_NV_conservative_raster,"
+            #"GL_INTEL_conservative_rasterization,"
         )
     }
 
