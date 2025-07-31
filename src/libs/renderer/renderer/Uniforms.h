@@ -61,6 +61,22 @@ namespace graphics {
 
     template <class T_derived>
     inline void setUniform(const Program & aProgram, GLint aLocation,
+                           const math::Vector<T_derived, 2, GLuint> & aVector)
+    {
+        glProgramUniform2ui(aProgram, aLocation, aVector[0], aVector[1]);
+    }
+
+
+    template <class T_derived>
+    inline void setUniform(const Program & aProgram, GLint aLocation,
+                           const math::Vector<T_derived, 3, GLuint> & aVector)
+    {
+        glProgramUniform3ui(aProgram, aLocation, aVector[0], aVector[1], aVector[2]);
+    }
+
+
+    template <class T_derived>
+    inline void setUniform(const Program & aProgram, GLint aLocation,
                            const math::Vector<T_derived, 2, GLfloat> & aVector)
     {
         glProgramUniform2f(aProgram, aLocation, aVector[0], aVector[1]);
